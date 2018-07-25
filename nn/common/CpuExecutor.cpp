@@ -20,7 +20,10 @@
 
 #include "NeuralNetworks.h"
 #include "Operations.h"
+#include "Tracing.h"
 
+#include "Eigen/Core"
+#include <omp.h>
 #include <sys/mman.h>
 
 namespace android {
@@ -32,7 +35,7 @@ RunTimePoolInfo::RunTimePoolInfo(const hidl_memory& hidlMemory, bool* fail) {
     sp<IMemory> memory;
     uint8_t* buffer = nullptr;
 
-    auto memType = hidlMemory.name();
+    const auto& memType = hidlMemory.name();
     if (memType == "ashmem") {
         memory = mapMemory(hidlMemory);
         if (memory == nullptr) {
@@ -187,14 +190,18 @@ static bool setInfoAndAllocateIfNeeded(RunTimeOperandInfo* info, const Shape& sh
 int CpuExecutor::run(const V1_0::Model& model, const Request& request,
                      const std::vector<RunTimePoolInfo>& modelPoolInfos,
                      const std::vector<RunTimePoolInfo>& requestPoolInfos) {
+    NNTRACE_CPU(NNTRACE_PHASE_EXECUTION, "run::V1_0");
     return run(convertToV1_1(model), request, modelPoolInfos, requestPoolInfos);
 }
 
 int CpuExecutor::run(const V1_1::Model& model, const Request& request,
                      const std::vector<RunTimePoolInfo>& modelPoolInfos,
                      const std::vector<RunTimePoolInfo>& requestPoolInfos) {
+    NNTRACE_CPU(NNTRACE_PHASE_EXECUTION, "run::V1_1");
     VLOG(CPUEXE) << "CpuExecutor::run() with request("
                  << SHOW_IF_DEBUG(toString(request)) << ")";
+
+    ScopedOpenmpSettings openMpSettings;
 
     mModel = &model;
     mRequest = &request; // TODO check if mRequest is needed
@@ -1529,6 +1536,33 @@ int CpuExecutor::executeOperation(const Operation& operation) {
     freeNoLongerUsedOperands(ins);
     return ANEURALNETWORKS_NO_ERROR;
 }
+
+ScopedOpenmpSettings::ScopedOpenmpSettings() {
+    mBlocktimeInitial = kmp_get_blocktime();
+    kmp_set_blocktime(20);  // ms, see b/109645291
+
+#if NNAPI_LIMIT_CPU_THREADS
+    // Code not yet enabled. Choosing the number of threads to be based on
+    // benchmarking. See longer comment by the class declaration.
+    mMaxThreadsInitial = Eigen::nbThreads();
+    const int nProcs = omp_get_num_procs();
+    int threads = nProcs;
+    if (nProcs >= 8) {
+        threads = nProcs - 4;
+    } else if (nProcs >= 4) {
+        threads = nProcs - 2;
+    }
+    Eigen::setNbThreads(threads);
+#endif
+}
+
+ScopedOpenmpSettings::~ScopedOpenmpSettings() {
+    kmp_set_blocktime(mBlocktimeInitial);
+#if NNAPI_LIMIT_CPU_THREADS
+    Eigen::setNbThreads(mMaxThreadsInitial);
+#endif
+}
+
 
 } // namespace nn
 } // namespace android
