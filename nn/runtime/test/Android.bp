@@ -15,25 +15,14 @@
  */
 
 cc_defaults {
-    name: "NeuralNetworksTest_defaults",
+    name: "NeuralNetworksTest_default_libs",
     defaults: ["neuralnetworks_defaults"],
     host_supported: false,
     openmp: true,
-    srcs: [
-        // Subset of tests that rely only on public functionality.
-        "Bridge.cpp",
-        "TestGenerated.cpp",
-        "TestMemory.cpp",
-        "TestMemoryInternal.cpp",
-        "TestTrivialModel.cpp",
-        "TestUnknownDimensions.cpp",
-        "TestValidateOperations.cpp",
-        "TestValidation.cpp",
-        "TestWrapper.cpp",
-    ],
     shared_libs: [
         "libandroid",
         "libbase",
+        "libcutils",
         "libhidlbase",
         "libhidltransport",
         "libhidlmemory",
@@ -45,13 +34,27 @@ cc_defaults {
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
     ],
-    static_libs: [
-        "libneuralnetworks_common",
-        "libSampleDriver",
-    ],
     header_libs: [
-        "libneuralnetworks_private_headers",
         "libneuralnetworks_generated_test_harness_headers",
+    ],
+}
+
+cc_defaults {
+    name: "NeuralNetworksTest_defaults",
+    defaults: ["NeuralNetworksTest_default_libs"],
+    srcs: [
+        // Subset of tests that rely only on public functionality.
+        //
+        // Changes to this list must be reflected in cts/tests/tests/neuralnetworks/Android.mk
+        // to ensure CTS tests coverage.
+        "generated/tests/*.cpp",
+        "GeneratedUtils.cpp",
+        "TestMemory.cpp",
+        "TestTrivialModel.cpp",
+        "TestUnknownDimensions.cpp",
+        "TestValidateOperations.cpp",
+        "TestValidation.cpp",
+        "TestWrapper.cpp",
     ],
 }
 
@@ -68,28 +71,118 @@ cc_test {
         "libneuralnetworks",
         "libtextclassifier_hash",
     ],
-    static_libs: [
-        "libneuralnetworks_common",
-    ],
 }
 
-cc_test {
-    name: "NeuralNetworksTest_static",
+cc_defaults {
+    name: "NeuralNetworksTest_static_defaults",
     defaults: ["NeuralNetworksTest_defaults"],
     srcs: [
         "TestMain.cpp",
 
+        "Bridge.cpp",
         // Tests that rely on non-public functionality (i.e., symbols
         // not exported from libneuralnetworks.so).
         "TestExecution.cpp",
+        "TestMemoryInternal.cpp",
+        "TestOpenmpSettings.cpp",
         "TestPartitioning.cpp",
         "TestPartitioningRandom.cpp",
     ],
     static_libs: [
         "libneuralnetworks",
         "libneuralnetworks_common",
+        "libSampleDriver",
     ],
     shared_libs: [
         "libcutils",
-    ]
+    ],
+    header_libs: [
+        "libneuralnetworks_private_headers",
+    ],
+}
+
+cc_test {
+    name: "NeuralNetworksTest_static",
+    defaults: ["NeuralNetworksTest_static_defaults"],
+}
+
+cc_test {
+    name: "NeuralNetworksTest_static_asan",
+    defaults: ["NeuralNetworksTest_static_defaults"],
+    sanitize: {
+      address: true,
+    },
+    // Declare explicit library dependency for continuous builds
+    target: {
+        android_arm: {
+            required: [
+                "libclang_rt.asan-arm-android",
+            ],
+        },
+        android_arm64: {
+            required: [
+                "libclang_rt.asan-aarch64-android",
+            ],
+        },
+        android_x86: {
+            required: [
+                "libclang_rt.asan-i686-android",
+            ],
+        },
+        android_x86_64: {
+            required: [
+                "libclang_rt.asan-x86_64-android",
+            ],
+        },
+    },
+}
+
+cc_test {
+    name: "NeuralNetworksTest_static_ubsan",
+    defaults: ["NeuralNetworksTest_static_defaults"],
+    sanitize: {
+      undefined: true,
+      all_undefined: true,
+      diag: {
+        undefined: true,
+      },
+    },
+}
+
+cc_defaults {
+    name: "NeuralNetworksTest_mt_defaults",
+    defaults: ["NeuralNetworksTest_default_libs"],
+    srcs: [
+        "TestMain.cpp",
+        "generated/tests/*.cpp",
+        "GeneratedUtils.cpp",
+    ],
+    cflags: [
+        "-DNNTEST_MULTITHREADED"
+    ],
+    static_libs: [
+        "libneuralnetworks",
+        "libneuralnetworks_common",
+        "libSampleDriver",
+    ],
+    shared_libs: [
+        "libcutils",
+    ],
+    header_libs: [
+        "libneuralnetworks_private_headers",
+    ],
+}
+
+cc_test {
+    name: "NeuralNetworksTest_mt_static",
+    defaults: ["NeuralNetworksTest_mt_defaults"],
+}
+
+cc_test {
+    // Note: tsan not supported on Android (yet)
+    name: "NeuralNetworksTest_mt_static_asan",
+    defaults: ["NeuralNetworksTest_mt_defaults"],
+    sanitize: {
+      address: true,
+    },
 }
