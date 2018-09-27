@@ -26,13 +26,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import argparse
+import copy
 from functools import reduce
+import itertools
 import math
 import os
+import re
 import struct
 import sys
 import contextlib
 import pprint
+import numpy as np
 
 def GetJointStr(l, sep=", ", method=str):
     return sep.join([method(i) for i in l])
@@ -44,6 +48,27 @@ def PrettyPrintAsFloat(x):
         return s + "f"
     else:
         return s + ".0f"
+
+# Transform from original type to float32
+def Dequantize(v, ty):
+    v -= ty.zeroPoint
+    if ty.scale != 0:
+        v *= ty.scale
+    return v
+
+# Transform float32 to target data type
+def Quantize(v, ty):
+    if ty.scale != 0:
+        v /= ty.scale
+    v += ty.zeroPoint
+    if not ty.IsFloat():
+        v = np.round(v)
+        v = int(v) if np.isscalar(v) else v.astype(int)
+    if ty.type == "TENSOR_QUANT8_ASYMM":
+        v = np.minimum(np.maximum(v, 0), 255)
+    elif ty.type == "UINT32":
+        v = np.maximum(v, 0)
+    return v
 
 @contextlib.contextmanager
 def SmartOpen(filename=None, mode="w"):
@@ -200,6 +225,17 @@ class Type(NamedVariable):
         else:
             return GetJointStr([self.GetDimensionsString(), self.scale, self.zeroPoint])
 
+# To track implicitly convertible parameter types
+class ImplicitParameter():
+    @staticmethod
+    def ImplicitConvertion(value):
+        if isinstance(value, Operand):
+            return value
+        for implicitType in ImplicitParameter.__subclasses__():
+            if implicitType.IsCompatible(value):
+                return implicitType("param", value)
+        assert False, "%s not supported for implicit parameter"%value
+
 # An operand that can be fed into operations. Also, an operand is always
 # declared before operations.
 class Operand(NamedVariable):
@@ -219,6 +255,13 @@ class Operand(NamedVariable):
     def SetValue(self, value):
         self.value = value if type(value) is list or type(value) is tuple else [value]
         return self
+
+    def SetValueFromNumpy(self, value):
+        self.value = value.flatten().tolist()
+        return self
+
+    def GetValueAsNumpy(self):
+        return np.array(self.value).reshape(self.type.dimensions)
 
     # Print value as cpp-style list initialization
     def GetListInitialization(self):
@@ -273,14 +316,40 @@ class Parameter(Operand):
         self.lifetime = "CONSTANT_COPY"
 
 # A shortcut for parameters of INT32
-class Int32Scalar(Parameter):
+class Int32Scalar(Parameter, ImplicitParameter):
     def __init__(self, name, value):
         Parameter.__init__(self, name, ("INT32", []), int(value))
+    @staticmethod
+    def IsCompatible(value):
+        return isinstance(value, int)
 
 # A shortcut for parameters of FLOAT32
-class Float32Scalar(Parameter):
+class Float32Scalar(Parameter, ImplicitParameter):
     def __init__(self, name, value):
         Parameter.__init__(self, name, ("FLOAT32", []), float(value))
+    @staticmethod
+    def IsCompatible(value):
+        return isinstance(value, float)
+
+# A shortcut for parameter of 1-D TENSOR_INT32
+class Int32Vector(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("TENSOR_INT32", [len(value)]), [int(v) for v in value])
+    @staticmethod
+    def IsCompatible(value):
+        if type(value) is not list and type(value) is not tuple:
+            return False
+        return all(isinstance(i, int) for i in value)
+
+# A shortcut for parameter of 1-D TENSOR_FLOAT32
+class Float32Vector(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("TENSOR_FLOAT32", [len(value)]), [float(v) for v in value])
+    @staticmethod
+    def IsCompatible(value):
+        if type(value) is not list and type(value) is not tuple:
+            return False
+        return all(isinstance(i, float) for i in value)
 
 # An explicitly declared intermediate result
 class Internal(Operand):
@@ -304,7 +373,7 @@ class Operation:
     __repr__ = __str__
 
     def SetInputs(self, ins):
-        self.ins = list(ins)
+        self.ins = [ImplicitParameter.ImplicitConvertion(i) for i in ins]
         for i in self.ins:
             i.outs.append(self)
         return self
@@ -341,6 +410,14 @@ class Model:
         self.compiled = False
         self.dumped = False
         Model.models.append(self)
+
+    def WithSuffix(self, *args):
+        if all(n is None or n == "" for n in args):
+            return self
+        self.createFunctionName = GlobalVariable("CreateModel", self.name, *args)
+        self.createTestFunctionName = GlobalVariable("createTestModel", self.name, *args)
+        self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name, *args)
+        return self
 
     def AddOperation(self, operation):
         self.operations.append(operation)
@@ -432,7 +509,271 @@ class Model:
         self.compiled = True
         return self
 
-# An example is always attached to a model
+# To track implicitly convertible variation types
+class ImplicitVariation:
+    @staticmethod
+    def ImplicitConvertion(value):
+        if isinstance(value, ModelVariation):
+            return value
+        for implicitType in ImplicitVariation.__subclasses__():
+            value = value if type(value) is tuple or type(value) is list else [value]
+            if implicitType.IsCompatible(value[0]):
+                var = implicitType(value[0])
+                if len(value) > 1:
+                    var.Identify(*value[1:])
+                return var
+        assert False, "%s not supported for implicit variation"%value[0]
+
+# The base class for model variations
+class ModelVariation:
+
+    def __init__(self, name=None):
+        self.targetOperands = {}
+        self.targetParameters = []
+        self.name = name
+
+    def ApplyToHelper(self, model, args, feedDicts, transform):
+        opVarList = []
+        for op in model.GetEquivalentOperands(sorted(args.keys())):
+            opVar = op
+            feedDictsVar = []
+            if isinstance(op, Input) or isinstance(op, Output):
+                for feedDict in feedDicts:
+                    op_tmp = copy.deepcopy(op)
+                    if op_tmp in feedDict[0]:
+                        opVar = transform(op_tmp.Feed(feedDict[0]), args[op_tmp])
+                    elif op_tmp in feedDict[1]:
+                        opVar = transform(op_tmp.Feed(feedDict[1]), args[op_tmp])
+                    else:
+                        assert False
+                    feedDictsVar.append(opVar.value)
+                assert type(op) == type(opVar), "Can not handle %s -> %s"%(type(op), type(opVar))
+            else:
+                opVar = transform(op, args[op])
+                # handle Parameter -> Input
+                if isinstance(opVar, Input) or isinstance(opVar, Output):
+                    feedDictsVar = [opVar.value] * len(feedDicts)
+            if isinstance(opVar, Input) or isinstance(opVar, Output):
+                for feedDict, feedDictVar in zip(feedDicts, feedDictsVar):
+                    if opVar in feedDict[1]:
+                        feedDict[1][opVar] = feedDictVar
+                    else:
+                        feedDict[0][opVar] = feedDictVar
+            opVarList.append(opVar)
+        return opVarList
+
+    # Make a deepcopy of the model and feedDicts, and apply the change
+    def ApplyTo(self, modelOrigin, feedDictsOrigin):
+        model, feedDicts = copy.deepcopy((modelOrigin, feedDictsOrigin))
+        model.compiled = False
+        model.dumped = False
+
+        # get transformed operands and update feedDicts
+        operandsVar = self.ApplyToHelper(
+            model, self.targetOperands, feedDicts, self.TransformOperand)
+        parametersVar = self.TransformParameters(
+            model.GetEquivalentOperands(self.targetParameters))
+
+        model = self.TransformModel(model)
+        model.UpdateEquivalentOperands(operandsVar)
+        model.UpdateEquivalentOperands(parametersVar)
+        return model, feedDicts
+
+    def IdentifyOperands(self, args=None):
+        if args is None:
+            return self
+        self.targetOperands = args if type(args) is dict else {i: None for i in args}
+        return self
+
+    def IdentifyParameters(self, args=None):
+        if args is None:
+            return self
+        self.targetParameters = args
+        return self
+
+    def Identify(self, operandArgs=None, paramArgs=None):
+        self.IdentifyOperands(operandArgs).IdentifyParameters(paramArgs)
+        return self
+
+    # Set variation to its default name
+    def SetToDefaultName(self):
+        self.name = ""
+        return self
+
+    # Transform operands that are marked by IdentifyOperands()
+    def TransformOperand(self, op, arg=None):
+        return op
+
+    # Transform operands that are marked as parameters by IdentifyParameters()
+    def TransformParameters(self, parameters):
+        return parameters
+
+    # Transform the model
+    def TransformModel(self, model):
+        return model
+
+# Default variation that does nothing
+class DefaultVariation(ModelVariation):
+
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    # For faster execution
+    def ApplyTo(self, model, feedDicts):
+        return model, feedDicts
+
+# Convert operand data type
+class DataTypeConverter(ModelVariation):
+
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    def SetToDefaultName(self):
+        # get all target types
+        targetTypes = list(zip(*self.targetOperands.values()))[0]
+        if "TENSOR_QUANT8_ASYMM" in targetTypes:
+            self.name = "quant8"
+        elif "TENSOR_INT32" in targetTypes:
+            self.name = "int32"
+        else:
+            self.name = "float"
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        if len(arg) == 1:
+            typeTuple = (arg[0], op.type.dimensions)
+        else:
+            typeTuple = (arg[0], op.type.dimensions, *arg[1:])
+        # To handle Internal operands
+        if op.value is None:
+            op.type = Type.GetType(*typeTuple)
+        else:
+            v = Dequantize(op.GetValueAsNumpy().astype(np.float32), op.type)
+            op.type = Type.GetType(*typeTuple)
+            v = Quantize(v, op.type)
+            op.SetValueFromNumpy(v)
+        return op
+
+# Convert model to turn on/off relaxed computation
+class RelaxedModeConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, isRelaxed=True, name=None):
+        ModelVariation.__init__(self, name=name)
+        if isinstance(isRelaxed, bool):
+            self.isRelaxed = isRelaxed
+        else:
+            assert RelaxedModeConverter.IsCompatible(isRelaxed.lower())
+            self.isRelaxed = True
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["relaxed"]
+
+    def SetToDefaultName(self):
+        self.name = "relaxed" if self.isRelaxed else "float"
+        return self
+
+    def TransformModel(self, model):
+        model.RelaxedExecution(self.isRelaxed)
+        return model
+
+# Convert data layout between "NHWC" amd "NCHW"
+class DataLayoutConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, targetLayout="nchw", name=None):
+        ModelVariation.__init__(self, name=name)
+        self.targetLayout = targetLayout.lower()
+        assert DataLayoutConverter.IsCompatible(self.targetLayout)
+        self.perm = (0, 3, 1, 2) if self.targetLayout == "nchw" else (0, 2, 3, 1)
+        self.enum = 1 if self.targetLayout == "nchw" else 0
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["nhwc", "nchw"]
+
+    def SetToDefaultName(self):
+        self.name = self.targetLayout
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        assert len(op.type.dimensions) == 4, \
+            "Error converting layout of %s, can only apply transformation to 4-D tensor"%op
+        # To handle Internal operands
+        if op.value is not None:
+            op.SetValueFromNumpy(op.GetValueAsNumpy().transpose(self.perm))
+        newDim = [op.type.dimensions[i] for i in self.perm]
+        op.type = Type.GetType(op.type.type, newDim, op.type.scale, op.type.zeroPoint)
+        return op
+
+    def TransformParameters(self, parameters):
+        for p in parameters:
+            p.SetValue(self.enum)
+        return parameters
+
+# Convert a Parameter to Input
+class ParameterAsInputConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, arg="as_input", prefix="weight", name=None):
+        ModelVariation.__init__(self, name=name)
+        assert ParameterAsInputConverter.IsCompatible(arg.lower())
+        self.prefix = prefix
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["as_input"]
+
+    def SetToDefaultName(self):
+        self.name = self.prefix + "_as_input"
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        assert isinstance(op, Parameter), "%s cannot be converted to Input."%type(op)
+        newop = Input(op.name, op.type.GetSignatureTuple(), skipRenaming=True)
+        newop.SetValue(op.value)
+        return newop
+
+# Convert Output based on activation
+class ActivationConverter(ModelVariation, ImplicitVariation):
+    # (Enum, low, high)
+    actMap = {
+        "none": (0, None, None),
+        "relu": (1, 0.0, None),
+        "relu1": (2, -1.0, 1.0),
+        "relu6": (3, 0.0, 6.0),
+    }
+    def __init__(self, act="relu", name=None):
+        ModelVariation.__init__(self, name=name)
+        self.act = act.lower()
+        assert ActivationConverter.IsCompatible(self.act)
+        self.enum = ActivationConverter.actMap[self.act][0]
+        self.low = ActivationConverter.actMap[self.act][1]
+        self.high = ActivationConverter.actMap[self.act][2]
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ActivationConverter.actMap.keys()
+
+    def SetToDefaultName(self):
+        self.name = self.act
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        assert isinstance(op, Output)
+        v = op.GetValueAsNumpy()
+        if self.low is not None:
+            low = Quantize(self.low, op.type)
+            v = np.maximum(v, low)
+        if self.high is not None:
+            high = Quantize(self.high, op.type)
+            v = np.minimum(v, high)
+        return op.SetValueFromNumpy(v)
+
+    def TransformParameters(self, parameters):
+        for p in parameters:
+            p.SetValue(self.enum)
+        return parameters
+
+# An example is always attached to a model, and could have multiple variations
 class Example:
     examples = []
 
@@ -450,6 +791,7 @@ class Example:
                 ))
             else:
                 assert False
+        self.variations = []
         Example.examples.append(self)
 
     # Main entrance of test generator
@@ -461,13 +803,13 @@ class Example:
         for example in Example.examples:
             example.Dump(DumpModel, model_fd, DumpExample, example_fd, DumpTest, test_fd)
 
-    # Combine examples with the same model and same name
+    # Combine examples with the same model, same name, and same set of variations
     @staticmethod
     def CombineAllExamples():
         modelMap = {}
         newExamples = []
         for example in Example.examples:
-            key = (example.model, example.name)
+            key = (example.model, example.name, tuple(tuple(e) for e in example.variations))
             if key in modelMap:
                 modelMap[key].Combine(example)
             else:
@@ -475,24 +817,67 @@ class Example:
                 newExamples.append(example)
         Example.examples = newExamples
 
+    def AddVariations(self, *args, includeDefault=True, defaultName=None):
+        self.variations.append([DefaultVariation(defaultName)] if includeDefault else [])
+        self.variations[-1].extend(ImplicitVariation.ImplicitConvertion(i) for i in args)
+        return self
+
+    def AddNchw(self, ops, params, includeDefault=True, defaultName=None):
+        var = DataLayoutConverter("nchw").Identify(ops, params)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddRelaxed(self, isRelaxed=True, includeDefault=True, defaultName=None):
+        var = RelaxedModeConverter(isRelaxed)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddInput(self, ops, includeDefault=True, defaultName=None):
+        var = ParameterAsInputConverter().Identify(ops)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddRelu(self, ops, params, includeDefault=True, defaultName=None):
+        var = ActivationConverter("relu").Identify(ops, params)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddAllActivations(self, ops, params):
+        var = [ActivationConverter(i).Identify(ops, params)
+            for i in sorted(ActivationConverter.actMap.keys())]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
     def Combine(self, other):
         assert self.model is other.model, "Only examples targetting the same model can be combined"
+        assert tuple(self.variations) == tuple(other.variations), \
+            "Only examples with the same set of variations can be combined"
         assert self.name == other.name, "Only examples with the same name can be combined"
         self.feedDicts.extend(other.feedDicts)
         return self
 
     def Dump(self, DumpModel, model_fd, DumpExample, example_fd, DumpTest, test_fd):
-        # Concat names for test and examples
-        self.testName = NamedTest(FileNames.specName, self.model.name, self.name)
-        self.examplesName = GlobalVariable("examples", self.model.name, self.name)
-        self.model.Compile()
-        # Dump files
-        if DumpModel is not None and model_fd is not None:
-            DumpModel(self.model, model_fd)
-        if DumpExample is not None and example_fd is not None:
-            DumpExample(self, example_fd)
-        if DumpTest is not None and test_fd is not None:
-            DumpTest(self, test_fd)
+        [v.SetToDefaultName() for vs in self.variations for v in vs if v.name is None]
+        for variationList in itertools.product(*self.variations):
+            # Apply variations
+            modelOrigin, feedDictsOrigin = self.model, self.feedDicts
+            for variation in variationList:
+                self.model, self.feedDicts = variation.ApplyTo(self.model, self.feedDicts)
+            # Concat names for test and examples
+            varNames = [v.name for v in variationList]
+            self.testName = NamedTest(FileNames.specName, self.model.name, self.name, *varNames)
+            self.examplesName = GlobalVariable("examples", self.model.name, self.name, *varNames)
+            self.model.WithSuffix(*varNames).Compile()
+            # Dump files
+            if DumpModel is not None and model_fd is not None:
+                DumpModel(self.model, model_fd)
+            if DumpExample is not None and example_fd is not None:
+                DumpExample(self, example_fd)
+            if DumpTest is not None and test_fd is not None:
+                DumpTest(self, test_fd)
+            # Restore model and feedDicts before variation
+            self.model = modelOrigin
+            self.feedDicts = feedDictsOrigin
         return self
 
     # For backward-compatibility with slicing.py
@@ -542,15 +927,75 @@ if collecting_data is True:
             print (example_template.format(**example_contents), file = example_file)
 
 class FileNames:
+    specFiles = []
+    specNames = []
+    modelFiles = []
+    exampleFiles = []
+    testFiles = []
     specFile = ""
     specName = ""
     modelFile = ""
     exampleFile = ""
     testFile = ""
+    ctsFile = ""
     logFile = ""
+    fileIndex = 0
+
+    @staticmethod
+    def InitializeFileLists(spec, model, example, test, cts="-", log=""):
+        # get all spec files and target files
+        if os.path.isfile(spec):
+            FileNames.specFiles = [os.path.abspath(spec)]
+        elif os.path.isdir(spec):
+            FileNames.specFiles = sorted([os.path.abspath(os.path.join(spec, f))
+                for f in os.listdir(spec) if f.endswith(".mod.py")])
+        else:
+            assert False, "%s is neither a file or a directory"%spec
+        FileNames.specNames = [re.sub(r"\..*", "", os.path.basename(f))
+            for f in FileNames.specFiles]
+        FileNames.modelFiles = FileNames.ParseTargetFiles(model, ".model.cpp")
+        FileNames.exampleFiles = FileNames.ParseTargetFiles(example, ".example.cpp")
+        FileNames.testFiles = FileNames.ParseTargetFiles(test, ".mod.py.cpp")
+        FileNames.ctsFile = os.path.abspath(cts) if cts != "-" else "-"
+        FileNames.logFile = ", \"%s\""%log if log != "" else ""
+
+    @staticmethod
+    def ParseTargetFiles(arg, ext):
+        numFiles = len(FileNames.specFiles)
+        absPath = os.path.abspath(arg)
+        if os.path.isfile(arg):
+            assert numFiles == 1
+            target = [absPath]
+        elif os.path.isdir(arg):
+            target = [os.path.join(absPath, f + ext) for f in FileNames.specNames]
+        elif arg == "-":
+            target = ["-"] * numFiles
+        else:
+            assert False, "%s is neither a file or a directory"%arg
+        return target
+
+    @staticmethod
+    def NextFile():
+        if FileNames.fileIndex >= len(FileNames.specFiles):
+            return False
+        FileNames.specFile = FileNames.specFiles[FileNames.fileIndex]
+        FileNames.specName = FileNames.specNames[FileNames.fileIndex]
+        FileNames.modelFile = FileNames.modelFiles[FileNames.fileIndex]
+        FileNames.exampleFile = FileNames.exampleFiles[FileNames.fileIndex]
+        FileNames.testFile = FileNames.testFiles[FileNames.fileIndex]
+        FileNames.fileIndex += 1
+        NamedObject.existingNames = set()
+        NamedVariable.existingNames = set()
+        NamedTest.existingNames = set()
+        Type.typesMap = dict()
+        Model.models = list()
+        Example.examples = list()
+        Configuration.use_shm_for_weights = False
+        return True
 
 class Configuration:
     use_shm_for_weights = False
+    force_regenerate = False
 
     @staticmethod
     def useSHM():
