@@ -241,3 +241,93 @@ TEST_F(NeuralnetworksHidlTest, argmin_2_quant8) {
                            argmin_2_quant8::examples);
 }
 
+// Generated from: lsh_projection_3_relaxed.mod.py.
+namespace lsh_projection_3_relaxed {
+// Generated lsh_projection_3_relaxed test
+#include "examples/lsh_projection_3_relaxed.example.cpp"
+// Generated model constructor
+#include "vts_models/lsh_projection_3_relaxed.model.cpp"
+} // namespace lsh_projection_3_relaxed
+
+TEST_F(NeuralnetworksHidlTest, lsh_projection_3_relaxed) {
+  generated_tests::Execute(device,
+                           lsh_projection_3_relaxed::createTestModel,
+                           lsh_projection_3_relaxed::is_ignored,
+                           lsh_projection_3_relaxed::examples);
+}
+
+// Generated from: lsh_projection_4_relaxed.mod.py.
+namespace lsh_projection_4_relaxed {
+// Generated lsh_projection_4_relaxed test
+#include "examples/lsh_projection_4_relaxed.example.cpp"
+// Generated model constructor
+#include "vts_models/lsh_projection_4_relaxed.model.cpp"
+} // namespace lsh_projection_4_relaxed
+
+TEST_F(NeuralnetworksHidlTest, lsh_projection_4_relaxed) {
+  generated_tests::Execute(device,
+                           lsh_projection_4_relaxed::createTestModel,
+                           lsh_projection_4_relaxed::is_ignored,
+                           lsh_projection_4_relaxed::examples);
+}
+
+// Generated from: lsh_projection_deprecated.mod.py.
+namespace lsh_projection_deprecated {
+// Generated lsh_projection_deprecated test
+#include "examples/lsh_projection_deprecated.example.cpp"
+// Generated model constructor
+#include "vts_models/lsh_projection_deprecated.model.cpp"
+} // namespace lsh_projection_deprecated
+
+TEST_F(NeuralnetworksHidlTest, lsh_projection_deprecated) {
+  generated_tests::Execute(device,
+                           lsh_projection_deprecated::createTestModel,
+                           lsh_projection_deprecated::is_ignored,
+                           lsh_projection_deprecated::examples);
+}
+
+// Generated from: pad_v2_1_float.mod.py.
+namespace pad_v2_1_float {
+// Generated pad_v2_1_float test
+#include "examples/pad_v2_1_float.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_v2_1_float.model.cpp"
+} // namespace pad_v2_1_float
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_1_float) {
+  generated_tests::Execute(device,
+                           pad_v2_1_float::createTestModel,
+                           pad_v2_1_float::is_ignored,
+                           pad_v2_1_float::examples);
+}
+
+// Generated from: pad_v2_1_float_relaxed.mod.py.
+namespace pad_v2_1_float_relaxed {
+// Generated pad_v2_1_float_relaxed test
+#include "examples/pad_v2_1_float_relaxed.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_v2_1_float_relaxed.model.cpp"
+} // namespace pad_v2_1_float_relaxed
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_1_float_relaxed) {
+  generated_tests::Execute(device,
+                           pad_v2_1_float_relaxed::createTestModel,
+                           pad_v2_1_float_relaxed::is_ignored,
+                           pad_v2_1_float_relaxed::examples);
+}
+
+// Generated from: pad_v2_1_quant8.mod.py.
+namespace pad_v2_1_quant8 {
+// Generated pad_v2_1_quant8 test
+#include "examples/pad_v2_1_quant8.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_v2_1_quant8.model.cpp"
+} // namespace pad_v2_1_quant8
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_1_quant8) {
+  generated_tests::Execute(device,
+                           pad_v2_1_quant8::createTestModel,
+                           pad_v2_1_quant8::is_ignored,
+                           pad_v2_1_quant8::examples);
+}
+
