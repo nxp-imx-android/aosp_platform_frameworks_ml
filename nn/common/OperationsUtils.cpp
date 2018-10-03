@@ -76,13 +76,16 @@ uint32_t getSizeOfDimension(const Shape& shape, uint32_t dimensionIdx) {
     return shape.dimensions[dimensionIdx];
 }
 
-int32_t getDimensionIndex(const Shape& shape, int32_t axis) {
-    int32_t dims = getNumberOfDimensions(shape);
-    NN_OPS_CHECK(-dims <= axis && axis < dims);
+int32_t getDimensionIndex(int32_t numberOfDimensions, int32_t axis) {
+    NN_OPS_CHECK(-numberOfDimensions <= axis && axis < numberOfDimensions);
     if (axis < 0) {
-        axis += dims;
+        axis += numberOfDimensions;
     }
     return axis;
+}
+
+int32_t getDimensionIndex(const Shape& shape, int32_t axis) {
+    return getDimensionIndex(getNumberOfDimensions(shape), axis);
 }
 
 bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
@@ -918,5 +921,24 @@ bool argMinMaxPrepare(const Shape& input, int32_t axis, Shape* output) {
 
     return true;
 }
+
+bool splitPrepare(const Shape& input, int32_t axis, int32_t numOutputs,
+                  std::vector<Shape>* output) {
+    axis = getDimensionIndex(input, axis);
+
+    const int32_t sizeOfAxisToSplit = input.dimensions[axis];
+    NN_OPS_CHECK(sizeOfAxisToSplit % numOutputs == 0);
+    const int32_t sliceSize = sizeOfAxisToSplit / numOutputs;
+
+    for (int i = 0; i < numOutputs; ++i) {
+        output->at(i).type = input.type;
+        output->at(i).dimensions = input.dimensions;
+        output->at(i).dimensions[axis] = sliceSize;
+        output->at(i).offset = input.offset;
+        output->at(i).scale = input.scale;
+    }
+    return true;
+}
+
 } // namespace nn
 } // namespace android
