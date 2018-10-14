@@ -443,6 +443,24 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                                     input.shape());
             }
         } break;
+        case OperationType::QUANTIZE: {
+            if (!allParametersPresent(1, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& input = mOperands[ins[0]];
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outShape = output.shape();
+
+            if (!quantizePrepare(input.shape(), &outShape) ||
+                !setInfoAndAllocateIfNeeded(&output, outShape)) {
+                break;
+            }
+            if (input.type == OperandType::TENSOR_FLOAT32) {
+                success = quantizeFloat32ToQuant8(reinterpret_cast<const float*>(input.buffer),
+                                                  reinterpret_cast<uint8_t*>(output.buffer),
+                                                  output.shape());
+            }
+        } break;
         case OperationType::DEPTHWISE_CONV_2D: {
             const size_t inCount = ins.size();
             if ((inCount != 11 && inCount != 8) || !allParametersPresent(inCount, 1)) {
@@ -1729,6 +1747,24 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                       setInfoAndAllocateIfNeeded(&out, outShape) &&
                       pReluGeneric(input.buffer, input.shape(), alpha.buffer, alpha.shape(),
                                    out.buffer, outShape);
+        } break;
+        case OperationType::TILE: {
+            if (!allParametersPresent(2, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& input = mOperands[ins[0]];
+            const RunTimeOperandInfo& multiples = mOperands[ins[1]];
+
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outShape = output.shape();
+
+            success =
+                    tile::prepare(input.shape(), reinterpret_cast<const int32_t*>(multiples.buffer),
+                                  multiples.shape(), &outShape) &&
+                    setInfoAndAllocateIfNeeded(&output, outShape) &&
+                    tile::eval(input.buffer, input.shape(),
+                               reinterpret_cast<const int32_t*>(multiples.buffer), output.buffer,
+                               outShape);
         } break;
         default:
             nnAssert(false);

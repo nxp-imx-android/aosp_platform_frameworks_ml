@@ -24,6 +24,7 @@
 #include "operations/LSTM.h"
 #include "operations/RNN.h"
 #include "operations/SVDF.h"
+#include "operations/Tile.h"
 
 #include <stddef.h>
 
@@ -60,6 +61,8 @@ bool floorFloat32(const float* inputData,
 bool dequantizeQuant8ToFloat32(const uint8_t* inputData,
                                float* outputData,
                                const Shape& shape);
+
+bool quantizeFloat32ToQuant8(const float* inputData, uint8_t* outputData, const Shape& outputShape);
 
 bool depthwiseConvFloat32(const float* inputData, const Shape& inputShape,
                           const float* filterData, const Shape& filterShape,
