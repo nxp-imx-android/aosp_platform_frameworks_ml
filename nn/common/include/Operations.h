@@ -137,6 +137,8 @@ bool relu6Float32(const float* inputData, const Shape& inputShape,
                   float* outputData, const Shape& outputShape);
 bool tanhFloat32(const float* inputData, const Shape& inputShape,
                  float* outputData, const Shape& outputShape);
+bool tanhQuant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
+                const Shape& outputShape);
 bool logisticFloat32(const float* inputData, const Shape& inputShape,
                      float* outputData, const Shape& outputShape);
 bool softmaxFloat32(const float* inputData, const Shape& inputShape,
@@ -215,6 +217,9 @@ bool subFloat32(const float* in1, const Shape& shape1,
                 const float* in2, const Shape& shape2,
                 int32_t activation,
                 float* out, const Shape& shapeOut);
+
+bool subQuant8(const uint8_t* in1, const Shape& shape1, const uint8_t* in2, const Shape& shape2,
+               int32_t activation, uint8_t* out, const Shape& shapeOut);
 
 bool squeezeGeneric(const void* inputData, const Shape& inputShape,
                     void* outputData, const Shape& outputShape);

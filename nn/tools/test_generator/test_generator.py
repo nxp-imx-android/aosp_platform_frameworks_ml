@@ -145,6 +145,7 @@ class Type(NamedVariable):
         "TENSOR_FLOAT32": "float",
         "TENSOR_QUANT8_ASYMM": "uint8_t",
         "BOOL": "bool",
+        "TENSOR_QUANT16_ASYMM": "int16_t",
 #     "OEM_SCALAR": this is service-defined.
         "TENSOR_OEM_BYTE": "uint8_t",
     }
@@ -211,7 +212,13 @@ class Type(NamedVariable):
         return self.GetCppTypeString() == "bool"
 
     def GetElementByteSize(self):
-        return 1 if self.GetCppTypeString() in ["uint8_t", "bool"] else 4
+        cppTypeString = self.GetCppTypeString()
+        if cppTypeString in ["uint8_t", "bool"]:
+            return 1
+        elif cppTypeString == "int16_t":
+            return 2
+        else:
+            return 4
 
     def GetByteSize(self):
         return self.GetElementByteSize() * self.GetNumberOfElements()
@@ -327,7 +334,7 @@ class Int32Scalar(Parameter, ImplicitParameter):
         Parameter.__init__(self, name, ("INT32", []), int(value))
     @staticmethod
     def IsCompatible(value):
-        return isinstance(value, int)
+        return type(value) is int
 
 # A shortcut for parameters of FLOAT32
 class Float32Scalar(Parameter, ImplicitParameter):
@@ -335,7 +342,7 @@ class Float32Scalar(Parameter, ImplicitParameter):
         Parameter.__init__(self, name, ("FLOAT32", []), float(value))
     @staticmethod
     def IsCompatible(value):
-        return isinstance(value, float)
+        return type(value) is float
 
 # A shortcut for parameters of BOOL
 class BoolScalar(Parameter, ImplicitParameter):
@@ -343,7 +350,7 @@ class BoolScalar(Parameter, ImplicitParameter):
         Parameter.__init__(self, name, ("BOOL", []), bool(value))
     @staticmethod
     def IsCompatible(value):
-        return isinstance(value, bool)
+        return type(value) is bool
 
 # A shortcut for parameter of 1-D TENSOR_INT32
 class Int32Vector(Parameter, ImplicitParameter):
@@ -353,7 +360,7 @@ class Int32Vector(Parameter, ImplicitParameter):
     def IsCompatible(value):
         if type(value) is not list and type(value) is not tuple:
             return False
-        return all(isinstance(i, int) for i in value)
+        return all(type(i) is int for i in value)
 
 # A shortcut for parameter of 1-D TENSOR_FLOAT32
 class Float32Vector(Parameter, ImplicitParameter):
@@ -363,7 +370,7 @@ class Float32Vector(Parameter, ImplicitParameter):
     def IsCompatible(value):
         if type(value) is not list and type(value) is not tuple:
             return False
-        return all(isinstance(i, float) for i in value)
+        return all(type(i) is float for i in value)
 
 # An explicitly declared intermediate result
 class Internal(Operand):
