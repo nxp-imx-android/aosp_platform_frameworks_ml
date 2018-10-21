@@ -1136,7 +1136,8 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             }
         } break;
         case OperationType::SOFTMAX: {
-            if (!allParametersPresent(2, 1)) {
+            const size_t inCount = ins.size();
+            if ((inCount != 3 && inCount != 2) || !allParametersPresent(inCount, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             RunTimeOperandInfo& input = mOperands[ins[0]];
@@ -1145,6 +1146,7 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                 LOG(ERROR) << "beta must be positive for softmax";
                 return ANEURALNETWORKS_BAD_DATA;
             }
+            int32_t axis = inCount == 3 ? getScalarData<int32_t>(mOperands[ins[2]]) : -1;
 
             RunTimeOperandInfo& output = mOperands[outs[0]];
             Shape outShape = output.shape();
@@ -1155,11 +1157,11 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             }
             if (input.type == OperandType::TENSOR_FLOAT32) {
                 success = softmaxFloat32(reinterpret_cast<const float*>(input.buffer),
-                                         input.shape(), beta,
+                                         input.shape(), beta, axis,
                                          reinterpret_cast<float*>(output.buffer), output.shape());
             } else if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
                 success = softmaxQuant8(reinterpret_cast<const uint8_t*>(input.buffer),
-                                        input.shape(), beta,
+                                        input.shape(), beta, axis,
                                         reinterpret_cast<uint8_t*>(output.buffer), output.shape());
             }
         } break;
@@ -1235,28 +1237,28 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             }
         } break;
         case OperationType::L2_NORMALIZATION: {
-            if (!allParametersPresent(1, 1)) {
+            const size_t inCount = ins.size();
+            if ((inCount != 2 && inCount != 1) || !allParametersPresent(inCount, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             const RunTimeOperandInfo& input = mOperands[ins[0]];
+            const int32_t axis = inCount == 2 ? getScalarData<int32_t>(mOperands[ins[1]]) : -1;
             RunTimeOperandInfo& output = mOperands[outs[0]];
             Shape outShape = output.shape();
 
             if (!genericNormalizationPrepare(input.shape(), &outShape) ||
                 !setInfoAndAllocateIfNeeded(&output, outShape)) {
+                success = false;
                 break;
             }
             if (input.type == OperandType::TENSOR_FLOAT32) {
                 success = l2normFloat32(reinterpret_cast<const float*>(input.buffer), input.shape(),
-                                        reinterpret_cast<float*>(output.buffer), outShape);
-            } else if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
-                success =
-                        l2normQuant8(reinterpret_cast<const uint8_t*>(input.buffer), input.shape(),
-                                     reinterpret_cast<uint8_t*>(output.buffer), outShape);
+                                        axis, reinterpret_cast<float*>(output.buffer), outShape);
             }
         } break;
         case OperationType::LOCAL_RESPONSE_NORMALIZATION: {
-            if (!allParametersPresent(5, 1)) {
+            const size_t inCount = ins.size();
+            if ((inCount != 6 && inCount != 5) || !allParametersPresent(inCount, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             const RunTimeOperandInfo& input = mOperands[ins[0]];
@@ -1264,18 +1266,20 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             float bias = getScalarData<float>(mOperands[ins[2]]);
             float alpha = getScalarData<float>(mOperands[ins[3]]);
             float beta = getScalarData<float>(mOperands[ins[4]]);
+            const int32_t axis = inCount == 6 ? getScalarData<int32_t>(mOperands[ins[5]]) : -1;
 
             RunTimeOperandInfo& output = mOperands[outs[0]];
             Shape outShape = output.shape();
 
             if (!genericNormalizationPrepare(input.shape(), &outShape) ||
                 !setInfoAndAllocateIfNeeded(&output, outShape)) {
+                success = false;
                 break;
             }
             if (input.type == OperandType::TENSOR_FLOAT32) {
                 success = localResponseNormFloat32(
                         reinterpret_cast<const float*>(input.buffer), input.shape(), radius, bias,
-                        alpha, beta, reinterpret_cast<float*>(output.buffer), outShape);
+                        alpha, beta, axis, reinterpret_cast<float*>(output.buffer), outShape);
             }
         } break;
         case OperationType::RESHAPE: {
@@ -1792,6 +1796,23 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                      axis, isArgMin,
                                      output.buffer, outShape);
         } break;
+        case OperationType::GATHER: {
+            if (!allParametersPresent(3, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& input = mOperands[ins[0]];
+            int32_t axis = getScalarData<int32_t>(mOperands[ins[1]]);
+            const RunTimeOperandInfo& indices = mOperands[ins[2]];
+
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outShape = output.shape();
+
+            success = gather::prepare(input.shape(), axis, indices.shape(), &outShape) &&
+                      setInfoAndAllocateIfNeeded(&output, outShape) &&
+                      gather::compute(input.buffer, input.shape(), axis,
+                                      reinterpret_cast<const int32_t*>(indices.buffer),
+                                      indices.shape(), output.buffer, outShape);
+        } break;
         case OperationType::EXPAND_DIMS: {
             if (!allParametersPresent(2, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
@@ -1861,7 +1882,7 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             }
         } break;
         case OperationType::ROI_ALIGN: {
-            if (!allParametersPresent(5, 1)) {
+            if (!allParametersPresent(6, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             const RunTimeOperandInfo& input = mOperands[ins[0]];
@@ -1869,20 +1890,38 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             const RunTimeOperandInfo& outputShape = mOperands[ins[2]];
             const float spatialScale = getScalarData<float>(mOperands[ins[3]]);
             const int32_t samplingRatio = getScalarData<int32_t>(mOperands[ins[4]]);
+            const bool data_layout = getScalarData<bool>(mOperands[ins[5]]);
 
             RunTimeOperandInfo& out = mOperands[outs[0]];
             Shape outShape = out.shape();
 
-            if (input.type == OperandType::TENSOR_FLOAT32) {
-                success = roiAlignPrepare(input.shape(), reinterpret_cast<const float*>(roi.buffer),
-                                          roi.shape(),
+            RunTimeOperandInfo input_tmp, out_tmp;
+            std::unique_ptr<uint8_t[]> input_tmp_guard, out_tmp_guard;
+            if (!convertToNhwc(input_tmp, input, input_tmp_guard, data_layout)) {
+                success = false;
+                break;
+            }
+            out_tmp.lifetime = OperandLifeTime::TEMPORARY_VARIABLE;
+            out_tmp.buffer = data_layout ? nullptr : out.buffer;
+
+            if (input_tmp.type == OperandType::TENSOR_FLOAT32) {
+                success = roiAlignPrepare(input_tmp.shape(),
+                                          reinterpret_cast<const float*>(roi.buffer), roi.shape(),
                                           reinterpret_cast<const int32_t*>(outputShape.buffer),
                                           outputShape.shape(), spatialScale, &outShape) &&
-                          setInfoAndAllocateIfNeeded(&out, outShape) &&
-                          roiAlign(reinterpret_cast<const float*>(input.buffer), input.shape(),
-                                   reinterpret_cast<const float*>(roi.buffer), roi.shape(),
-                                   spatialScale, samplingRatio,
-                                   reinterpret_cast<float*>(out.buffer), outShape);
+                          setInfoAndAllocateIfNeeded(&out_tmp, outShape) &&
+                          roiAlign(reinterpret_cast<const float*>(input_tmp.buffer),
+                                   input_tmp.shape(), reinterpret_cast<const float*>(roi.buffer),
+                                   roi.shape(), spatialScale, samplingRatio,
+                                   reinterpret_cast<float*>(out_tmp.buffer), outShape);
+            }
+
+            if (data_layout) {
+                out_tmp_guard.reset(out_tmp.buffer);
+            }
+            if (!success || !convertFromNhwc(out, out_tmp, data_layout)) {
+                success = false;
+                break;
             }
         } break;
         case OperationType::HEATMAP_MAX_KEYPOINT: {
@@ -2002,19 +2041,20 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             }
         } break;
         case OperationType::CHANNEL_SHUFFLE: {
-            if (!allParametersPresent(2, 1)) {
+            if (!allParametersPresent(3, 1)) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             const RunTimeOperandInfo& input = mOperands[ins[0]];
             const int32_t numGroups = getScalarData<int32_t>(mOperands[ins[1]]);
+            const int32_t axis = getScalarData<int32_t>(mOperands[ins[2]]);
 
             RunTimeOperandInfo& out = mOperands[outs[0]];
             Shape outShape = out.shape();
 
-            success = channelShufflePrepare(input.shape(), numGroups, &outShape) &&
+            success = channelShufflePrepare(input.shape(), numGroups, axis, &outShape) &&
                       setInfoAndAllocateIfNeeded(&out, outShape) &&
-                      channelShuffleGeneric(input.buffer, input.shape(), numGroups, out.buffer,
-                                            outShape);
+                      channelShuffleGeneric(input.buffer, input.shape(), numGroups, axis,
+                                            out.buffer, outShape);
         } break;
         case OperationType::TRANSPOSE_CONV_2D: {
             const size_t inCount = ins.size();
@@ -2141,6 +2181,33 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                     tile::eval(input.buffer, input.shape(),
                                reinterpret_cast<const int32_t*>(multiples.buffer), output.buffer,
                                outShape);
+        } break;
+        case OperationType::QUANTIZED_16BIT_LSTM: {
+            if (!allParametersPresent(5, 5)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+
+            RunTimeOperandInfo& concatTemp = mOperands[outs[QuantizedLSTMCell::kConcatTempTensor]];
+            RunTimeOperandInfo& activationTemp =
+                    mOperands[outs[QuantizedLSTMCell::kActivationTempTensor]];
+            RunTimeOperandInfo& outputStateOut =
+                    mOperands[outs[QuantizedLSTMCell::kOutputStateOutTensor]];
+            RunTimeOperandInfo& cellStateOut =
+                    mOperands[outs[QuantizedLSTMCell::kCellStateOutTensor]];
+            RunTimeOperandInfo& output = mOperands[outs[QuantizedLSTMCell::kOutputTensor]];
+
+            Shape concatTempShape, activationTempShape, outputStateOutShape, cellStateOutShape,
+                    outputShape;
+            QuantizedLSTMCell quantizedLSTMCell(operation, mOperands);
+
+            success = QuantizedLSTMCell::prepare(operation, mOperands, &concatTempShape,
+                                                 &activationTempShape, &outputStateOutShape,
+                                                 &cellStateOutShape, &outputShape) &&
+                      setInfoAndAllocateIfNeeded(&concatTemp, concatTempShape) &&
+                      setInfoAndAllocateIfNeeded(&activationTemp, activationTempShape) &&
+                      setInfoAndAllocateIfNeeded(&outputStateOut, outputStateOutShape) &&
+                      setInfoAndAllocateIfNeeded(&cellStateOut, cellStateOutShape) &&
+                      setInfoAndAllocateIfNeeded(&output, outputShape) && quantizedLSTMCell.eval();
         } break;
         default:
             nnAssert(false);

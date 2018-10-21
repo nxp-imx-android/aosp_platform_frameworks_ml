@@ -451,7 +451,6 @@ bool concatenationPrepare(const std::vector<Shape>& inputShapes,
 
 
 bool genericNormalizationPrepare(const Shape& input, Shape* output) {
-    NN_OPS_CHECK(getNumberOfDimensions(input) == 4);
     return SetShape(input, output);
 }
 
@@ -1074,12 +1073,10 @@ bool groupedConvPrepare(const Shape& input, const Shape& filter, const Shape& bi
     return true;
 }
 
-bool channelShufflePrepare(const Shape& input, int32_t numGroups, Shape* output) {
-    uint32_t numDimensions = getNumberOfDimensions(input);
-
+bool channelShufflePrepare(const Shape& input, int32_t numGroups, int32_t axis, Shape* output) {
+    axis = getDimensionIndex(input, axis);
     NN_OPS_CHECK(numGroups > 0);
-    NN_OPS_CHECK(getSizeOfDimension(input, numDimensions - 1) % numGroups == 0);
-
+    NN_OPS_CHECK(getSizeOfDimension(input, axis) % numGroups == 0);
     output->type = input.type;
     output->dimensions = input.dimensions;
     output->offset = input.offset;

@@ -20,9 +20,11 @@
 #include "operations/Cast.h"
 #include "operations/EmbeddingLookup.h"
 #include "operations/ExpandDims.h"
+#include "operations/Gather.h"
 #include "operations/HashtableLookup.h"
 #include "operations/LSHProjection.h"
 #include "operations/LSTM.h"
+#include "operations/QuantizedLSTM.h"
 #include "operations/RNN.h"
 #include "operations/SVDF.h"
 #include "operations/Tile.h"
@@ -142,8 +144,7 @@ bool tanhQuant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outp
                 const Shape& outputShape);
 bool logisticFloat32(const float* inputData, const Shape& inputShape,
                      float* outputData, const Shape& outputShape);
-bool softmaxFloat32(const float* inputData, const Shape& inputShape,
-                    const float beta,
+bool softmaxFloat32(const float* inputData, const Shape& inputShape, const float beta, int32_t axis,
                     float* outputData, const Shape& outputShape);
 bool reluQuant8(const uint8_t* inputData, const Shape& inputShape,
                 uint8_t* outputData, const Shape& outputShape);
@@ -153,9 +154,8 @@ bool relu6Quant8(const uint8_t* inputData, const Shape& inputShape,
                  uint8_t* outputData, const Shape& outputShape);
 bool logisticQuant8(const uint8_t* inputData, const Shape& inputShape,
                     uint8_t* outputData, const Shape& outputShape);
-bool softmaxQuant8(const uint8_t* inputData, const Shape& inputShape,
-                   const float beta,
-                   uint8_t* outputData, const Shape& outputShape);
+bool softmaxQuant8(const uint8_t* inputData, const Shape& inputShape, const float beta,
+                   int32_t axis, uint8_t* outputData, const Shape& outputShape);
 
 bool fullyConnectedFloat32(const float* inputData, const Shape& inputShape,
                            const float* weights, const Shape& weightsShape,
@@ -175,13 +175,11 @@ bool concatenationQuant8(const std::vector<const uint8_t*>& inputDataPtrs,
                          const std::vector<Shape>& inputShapes, int32_t axis,
                          uint8_t* outputData, const Shape& outputShape);
 
-bool l2normFloat32(const float* inputData, const Shape& inputShape,
-                   float* outputData, const Shape& outputShape);
-bool l2normQuant8(const uint8_t* inputData, const Shape& inputShape,
-                  uint8_t* outputData, const Shape& outputShape);
-bool localResponseNormFloat32(const float* inputData, const Shape& inputShape,
-                              int32_t radius, float bias, float alpha, float beta,
-                              float* outputData, const Shape& outputShape);
+bool l2normFloat32(const float* inputData, const Shape& inputShape, int32_t axis, float* outputData,
+                   const Shape& outputShape);
+bool localResponseNormFloat32(const float* inputData, const Shape& inputShape, int32_t radius,
+                              float bias, float alpha, float beta, int32_t axis, float* outputData,
+                              const Shape& outputShape);
 
 bool reshapeGeneric(const void* inputData, const Shape& inputShape,
                     void* outputData, const Shape& outputShape);
@@ -282,7 +280,7 @@ bool groupedConvQuant8(const uint8_t* inputData, const Shape& inputShape, const 
                        const Shape& outputShape);
 
 bool channelShuffleGeneric(const uint8_t* inputData, const Shape& inputShape, int32_t numGroups,
-                           uint8_t* outputData, const Shape& outputShape);
+                           int32_t axis, uint8_t* outputData, const Shape& outputShape);
 
 bool transposeConvFloat32(const float* inputData, const Shape& inputShape, const float* filterData,
                           const Shape& filterShape, const float* biasData, const Shape& biasShape,

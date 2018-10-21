@@ -695,46 +695,424 @@ namespace channel_shuffle {
 #include "vts_models/channel_shuffle.model.cpp"
 } // namespace channel_shuffle
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis0) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel,
-                           channel_shuffle::is_ignored,
-                           channel_shuffle::examples);
+                           channel_shuffle::createTestModel_dim4_axis0,
+                           channel_shuffle::is_ignored_dim4_axis0,
+                           channel_shuffle::examples_dim4_axis0);
 }
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis0_neg) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel_relaxed,
-                           channel_shuffle::is_ignored_relaxed,
-                           channel_shuffle::examples_relaxed);
+                           channel_shuffle::createTestModel_dim4_axis0_neg,
+                           channel_shuffle::is_ignored_dim4_axis0_neg,
+                           channel_shuffle::examples_dim4_axis0_neg);
 }
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis1) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel_quant8,
-                           channel_shuffle::is_ignored_quant8,
-                           channel_shuffle::examples_quant8);
+                           channel_shuffle::createTestModel_dim4_axis1,
+                           channel_shuffle::is_ignored_dim4_axis1,
+                           channel_shuffle::examples_dim4_axis1);
 }
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle_2) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis1_neg) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel_2,
-                           channel_shuffle::is_ignored_2,
-                           channel_shuffle::examples_2);
+                           channel_shuffle::createTestModel_dim4_axis1_neg,
+                           channel_shuffle::is_ignored_dim4_axis1_neg,
+                           channel_shuffle::examples_dim4_axis1_neg);
 }
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_2) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis2) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel_relaxed_2,
-                           channel_shuffle::is_ignored_relaxed_2,
-                           channel_shuffle::examples_relaxed_2);
+                           channel_shuffle::createTestModel_dim4_axis2,
+                           channel_shuffle::is_ignored_dim4_axis2,
+                           channel_shuffle::examples_dim4_axis2);
 }
 
-TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_2) {
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis2_neg) {
   generated_tests::Execute(device,
-                           channel_shuffle::createTestModel_quant8_2,
-                           channel_shuffle::is_ignored_quant8_2,
-                           channel_shuffle::examples_quant8_2);
+                           channel_shuffle::createTestModel_dim4_axis2_neg,
+                           channel_shuffle::is_ignored_dim4_axis2_neg,
+                           channel_shuffle::examples_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis3) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim4_axis3,
+                           channel_shuffle::is_ignored_dim4_axis3,
+                           channel_shuffle::examples_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim4_axis3_neg,
+                           channel_shuffle::is_ignored_dim4_axis3_neg,
+                           channel_shuffle::examples_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis0,
+                           channel_shuffle::is_ignored_dim3_axis0,
+                           channel_shuffle::examples_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis0_neg,
+                           channel_shuffle::is_ignored_dim3_axis0_neg,
+                           channel_shuffle::examples_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis1,
+                           channel_shuffle::is_ignored_dim3_axis1,
+                           channel_shuffle::examples_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis1_neg,
+                           channel_shuffle::is_ignored_dim3_axis1_neg,
+                           channel_shuffle::examples_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis2) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis2,
+                           channel_shuffle::is_ignored_dim3_axis2,
+                           channel_shuffle::examples_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim3_axis2_neg,
+                           channel_shuffle::is_ignored_dim3_axis2_neg,
+                           channel_shuffle::examples_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim2_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim2_axis0,
+                           channel_shuffle::is_ignored_dim2_axis0,
+                           channel_shuffle::examples_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim2_axis0_neg,
+                           channel_shuffle::is_ignored_dim2_axis0_neg,
+                           channel_shuffle::examples_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim2_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim2_axis1,
+                           channel_shuffle::is_ignored_dim2_axis1,
+                           channel_shuffle::examples_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim2_axis1_neg,
+                           channel_shuffle::is_ignored_dim2_axis1_neg,
+                           channel_shuffle::examples_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim1_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim1_axis0,
+                           channel_shuffle::is_ignored_dim1_axis0,
+                           channel_shuffle::examples_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_dim1_axis0_neg,
+                           channel_shuffle::is_ignored_dim1_axis0_neg,
+                           channel_shuffle::examples_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis0,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis0,
+                           channel_shuffle::examples_relaxed_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis0_neg,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis0_neg,
+                           channel_shuffle::examples_relaxed_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis1,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis1,
+                           channel_shuffle::examples_relaxed_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis1_neg,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis1_neg,
+                           channel_shuffle::examples_relaxed_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis2) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis2,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis2,
+                           channel_shuffle::examples_relaxed_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis2_neg,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis2_neg,
+                           channel_shuffle::examples_relaxed_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis3) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis3,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis3,
+                           channel_shuffle::examples_relaxed_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim4_axis3_neg,
+                           channel_shuffle::is_ignored_relaxed_dim4_axis3_neg,
+                           channel_shuffle::examples_relaxed_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis0,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis0,
+                           channel_shuffle::examples_relaxed_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis0_neg,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis0_neg,
+                           channel_shuffle::examples_relaxed_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis1,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis1,
+                           channel_shuffle::examples_relaxed_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis1_neg,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis1_neg,
+                           channel_shuffle::examples_relaxed_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis2,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis2,
+                           channel_shuffle::examples_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim3_axis2_neg,
+                           channel_shuffle::is_ignored_relaxed_dim3_axis2_neg,
+                           channel_shuffle::examples_relaxed_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim2_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim2_axis0,
+                           channel_shuffle::is_ignored_relaxed_dim2_axis0,
+                           channel_shuffle::examples_relaxed_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim2_axis0_neg,
+                           channel_shuffle::is_ignored_relaxed_dim2_axis0_neg,
+                           channel_shuffle::examples_relaxed_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim2_axis1,
+                           channel_shuffle::is_ignored_relaxed_dim2_axis1,
+                           channel_shuffle::examples_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim2_axis1_neg,
+                           channel_shuffle::is_ignored_relaxed_dim2_axis1_neg,
+                           channel_shuffle::examples_relaxed_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim1_axis0,
+                           channel_shuffle::is_ignored_relaxed_dim1_axis0,
+                           channel_shuffle::examples_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_relaxed_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_relaxed_dim1_axis0_neg,
+                           channel_shuffle::is_ignored_relaxed_dim1_axis0_neg,
+                           channel_shuffle::examples_relaxed_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis0,
+                           channel_shuffle::is_ignored_quant8_dim4_axis0,
+                           channel_shuffle::examples_quant8_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis0_neg,
+                           channel_shuffle::is_ignored_quant8_dim4_axis0_neg,
+                           channel_shuffle::examples_quant8_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis1,
+                           channel_shuffle::is_ignored_quant8_dim4_axis1,
+                           channel_shuffle::examples_quant8_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis1_neg,
+                           channel_shuffle::is_ignored_quant8_dim4_axis1_neg,
+                           channel_shuffle::examples_quant8_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis2) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis2,
+                           channel_shuffle::is_ignored_quant8_dim4_axis2,
+                           channel_shuffle::examples_quant8_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis2_neg,
+                           channel_shuffle::is_ignored_quant8_dim4_axis2_neg,
+                           channel_shuffle::examples_quant8_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis3) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis3,
+                           channel_shuffle::is_ignored_quant8_dim4_axis3,
+                           channel_shuffle::examples_quant8_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim4_axis3_neg,
+                           channel_shuffle::is_ignored_quant8_dim4_axis3_neg,
+                           channel_shuffle::examples_quant8_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis0,
+                           channel_shuffle::is_ignored_quant8_dim3_axis0,
+                           channel_shuffle::examples_quant8_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis0_neg,
+                           channel_shuffle::is_ignored_quant8_dim3_axis0_neg,
+                           channel_shuffle::examples_quant8_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis1,
+                           channel_shuffle::is_ignored_quant8_dim3_axis1,
+                           channel_shuffle::examples_quant8_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis1_neg,
+                           channel_shuffle::is_ignored_quant8_dim3_axis1_neg,
+                           channel_shuffle::examples_quant8_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis2) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis2,
+                           channel_shuffle::is_ignored_quant8_dim3_axis2,
+                           channel_shuffle::examples_quant8_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim3_axis2_neg,
+                           channel_shuffle::is_ignored_quant8_dim3_axis2_neg,
+                           channel_shuffle::examples_quant8_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim2_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim2_axis0,
+                           channel_shuffle::is_ignored_quant8_dim2_axis0,
+                           channel_shuffle::examples_quant8_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim2_axis0_neg,
+                           channel_shuffle::is_ignored_quant8_dim2_axis0_neg,
+                           channel_shuffle::examples_quant8_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim2_axis1) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim2_axis1,
+                           channel_shuffle::is_ignored_quant8_dim2_axis1,
+                           channel_shuffle::examples_quant8_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim2_axis1_neg,
+                           channel_shuffle::is_ignored_quant8_dim2_axis1_neg,
+                           channel_shuffle::examples_quant8_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim1_axis0) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim1_axis0,
+                           channel_shuffle::is_ignored_quant8_dim1_axis0,
+                           channel_shuffle::examples_quant8_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, channel_shuffle_quant8_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           channel_shuffle::createTestModel_quant8_dim1_axis0_neg,
+                           channel_shuffle::is_ignored_quant8_dim1_axis0_neg,
+                           channel_shuffle::examples_quant8_dim1_axis0_neg);
 }
 
 // Generated from: conv2d_v1_2.mod.py.
@@ -1791,6 +2169,274 @@ TEST_F(NeuralnetworksHidlTest, expand_dims_int32_4) {
                            expand_dims::examples_int32_4);
 }
 
+// Generated from: gather.mod.py.
+namespace gather {
+// Generated gather test
+#include "examples/gather.example.cpp"
+// Generated model constructor
+#include "vts_models/gather.model.cpp"
+} // namespace gather
+
+TEST_F(NeuralnetworksHidlTest, gather) {
+  generated_tests::Execute(device,
+                           gather::createTestModel,
+                           gather::is_ignored,
+                           gather::examples);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed,
+                           gather::is_ignored_relaxed,
+                           gather::examples_relaxed);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8,
+                           gather::is_ignored_quant8,
+                           gather::examples_quant8);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32,
+                           gather::is_ignored_int32,
+                           gather::examples_int32);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_2) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_2,
+                           gather::is_ignored_2,
+                           gather::examples_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_2) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_2,
+                           gather::is_ignored_relaxed_2,
+                           gather::examples_relaxed_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_2) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_2,
+                           gather::is_ignored_quant8_2,
+                           gather::examples_quant8_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_2) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_2,
+                           gather::is_ignored_int32_2,
+                           gather::examples_int32_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_3) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_3,
+                           gather::is_ignored_3,
+                           gather::examples_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_3) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_3,
+                           gather::is_ignored_relaxed_3,
+                           gather::examples_relaxed_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_3) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_3,
+                           gather::is_ignored_quant8_3,
+                           gather::examples_quant8_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_3) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_3,
+                           gather::is_ignored_int32_3,
+                           gather::examples_int32_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_4) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_4,
+                           gather::is_ignored_4,
+                           gather::examples_4);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_4) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_4,
+                           gather::is_ignored_relaxed_4,
+                           gather::examples_relaxed_4);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_4) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_4,
+                           gather::is_ignored_quant8_4,
+                           gather::examples_quant8_4);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_4) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_4,
+                           gather::is_ignored_int32_4,
+                           gather::examples_int32_4);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_5) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_5,
+                           gather::is_ignored_5,
+                           gather::examples_5);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_5) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_5,
+                           gather::is_ignored_relaxed_5,
+                           gather::examples_relaxed_5);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_5) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_5,
+                           gather::is_ignored_quant8_5,
+                           gather::examples_quant8_5);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_5) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_5,
+                           gather::is_ignored_int32_5,
+                           gather::examples_int32_5);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_6) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_6,
+                           gather::is_ignored_6,
+                           gather::examples_6);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_6) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_6,
+                           gather::is_ignored_relaxed_6,
+                           gather::examples_relaxed_6);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_6) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_6,
+                           gather::is_ignored_quant8_6,
+                           gather::examples_quant8_6);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_6) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_6,
+                           gather::is_ignored_int32_6,
+                           gather::examples_int32_6);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_7) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_7,
+                           gather::is_ignored_7,
+                           gather::examples_7);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_7) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_7,
+                           gather::is_ignored_relaxed_7,
+                           gather::examples_relaxed_7);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_7) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_7,
+                           gather::is_ignored_quant8_7,
+                           gather::examples_quant8_7);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_7) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_7,
+                           gather::is_ignored_int32_7,
+                           gather::examples_int32_7);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_8) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_8,
+                           gather::is_ignored_8,
+                           gather::examples_8);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_relaxed_8) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_relaxed_8,
+                           gather::is_ignored_relaxed_8,
+                           gather::examples_relaxed_8);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_quant8_8) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_quant8_8,
+                           gather::is_ignored_quant8_8,
+                           gather::examples_quant8_8);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_int32_8) {
+  generated_tests::Execute(device,
+                           gather::createTestModel_int32_8,
+                           gather::is_ignored_int32_8,
+                           gather::examples_int32_8);
+}
+
+// Generated from: gather_higher_rank.mod.py.
+namespace gather_higher_rank {
+// Generated gather_higher_rank test
+#include "examples/gather_higher_rank.example.cpp"
+// Generated model constructor
+#include "vts_models/gather_higher_rank.model.cpp"
+} // namespace gather_higher_rank
+
+TEST_F(NeuralnetworksHidlTest, gather_higher_rank) {
+  generated_tests::Execute(device,
+                           gather_higher_rank::createTestModel,
+                           gather_higher_rank::is_ignored,
+                           gather_higher_rank::examples);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_higher_rank_relaxed) {
+  generated_tests::Execute(device,
+                           gather_higher_rank::createTestModel_relaxed,
+                           gather_higher_rank::is_ignored_relaxed,
+                           gather_higher_rank::examples_relaxed);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_higher_rank_quant8) {
+  generated_tests::Execute(device,
+                           gather_higher_rank::createTestModel_quant8,
+                           gather_higher_rank::is_ignored_quant8,
+                           gather_higher_rank::examples_quant8);
+}
+
+TEST_F(NeuralnetworksHidlTest, gather_higher_rank_int32) {
+  generated_tests::Execute(device,
+                           gather_higher_rank::createTestModel_int32,
+                           gather_higher_rank::is_ignored_int32,
+                           gather_higher_rank::examples_int32);
+}
+
 // Generated from: grouped_conv2d.mod.py.
 namespace grouped_conv2d {
 // Generated grouped_conv2d test
@@ -2339,6 +2985,336 @@ TEST_F(NeuralnetworksHidlTest, heatmap_max_keypoint_relaxed_2) {
                            heatmap_max_keypoint::examples_relaxed_2);
 }
 
+// Generated from: l2_normalization_v1_2.mod.py.
+namespace l2_normalization_v1_2 {
+// Generated l2_normalization_v1_2 test
+#include "examples/l2_normalization_v1_2.example.cpp"
+// Generated model constructor
+#include "vts_models/l2_normalization_v1_2.model.cpp"
+} // namespace l2_normalization_v1_2
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim1_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim1_axis0,
+                           l2_normalization_v1_2::is_ignored_dim1_axis0,
+                           l2_normalization_v1_2::examples_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim2_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim2_axis1,
+                           l2_normalization_v1_2::is_ignored_dim2_axis1,
+                           l2_normalization_v1_2::examples_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim3_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim3_axis2,
+                           l2_normalization_v1_2::is_ignored_dim3_axis2,
+                           l2_normalization_v1_2::examples_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim1_axis0,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim1_axis0,
+                           l2_normalization_v1_2::examples_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim2_axis1,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim2_axis1,
+                           l2_normalization_v1_2::examples_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim3_axis2,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim3_axis2,
+                           l2_normalization_v1_2::examples_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis0,
+                           l2_normalization_v1_2::examples_axis_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis1,
+                           l2_normalization_v1_2::examples_axis_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis2,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis2,
+                           l2_normalization_v1_2::examples_axis_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis2_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis2_neg,
+                           l2_normalization_v1_2::examples_axis_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis3,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis3,
+                           l2_normalization_v1_2::examples_axis_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis3_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis3_neg,
+                           l2_normalization_v1_2::examples_axis_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis0,
+                           l2_normalization_v1_2::examples_axis_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis1,
+                           l2_normalization_v1_2::examples_axis_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis2,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis2,
+                           l2_normalization_v1_2::examples_axis_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis2_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis2_neg,
+                           l2_normalization_v1_2::examples_axis_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis0,
+                           l2_normalization_v1_2::examples_axis_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis1,
+                           l2_normalization_v1_2::examples_axis_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim1_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_dim1_axis0,
+                           l2_normalization_v1_2::examples_axis_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim1_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_dim1_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg,
+                           l2_normalization_v1_2::examples_axis_relaxed_dim1_axis0_neg);
+}
+
 // Generated from: l2_pool_v1_2.mod.py.
 namespace l2_pool_v1_2 {
 // Generated l2_pool_v1_2 test
@@ -2429,6 +3405,896 @@ TEST_F(NeuralnetworksHidlTest, l2_pool_v1_2_large_nchw_relaxed) {
                            l2_pool_v1_2::createTestModel_large_nchw_relaxed,
                            l2_pool_v1_2::is_ignored_large_nchw_relaxed,
                            l2_pool_v1_2::examples_large_nchw_relaxed);
+}
+
+// Generated from: local_response_normalization_v1_2.mod.py.
+namespace local_response_normalization_v1_2 {
+// Generated local_response_normalization_v1_2 test
+#include "examples/local_response_normalization_v1_2.example.cpp"
+// Generated model constructor
+#include "vts_models/local_response_normalization_v1_2.model.cpp"
+} // namespace local_response_normalization_v1_2
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_2,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis2_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim4_axis3_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim3_axis2_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim2_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_dim1_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis2_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim4_axis3_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim3_axis2_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim2_axis1_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_3,
+                           local_response_normalization_v1_2::examples_axis_relaxed_dim1_axis0_neg_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim1_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim1_axis0,
+                           local_response_normalization_v1_2::is_ignored_dim1_axis0,
+                           local_response_normalization_v1_2::examples_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim2_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim2_axis1,
+                           local_response_normalization_v1_2::is_ignored_dim2_axis1,
+                           local_response_normalization_v1_2::examples_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim3_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim3_axis2,
+                           local_response_normalization_v1_2::is_ignored_dim3_axis2,
+                           local_response_normalization_v1_2::examples_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim1_axis0,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim1_axis0,
+                           local_response_normalization_v1_2::examples_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim2_axis1,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim2_axis1,
+                           local_response_normalization_v1_2::examples_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim3_axis2,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim3_axis2,
+                           local_response_normalization_v1_2::examples_relaxed_dim3_axis2);
 }
 
 // Generated from: lsh_projection_3_relaxed.mod.py.
@@ -2855,46 +4721,1062 @@ namespace roi_align {
 #include "vts_models/roi_align.model.cpp"
 } // namespace roi_align
 
-TEST_F(NeuralnetworksHidlTest, roi_align) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel,
-                           roi_align::is_ignored,
-                           roi_align::examples);
+                           roi_align::createTestModel_nhwc,
+                           roi_align::is_ignored_nhwc,
+                           roi_align::examples_nhwc);
 }
 
-TEST_F(NeuralnetworksHidlTest, roi_align_relaxed) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_relaxed) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel_relaxed,
-                           roi_align::is_ignored_relaxed,
-                           roi_align::examples_relaxed);
+                           roi_align::createTestModel_nhwc_relaxed,
+                           roi_align::is_ignored_nhwc_relaxed,
+                           roi_align::examples_nhwc_relaxed);
 }
 
-TEST_F(NeuralnetworksHidlTest, roi_align_2) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel_2,
-                           roi_align::is_ignored_2,
-                           roi_align::examples_2);
+                           roi_align::createTestModel_nchw,
+                           roi_align::is_ignored_nchw,
+                           roi_align::examples_nchw);
 }
 
-TEST_F(NeuralnetworksHidlTest, roi_align_relaxed_2) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_relaxed) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel_relaxed_2,
-                           roi_align::is_ignored_relaxed_2,
-                           roi_align::examples_relaxed_2);
+                           roi_align::createTestModel_nchw_relaxed,
+                           roi_align::is_ignored_nchw_relaxed,
+                           roi_align::examples_nchw_relaxed);
 }
 
-TEST_F(NeuralnetworksHidlTest, roi_align_3) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_2) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel_3,
-                           roi_align::is_ignored_3,
-                           roi_align::examples_3);
+                           roi_align::createTestModel_nhwc_2,
+                           roi_align::is_ignored_nhwc_2,
+                           roi_align::examples_nhwc_2);
 }
 
-TEST_F(NeuralnetworksHidlTest, roi_align_relaxed_3) {
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_relaxed_2) {
   generated_tests::Execute(device,
-                           roi_align::createTestModel_relaxed_3,
-                           roi_align::is_ignored_relaxed_3,
-                           roi_align::examples_relaxed_3);
+                           roi_align::createTestModel_nhwc_relaxed_2,
+                           roi_align::is_ignored_nhwc_relaxed_2,
+                           roi_align::examples_nhwc_relaxed_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_2) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_2,
+                           roi_align::is_ignored_nchw_2,
+                           roi_align::examples_nchw_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_relaxed_2) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_relaxed_2,
+                           roi_align::is_ignored_nchw_relaxed_2,
+                           roi_align::examples_nchw_relaxed_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_3) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_3,
+                           roi_align::is_ignored_nhwc_3,
+                           roi_align::examples_nhwc_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_relaxed_3) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_relaxed_3,
+                           roi_align::is_ignored_nhwc_relaxed_3,
+                           roi_align::examples_nhwc_relaxed_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_3) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_3,
+                           roi_align::is_ignored_nchw_3,
+                           roi_align::examples_nchw_3);
+}
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_relaxed_3) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_relaxed_3,
+                           roi_align::is_ignored_nchw_relaxed_3,
+                           roi_align::examples_nchw_relaxed_3);
+}
+
+// Generated from: softmax_v1_2.mod.py.
+namespace softmax_v1_2 {
+// Generated softmax_v1_2 test
+#include "examples/softmax_v1_2.example.cpp"
+// Generated model constructor
+#include "vts_models/softmax_v1_2.model.cpp"
+} // namespace softmax_v1_2
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel,
+                           softmax_v1_2::is_ignored,
+                           softmax_v1_2::examples);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_dim1_axis0,
+                           softmax_v1_2::is_ignored_dim1_axis0,
+                           softmax_v1_2::examples_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_dim3_axis2,
+                           softmax_v1_2::is_ignored_dim3_axis2,
+                           softmax_v1_2::examples_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed,
+                           softmax_v1_2::is_ignored_relaxed,
+                           softmax_v1_2::examples_relaxed);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed_dim1_axis0,
+                           softmax_v1_2::is_ignored_relaxed_dim1_axis0,
+                           softmax_v1_2::examples_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed_dim3_axis2,
+                           softmax_v1_2::is_ignored_relaxed_dim3_axis2,
+                           softmax_v1_2::examples_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8,
+                           softmax_v1_2::is_ignored_quant8,
+                           softmax_v1_2::examples_quant8);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8_dim1_axis0,
+                           softmax_v1_2::is_ignored_quant8_dim1_axis0,
+                           softmax_v1_2::examples_quant8_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8_dim3_axis2,
+                           softmax_v1_2::is_ignored_quant8_dim3_axis2,
+                           softmax_v1_2::examples_quant8_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_2,
+                           softmax_v1_2::is_ignored_2,
+                           softmax_v1_2::examples_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_dim1_axis0_2,
+                           softmax_v1_2::examples_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_dim3_axis2_2,
+                           softmax_v1_2::examples_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed_2,
+                           softmax_v1_2::is_ignored_relaxed_2,
+                           softmax_v1_2::examples_relaxed_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_relaxed_dim1_axis0_2,
+                           softmax_v1_2::examples_relaxed_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_relaxed_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_relaxed_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_relaxed_dim3_axis2_2,
+                           softmax_v1_2::examples_relaxed_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8_2,
+                           softmax_v1_2::is_ignored_quant8_2,
+                           softmax_v1_2::examples_quant8_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_quant8_dim1_axis0_2,
+                           softmax_v1_2::examples_quant8_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_quant8_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_quant8_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_quant8_dim3_axis2_2,
+                           softmax_v1_2::examples_quant8_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis0,
+                           softmax_v1_2::is_ignored_axis_dim4_axis0,
+                           softmax_v1_2::examples_axis_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_dim4_axis0_neg,
+                           softmax_v1_2::examples_axis_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis1,
+                           softmax_v1_2::is_ignored_axis_dim4_axis1,
+                           softmax_v1_2::examples_axis_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_dim4_axis1_neg,
+                           softmax_v1_2::examples_axis_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis2,
+                           softmax_v1_2::examples_axis_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_dim4_axis2_neg,
+                           softmax_v1_2::examples_axis_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis3) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis3,
+                           softmax_v1_2::is_ignored_axis_dim4_axis3,
+                           softmax_v1_2::examples_axis_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis3_neg,
+                           softmax_v1_2::is_ignored_axis_dim4_axis3_neg,
+                           softmax_v1_2::examples_axis_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis0,
+                           softmax_v1_2::is_ignored_axis_dim3_axis0,
+                           softmax_v1_2::examples_axis_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_dim3_axis0_neg,
+                           softmax_v1_2::examples_axis_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis1,
+                           softmax_v1_2::is_ignored_axis_dim3_axis1,
+                           softmax_v1_2::examples_axis_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_dim3_axis1_neg,
+                           softmax_v1_2::examples_axis_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis2,
+                           softmax_v1_2::examples_axis_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_dim3_axis2_neg,
+                           softmax_v1_2::examples_axis_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis0,
+                           softmax_v1_2::is_ignored_axis_dim2_axis0,
+                           softmax_v1_2::examples_axis_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_dim2_axis0_neg,
+                           softmax_v1_2::examples_axis_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis1,
+                           softmax_v1_2::is_ignored_axis_dim2_axis1,
+                           softmax_v1_2::examples_axis_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_dim2_axis1_neg,
+                           softmax_v1_2::examples_axis_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim1_axis0,
+                           softmax_v1_2::is_ignored_axis_dim1_axis0,
+                           softmax_v1_2::examples_axis_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim1_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_dim1_axis0_neg,
+                           softmax_v1_2::examples_axis_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis0,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis0,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis1,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis1,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis3) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis3,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis3,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis0,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis0,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis1,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis1,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis0,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis0,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis1,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis1,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim1_axis0,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim1_axis0,
+                           softmax_v1_2::examples_axis_relaxed_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg,
+                           softmax_v1_2::examples_axis_relaxed_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis0,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis0,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis0_neg,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis1,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis1,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis1_neg,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis2_neg,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis3) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis3,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis3,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis3);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis3_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis3_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis3_neg,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis3_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis0,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis0,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis0_neg,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis1,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis1,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis1_neg,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis2_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis2_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis2_neg,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis2_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis0,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis0,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis0_neg,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis1) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis1,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis1,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis1);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis1_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis1_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis1_neg,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis1_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim1_axis0) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim1_axis0,
+                           softmax_v1_2::is_ignored_axis_quant8_dim1_axis0,
+                           softmax_v1_2::examples_axis_quant8_dim1_axis0);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim1_axis0_neg) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim1_axis0_neg,
+                           softmax_v1_2::is_ignored_axis_quant8_dim1_axis0_neg,
+                           softmax_v1_2::examples_axis_quant8_dim1_axis0_neg);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis0_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis0_2,
+                           softmax_v1_2::examples_axis_dim4_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis0_neg_2,
+                           softmax_v1_2::examples_axis_dim4_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis1_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis1_2,
+                           softmax_v1_2::examples_axis_dim4_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis1_neg_2,
+                           softmax_v1_2::examples_axis_dim4_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis2_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis2_2,
+                           softmax_v1_2::examples_axis_dim4_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis2_neg_2,
+                           softmax_v1_2::examples_axis_dim4_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis3_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis3_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis3_2,
+                           softmax_v1_2::examples_axis_dim4_axis3_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim4_axis3_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim4_axis3_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim4_axis3_neg_2,
+                           softmax_v1_2::examples_axis_dim4_axis3_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis0_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis0_2,
+                           softmax_v1_2::examples_axis_dim3_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis0_neg_2,
+                           softmax_v1_2::examples_axis_dim3_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis1_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis1_2,
+                           softmax_v1_2::examples_axis_dim3_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis1_neg_2,
+                           softmax_v1_2::examples_axis_dim3_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis2_2,
+                           softmax_v1_2::examples_axis_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim3_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim3_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim3_axis2_neg_2,
+                           softmax_v1_2::examples_axis_dim3_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis0_2,
+                           softmax_v1_2::is_ignored_axis_dim2_axis0_2,
+                           softmax_v1_2::examples_axis_dim2_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim2_axis0_neg_2,
+                           softmax_v1_2::examples_axis_dim2_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis1_2,
+                           softmax_v1_2::is_ignored_axis_dim2_axis1_2,
+                           softmax_v1_2::examples_axis_dim2_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim2_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim2_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim2_axis1_neg_2,
+                           softmax_v1_2::examples_axis_dim2_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_axis_dim1_axis0_2,
+                           softmax_v1_2::examples_axis_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_dim1_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_dim1_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_dim1_axis0_neg_2,
+                           softmax_v1_2::examples_axis_dim1_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis0_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis0_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis1_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis1_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis2_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis2_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis3_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis3_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis3_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis3_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim4_axis3_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim4_axis3_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis0_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis0_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis1_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis1_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis2_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim3_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim3_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis0_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis0_2,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis1_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis1_2,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim2_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim2_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim1_axis0_2,
+                           softmax_v1_2::examples_axis_relaxed_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_relaxed_dim1_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_2,
+                           softmax_v1_2::examples_axis_relaxed_dim1_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis0_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis0_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis0_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis1_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis1_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis1_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis2_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis2_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis2_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis3_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis3_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis3_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis3_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim4_axis3_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim4_axis3_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim4_axis3_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim4_axis3_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis0_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis0_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis0_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis1_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis1_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis1_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis2_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis2_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis2_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis2_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim3_axis2_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim3_axis2_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim3_axis2_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim3_axis2_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis0_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis0_2,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis0_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis0_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis1_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis1_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis1_2,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis1_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim2_axis1_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim2_axis1_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim2_axis1_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim2_axis1_neg_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim1_axis0_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim1_axis0_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim1_axis0_2,
+                           softmax_v1_2::examples_axis_quant8_dim1_axis0_2);
+}
+
+TEST_F(NeuralnetworksHidlTest, softmax_v1_2_axis_quant8_dim1_axis0_neg_2) {
+  generated_tests::Execute(device,
+                           softmax_v1_2::createTestModel_axis_quant8_dim1_axis0_neg_2,
+                           softmax_v1_2::is_ignored_axis_quant8_dim1_axis0_neg_2,
+                           softmax_v1_2::examples_axis_quant8_dim1_axis0_neg_2);
 }
 
 // Generated from: space_to_batch_v1_2.mod.py.
