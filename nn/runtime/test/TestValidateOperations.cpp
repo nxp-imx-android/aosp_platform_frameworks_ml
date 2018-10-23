@@ -1263,11 +1263,11 @@ TEST(OperationValidationTest, ROI_ALIGN_float32) {
 }
 
 TEST(OperationValidationTest, HEATMAP_MAX_KEYPOINT_float32) {
-    uint32_t heatmapDim[] = {6, 4, 4, 1}, boxDim[] = {6, 4}, outDim[] = {6, 1, 3};
+    uint32_t heatmapDim[] = {6, 4, 4, 1}, boxDim[] = {6, 4}, outDim[] = {6, 3, 1};
     OperationTestBase heatmapMaxKeypointTest(
             ANEURALNETWORKS_HEATMAP_MAX_KEYPOINT,
             {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 4, heatmapDim),
-             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, boxDim)},
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, boxDim), getOpType(ANEURALNETWORKS_BOOL)},
             {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 3, outDim)});
 
     EXPECT_TRUE(heatmapMaxKeypointTest.testMutatingInputOperandCode());
@@ -1449,5 +1449,45 @@ void localResponseNormOpTest(int32_t operandCode) {
 
 TEST(OperationValidationTest, LOCAL_RESPONSE_NORMALIZATION_float32) {
     localResponseNormOpTest(ANEURALNETWORKS_TENSOR_FLOAT32);
+}
+
+TEST(OperationValidationTest, AXIS_ALIGNED_BBOX_TRANSFORM_float32) {
+    uint32_t roiDim[] = {5, 5}, deltaDim[] = {5, 8}, imageDim[] = {5, 3}, weightDim[] = {4};
+    uint32_t outDim[] = {5, 8}, bsDim[] = {5};
+    OperationTestBase axisAlignedBBoxTransformTest(
+            ANEURALNETWORKS_AXIS_ALIGNED_BBOX_TRANSFORM,
+            {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, roiDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, deltaDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, imageDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 1, weightDim),
+             getOpType(ANEURALNETWORKS_BOOL)},
+            {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, outDim),
+             getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, bsDim)});
+
+    EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingInputOperandCode());
+    EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingInputOperandCounts());
+    EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingOutputOperandCode());
+    EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, ROTATED_BBOX_TRANSFORM_float32) {
+    uint32_t roiDim[] = {5, 5}, deltaDim[] = {5, 8}, imageDim[] = {5, 3}, weightDim[] = {4};
+    uint32_t outDim[] = {5, 8}, bsDim[] = {5};
+    OperationTestBase rotatedBBoxTransformTest(
+            ANEURALNETWORKS_ROTATED_BBOX_TRANSFORM,
+            {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, roiDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, deltaDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, imageDim),
+             getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 1, weightDim),
+             getOpType(ANEURALNETWORKS_BOOL), getOpType(ANEURALNETWORKS_BOOL),
+             getOpType(ANEURALNETWORKS_INT32), getOpType(ANEURALNETWORKS_INT32),
+             getOpType(ANEURALNETWORKS_FLOAT32)},
+            {getOpType(ANEURALNETWORKS_TENSOR_FLOAT32, 2, outDim),
+             getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, bsDim)});
+
+    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingInputOperandCode());
+    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingInputOperandCounts());
+    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCode());
+    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCounts());
 }
 }  // end namespace

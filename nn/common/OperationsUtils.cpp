@@ -56,7 +56,9 @@ uint32_t getNumberOfElements(const Shape& shape) {
 uint32_t getNumberOfElements(const Shape& shape,
                              size_t firstAxisInclusive,
                              size_t lastAxisExclusive) {
-    NN_CHECK(lastAxisExclusive <= shape.dimensions.size());
+    nnAssert(0 <= firstAxisInclusive);
+    nnAssert(firstAxisInclusive <= lastAxisExclusive);
+    nnAssert(lastAxisExclusive <= shape.dimensions.size());
     uint32_t count = 1;
     for (size_t i = firstAxisInclusive; i < lastAxisExclusive; i++) {
         count *= shape.dimensions[i];
@@ -69,23 +71,16 @@ uint32_t getNumberOfDimensions(const Shape& shape) {
 }
 
 uint32_t getSizeOfDimension(const Shape& shape, uint32_t dimensionIdx) {
-    if (dimensionIdx >= shape.dimensions.size()) {
-        // TODO, log the error
-        return 0;
-    }
+    nnAssert(0 <= dimensionIdx && dimensionIdx < shape.dimensions.size());
     return shape.dimensions[dimensionIdx];
 }
 
-int32_t getDimensionIndex(int32_t numberOfDimensions, int32_t axis) {
-    NN_OPS_CHECK(-numberOfDimensions <= axis && axis < numberOfDimensions);
-    if (axis < 0) {
-        axis += numberOfDimensions;
+bool handleNegativeAxis(int32_t numberOfDimensions, int32_t* axis) {
+    NN_CHECK(-numberOfDimensions <= *axis && *axis < numberOfDimensions);
+    if (*axis < 0) {
+        *axis += numberOfDimensions;
     }
-    return axis;
-}
-
-int32_t getDimensionIndex(const Shape& shape, int32_t axis) {
-    return getDimensionIndex(getNumberOfDimensions(shape), axis);
+    return true;
 }
 
 bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
@@ -921,7 +916,7 @@ bool stridedSlicePrepare(const Shape& input,
 }
 
 bool argMinMaxPrepare(const Shape& input, int32_t axis, Shape* output) {
-    axis = getDimensionIndex(input, axis);
+    NN_CHECK(handleNegativeAxis(input, &axis));
 
     output->type = OperandType::TENSOR_INT32;
 
@@ -940,7 +935,7 @@ bool argMinMaxPrepare(const Shape& input, int32_t axis, Shape* output) {
 
 bool splitPrepare(const Shape& input, int32_t axis, int32_t numOutputs,
                   std::vector<Shape>* output) {
-    axis = getDimensionIndex(input, axis);
+    NN_CHECK(handleNegativeAxis(input, &axis));
 
     const int32_t sizeOfAxisToSplit = input.dimensions[axis];
     NN_OPS_CHECK(sizeOfAxisToSplit % numOutputs == 0);
@@ -1030,7 +1025,7 @@ bool heatmapMaxKeypointPrepare(const Shape& heatmapShape, const float* boxesData
     }
 
     output->type = heatmapShape.type;
-    output->dimensions = {numBoxes, numKeypoints, 3};
+    output->dimensions = {numBoxes, 3, numKeypoints};
     output->offset = heatmapShape.offset;
     output->scale = heatmapShape.scale;
 
@@ -1074,7 +1069,7 @@ bool groupedConvPrepare(const Shape& input, const Shape& filter, const Shape& bi
 }
 
 bool channelShufflePrepare(const Shape& input, int32_t numGroups, int32_t axis, Shape* output) {
-    axis = getDimensionIndex(input, axis);
+    NN_CHECK(handleNegativeAxis(input, &axis));
     NN_OPS_CHECK(numGroups > 0);
     NN_OPS_CHECK(getSizeOfDimension(input, axis) % numGroups == 0);
     output->type = input.type;
@@ -1115,6 +1110,79 @@ bool transposeConvPrepare(const Shape& input, const Shape& filter, const Shape& 
     output->type = input.type;
     output->dimensions = {batches, outHeight, outWidth, channels_out};
     return true;
+}
+
+inline bool bboxTransformPrepare(const float* roiData, const Shape& roiShape,
+                                 const Shape& bboxDeltasShape, const Shape& imageInfoShape,
+                                 const Shape& weightsShape, bool rotated, bool angleBoundOn,
+                                 int32_t angleBoundLow, int32_t angleBoundHigh, Shape* outputShape,
+                                 Shape* batchSplitShape) {
+    NN_OPS_CHECK(getNumberOfDimensions(roiShape) == 2);
+    NN_OPS_CHECK(getNumberOfDimensions(bboxDeltasShape) == 2);
+    NN_OPS_CHECK(getNumberOfDimensions(imageInfoShape) == 2);
+    NN_OPS_CHECK(getNumberOfDimensions(weightsShape) == 1);
+
+    const uint32_t kRoiDim = rotated ? 5 : 4;
+    uint32_t numRois = getSizeOfDimension(roiShape, 0);
+    uint32_t roiInfoLength = getSizeOfDimension(roiShape, 1);
+    uint32_t numClasses = getSizeOfDimension(bboxDeltasShape, 1) / kRoiDim;
+    uint32_t numBatches = getSizeOfDimension(imageInfoShape, 0);
+
+    NN_OPS_CHECK(roiInfoLength == kRoiDim + 1 || (roiInfoLength == kRoiDim && numBatches == 1));
+    NN_OPS_CHECK(getSizeOfDimension(bboxDeltasShape, 0) == numRois);
+    NN_OPS_CHECK(getSizeOfDimension(bboxDeltasShape, 1) == kRoiDim * numClasses);
+    NN_OPS_CHECK(getSizeOfDimension(imageInfoShape, 1) == 3);
+    NN_OPS_CHECK(getSizeOfDimension(weightsShape, 0) == 4);
+
+    if (rotated && angleBoundOn) {
+        NN_OPS_CHECK(angleBoundHigh > angleBoundLow);
+        NN_OPS_CHECK((angleBoundHigh - angleBoundLow) % 180 == 0);
+    }
+
+    const float* roiDataEnd = roiData + numRois * roiInfoLength;
+    for (const float* roiInfo = roiData; roiInfo < roiDataEnd; roiInfo += kRoiDim) {
+        if (roiInfoLength == kRoiDim + 1) {
+            NN_OPS_CHECK(roiInfo[0] >= 0);
+            NN_OPS_CHECK(roiInfo[0] < numBatches);
+            roiInfo++;
+        }
+
+        if (!rotated) {
+            // Check for malformed data: x2 <= x1 || y2 <= y1
+            NN_OPS_CHECK(roiInfo[0] < roiInfo[2]);
+            NN_OPS_CHECK(roiInfo[1] < roiInfo[3]);
+        }
+    }
+
+    outputShape->type = roiShape.type;
+    outputShape->dimensions = {numRois, numClasses * kRoiDim};
+
+    batchSplitShape->type = OperandType::TENSOR_INT32;
+    batchSplitShape->dimensions = {numBatches};
+    batchSplitShape->offset = 0;
+    batchSplitShape->scale = 1.0f;
+
+    return true;
+}
+
+bool axisAlignedBBoxTransformPrepare(const float* roiData, const Shape& roiShape,
+                                     const Shape& bboxDeltasShape, const Shape& imageInfoShape,
+                                     const Shape& weightsShape, Shape* outputShape,
+                                     Shape* batchSplitShape) {
+    return bboxTransformPrepare(roiData, roiShape, bboxDeltasShape, imageInfoShape, weightsShape, 0,
+                                false, false, 0,  // rotated = false
+                                outputShape, batchSplitShape);
+}
+
+bool rotatedBBoxTransformPrepare(const float* roiData, const Shape& roiShape,
+                                 const Shape& bboxDeltasShape, const Shape& imageInfoShape,
+                                 const Shape& weightsShape, bool angleBoundOn,
+                                 int32_t angleBoundLow, int32_t angleBoundHigh, Shape* outputShape,
+                                 Shape* batchSplitShape) {
+    return bboxTransformPrepare(roiData, roiShape, bboxDeltasShape, imageInfoShape, weightsShape,
+                                true,  // rotated = true
+                                angleBoundOn, angleBoundLow, angleBoundHigh, outputShape,
+                                batchSplitShape);
 }
 } // namespace nn
 } // namespace android

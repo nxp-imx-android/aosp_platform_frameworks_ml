@@ -71,8 +71,11 @@ uint32_t getNumberOfDimensions(const Shape& shape);
 uint32_t getSizeOfDimension(const Shape& shape, uint32_t dimensionIdx);
 
 // Converts an axis index from the range [-dims, dims) into the range [0, dims).
-int32_t getDimensionIndex(const Shape& shape, int32_t axis);
-int32_t getDimensionIndex(int32_t numberOfDimensions, int32_t axis);
+bool handleNegativeAxis(int32_t numberOfDimensions, int32_t* axis);
+
+inline bool handleNegativeAxis(const Shape& shape, int32_t* axis) {
+    return handleNegativeAxis(getNumberOfDimensions(shape), axis);
+}
 
 inline uint32_t computeOutSize(uint32_t imageSize, uint32_t filterSize, uint32_t stride,
                                uint32_t paddingHead, uint32_t paddingTail) {
@@ -317,6 +320,17 @@ bool transposeConvPrepare(const Shape& input, const Shape& filter, const Shape& 
                           int32_t padding_left, int32_t padding_right, int32_t padding_top,
                           int32_t padding_bottom, int32_t stride_width, int32_t stride_height,
                           Shape* output);
+
+bool axisAlignedBBoxTransformPrepare(const float* roiData, const Shape& roiShape,
+                                     const Shape& bboxDeltasShape, const Shape& imageInfoShape,
+                                     const Shape& weightsShape, Shape* outputShape,
+                                     Shape* batchSplitShape);
+
+bool rotatedBBoxTransformPrepare(const float* roiData, const Shape& roiShape,
+                                 const Shape& bboxDeltasShape, const Shape& imageInfoShape,
+                                 const Shape& weightsShape, bool angleBoundOn,
+                                 int32_t angleBoundLow, int32_t angleBoundHigh, Shape* outputShape,
+                                 Shape* batchSplitShape);
 } // namespace nn
 } // namespace android
 
