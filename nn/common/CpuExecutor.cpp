@@ -1916,16 +1916,24 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             out_tmp.lifetime = OperandLifeTime::TEMPORARY_VARIABLE;
             out_tmp.buffer = data_layout ? nullptr : out.buffer;
 
+            if (!roiAlignPrepare(input_tmp.shape(), reinterpret_cast<const float*>(roi.buffer),
+                                 roi.shape(), reinterpret_cast<const int32_t*>(outputShape.buffer),
+                                 outputShape.shape(), spatialScale, &outShape) ||
+                !setInfoAndAllocateIfNeeded(&out_tmp, outShape)) {
+                success = false;
+                break;
+            }
+
             if (input_tmp.type == OperandType::TENSOR_FLOAT32) {
-                success = roiAlignPrepare(input_tmp.shape(),
-                                          reinterpret_cast<const float*>(roi.buffer), roi.shape(),
-                                          reinterpret_cast<const int32_t*>(outputShape.buffer),
-                                          outputShape.shape(), spatialScale, &outShape) &&
-                          setInfoAndAllocateIfNeeded(&out_tmp, outShape) &&
-                          roiAlign(reinterpret_cast<const float*>(input_tmp.buffer),
-                                   input_tmp.shape(), reinterpret_cast<const float*>(roi.buffer),
-                                   roi.shape(), spatialScale, samplingRatio,
-                                   reinterpret_cast<float*>(out_tmp.buffer), outShape);
+                success = roiAlignFloat32(
+                        reinterpret_cast<const float*>(input_tmp.buffer), input_tmp.shape(),
+                        reinterpret_cast<const float*>(roi.buffer), roi.shape(), spatialScale,
+                        samplingRatio, reinterpret_cast<float*>(out_tmp.buffer), outShape);
+            } else if (input_tmp.type == OperandType::TENSOR_QUANT8_ASYMM) {
+                success = roiAlignQuant8(
+                        reinterpret_cast<const uint8_t*>(input_tmp.buffer), input_tmp.shape(),
+                        reinterpret_cast<const float*>(roi.buffer), roi.shape(), spatialScale,
+                        samplingRatio, reinterpret_cast<uint8_t*>(out_tmp.buffer), outShape);
             }
 
             if (data_layout) {
@@ -2300,6 +2308,21 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                 clipAngleThreshold, reinterpret_cast<float*>(out.buffer), outShape,
                                 reinterpret_cast<int32_t*>(batchSplit.buffer), batchSplitShape);
             }
+        } break;
+        case OperationType::POW: {
+            if (!allParametersPresent(2, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& base = mOperands[ins[0]];
+            const RunTimeOperandInfo& exponent = mOperands[ins[1]];
+
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outShape = output.shape();
+
+            success = pow::prepare(base.shape(), exponent.shape(), &outShape) &&
+                      setInfoAndAllocateIfNeeded(&output, outShape) &&
+                      pow::eval(base.buffer, base.shape(), exponent.buffer, exponent.shape(),
+                                output.buffer, outShape);
         } break;
         default:
             nnAssert(false);
