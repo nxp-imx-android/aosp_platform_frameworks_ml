@@ -1841,6 +1841,7 @@ int CpuExecutor::executeOperation(const Operation& operation) {
         } break;
         case OperationType::SPLIT: {
             if (ins.size() != 3) {
+                LOG(ERROR) << "Wrong input count";
                 return ANEURALNETWORKS_BAD_DATA;
             }
 
@@ -1972,6 +1973,23 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                   input_tmp.shape(), reinterpret_cast<const float*>(boxes.buffer),
                                   boxes.shape(), reinterpret_cast<float*>(out.buffer), outShape);
             }
+        } break;
+        case OperationType::MAXIMUM:
+        case OperationType::MINIMUM: {
+            if (!allParametersPresent(2, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& in1 = mOperands[ins[0]];
+            const RunTimeOperandInfo& in2 = mOperands[ins[1]];
+
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outputShape = output.shape();
+
+            const bool isMinimum = operation.type == OperationType::MINIMUM;
+            success = maximum_minimum::prepare(in1.shape(), in2.shape(), &outputShape) &&
+                      setInfoAndAllocateIfNeeded(&output, outputShape) &&
+                      maximum_minimum::eval(in1.buffer, in1.shape(), in2.buffer, in2.shape(),
+                                            isMinimum, output.buffer, outputShape);
         } break;
         case OperationType::GROUPED_CONV_2D: {
             const size_t inCount = ins.size();
