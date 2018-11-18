@@ -89,7 +89,7 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
             case OperandType::TENSOR_FLOAT32:
             case OperandType::TENSOR_INT32:
             case OperandType::TENSOR_QUANT8_ASYMM:
-            case OperandType::TENSOR_QUANT16_ASYMM:
+            case OperandType::TENSOR_QUANT16_SYMM:
             case OperandType::TENSOR_OEM_BYTE: {
                 if (operand.dimensions.size() == 0) {
                     LOG(ERROR) << "Operand " << index << ": Tensor has dimensions of rank 0";
@@ -138,7 +138,7 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
                     return false;
                 }
                 break;
-            case OperandType::TENSOR_QUANT16_ASYMM:
+            case OperandType::TENSOR_QUANT16_SYMM:
                 if (operand.scale <= 0.f) {
                     LOG(ERROR) << "Operand " << index << ": Operand of type "
                                << getOperandTypeName(operand.type) << " with a non-positive scale";
@@ -176,11 +176,11 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
                     return false;
                 }
                 break;
-            case OperandType::TENSOR_QUANT16_ASYMM:
-                if (operand.zeroPoint < -32768 || operand.zeroPoint > 32767) {
+            case OperandType::TENSOR_QUANT16_SYMM:
+                if (operand.zeroPoint != 0) {
                     LOG(ERROR) << "Operand " << index << ": Operand of type "
                                << getOperandTypeName(operand.type) << " with an invalid zeroPoint "
-                               << operand.zeroPoint << ", must be in range [-32768, 32767]";
+                               << operand.zeroPoint << ", must be zero.";
                     return false;
                 }
                 break;
@@ -273,22 +273,14 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
     // model outputs will be written to.
     std::vector<bool> writtenTo(operandCount, false);
     for (auto& op : operations) {
-        HalVersion minSupportedHalVersion;
         // TODO Validate the shapes and any known values. This is currently
         // done in CpuExecutor but should be done here for all drivers.
-        int error = validateOperation(static_cast<int32_t>(op.type), op.inputs.size(),
-                                      op.inputs.size() > 0 ? op.inputs.data() : nullptr,
-                                      op.outputs.size(),
-                                      op.outputs.size() > 0 ? op.outputs.data() : nullptr, operands,
-                                      &minSupportedHalVersion);
+        int error = validateOperation(
+                static_cast<int32_t>(op.type), op.inputs.size(),
+                op.inputs.size() > 0 ? op.inputs.data() : nullptr, op.outputs.size(),
+                op.outputs.size() > 0 ? op.outputs.data() : nullptr, operands, getHalVersion(op));
         if (error != ANEURALNETWORKS_NO_ERROR) {
             LOG(ERROR) << "Invalid operation " << toString(op.type);
-            return false;
-        }
-        if (getHalVersion(op) < minSupportedHalVersion) {
-            LOG(ERROR) << "Operation " << toString(op.type)
-                       << " with the given operand types is only supported"
-                       << " in later HAL versions";
             return false;
         }
 
@@ -524,7 +516,7 @@ bool validOperandType(V1_2::OperandType operandType) {
         case V1_2::OperandType::TENSOR_FLOAT32:
         case V1_2::OperandType::TENSOR_INT32:
         case V1_2::OperandType::TENSOR_QUANT8_ASYMM:
-        case V1_2::OperandType::TENSOR_QUANT16_ASYMM:
+        case V1_2::OperandType::TENSOR_QUANT16_SYMM:
         case V1_2::OperandType::OEM:
         case V1_2::OperandType::TENSOR_OEM_BYTE:
             return true;
