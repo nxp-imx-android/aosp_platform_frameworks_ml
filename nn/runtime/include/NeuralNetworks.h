@@ -244,16 +244,19 @@ typedef enum {
      * dimensions except the dimension along the concatenation axis.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} (full support since API
+     *   level 29, see the input section)
      *
      * Supported tensor rank: up to 4
      *
      * Inputs:
      * * 0 ~ n-1: The list of n input tensors, of shape
-     *            [D0, D1, ..., Daxis(i), ..., Dm]. For inputs of
-     *            {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, all input tensors
-     *            must have the same scale and zeroPoint.
+     *            [D0, D1, ..., Daxis(i), ..., Dm].
+     *            Before API level 29, all input tensors of
+     *            {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     *            must have the same scale and zeroPoint as the output tensor.
      * * n: An {@link ANEURALNETWORKS_INT32} scalar, specifying the
      *      concatenation axis.
      *
@@ -705,7 +708,6 @@ typedef enum {
      * 1-D slice along dimension dim.
      *
      * Supported tensor {@link OperandCode}:
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: up to 4
@@ -821,7 +823,6 @@ typedef enum {
      * 1-D slice along specified dimension.
      *
      * Supported tensor {@link OperandCode}:
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: up to 4
@@ -2927,7 +2928,25 @@ typedef enum {
      */
     ANEURALNETWORKS_ROTATED_BBOX_TRANSFORM = 87,
 
+    /**
+     * Computes the absolute value of a tensor, element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_ABS = 88,
+
     ANEURALNETWORKS_ROI_POOLING = 89,
 } OperationCode;
 
