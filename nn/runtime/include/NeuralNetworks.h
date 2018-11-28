@@ -2004,6 +2004,7 @@ typedef enum {
      * Returns the index of the largest element along an axis.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
@@ -2029,6 +2030,7 @@ typedef enum {
      * Returns the index of the smallest element along an axis.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
@@ -2947,6 +2949,42 @@ typedef enum {
      */
     ANEURALNETWORKS_ABS = 88,
 
+    /**
+     * Select and scale the feature map of each region of interest to a unified
+     * output size by max-pooling.
+     *
+     * The region of interest is represented by its upper-left corner coordinate
+     * (x1,y1) and lower-right corner coordinate (x2,y2) in the original image.
+     * A spatial scaling factor is applied to map into feature map coordinate.
+     * A valid region of interest should satisfy x1 < x2 and y1 < y2.
+     *
+     * Rounding is applied in this operation to ensure integer boundary for
+     * regions of interest and pooling bins.
+     *
+     * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
+     * With the default data layout NHWC, the data is stored in the order of:
+     * [batch, height, width, channels]. Alternatively, the data layout could
+     * be NCHW, the data storage order of: [batch, channels, height, width].
+     *
+     * Inputs:
+     * * 0: A 4-D tensor, specifying the feature map.
+     * * 1: A 2-D Tensor of shape [num_rois, 5 or 4], specifying the locations
+     *      of the regions of interest, each line with format
+     *      [<optional batch_id>, x1, y1, x2, y2]. The batch_id is optional if
+     *      there is only one batch.
+     * * 2: A 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32},
+     *      specifying the size of the output tensor [out_height, out_width].
+     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
+     *      scaling factor from original image to feature map.
+     * * 4: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
+     *      NCHW data layout for input0 and output0. Set to false for NHWC.
+     *
+     * Outputs:
+     * * 0: A tensor of the same {@link OperandCode} as input0. The output
+     *      shape is [num_rois, out_height, out_width, depth].
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_ROI_POOLING = 89,
 } OperationCode;
 
@@ -3191,9 +3229,12 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  *    <li>Associate output buffers or memory regions to the model outputs with
  *        {@link ANeuralNetworksExecution_setOutput} or
  *        {@link ANeuralNetworksExecution_setOutputFromMemory}.</li>
- *    <li>Apply the model with {@link ANeuralNetworksExecution_startCompute}.</li>
- *    <li>Wait for the execution to complete with {@link
- *        ANeuralNetworksEvent_wait}.</li>
+ *    <li>Either
+ *        <li>Apply the model asynchronously with {@link
+ * ANeuralNetworksExecution_startCompute}.</li> <li>Wait for the execution to complete with {@link
+ *            ANeuralNetworksEvent_wait}.</li></li>
+ *    <li>Or
+ *        <li>Apply the model synchronously with {@link ANeuralNetworksExecution_compute}.</li></li>
  *    <li>Destroy the execution with
  *        {@link ANeuralNetworksExecution_free}.</li></ul></p>
  *
@@ -3202,12 +3243,14 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * memory region, or with an operand value in a memory object
  * ({@link ANeuralNetworksModel_setOperandValueFromMemory}).</p>
  *
- * <p>An execution cannot be modified once {@link ANeuralNetworksExecution_startCompute}
- * has been called on it.</p>
+ * <p>An execution cannot be modified once
+ * {@link ANeuralNetworksExecution_compute} or
+ * {@link ANeuralNetworksExecution_startCompute} has been called on it.</p>
  *
  * <p>An execution can be applied to a model with
- * {@link ANeuralNetworksExecution_startCompute} only once. Create new executions
- * to do new evaluations of the model.</p>
+ * {@link ANeuralNetworksExecution_compute} or
+ * {@link ANeuralNetworksExecution_startCompute} only once. Create new
+ * executions to do new evaluations of the model.</p>
  *
  * <p>It is the application's responsibility to make sure that only one thread
  * modifies an execution at a given time. It is however safe for more than one
@@ -3215,6 +3258,18 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  *
  * <p>It is also the application's responsibility to ensure that there are no other
  * uses of the execution after calling {@link ANeuralNetworksExecution_free}.</p>
+ *
+ * <p>Multiple executions can be scheduled and evaluated concurrently, either by
+ * means of {@link ANeuralNetworksExecution_compute} (which is synchronous) in
+ * different threads or by means of
+ * {@link ANeuralNetworksExecution_startCompute} (which is asynchronous). The
+ * runtime makes no guarantee on the ordering of completion of executions. If
+ * it's important to the application, the application should enforce the
+ * ordering by ensuring that one execution completes before the next is
+ * scheduled (for example, by scheduling all executions synchronously within a
+ * single thread, or by scheduling all executions asynchronously and using
+ * {@link ANeuralNetworksEvent_wait} between calls to
+ * {@link ANeuralNetworksExecution_startCompute}).</p>
  *
  * Available since API level 27.
  */
@@ -3435,6 +3490,26 @@ int ANeuralNetworksCompilation_createForDevices(ANeuralNetworksModel* model,
                                                 uint32_t numDevices,
                                                 ANeuralNetworksCompilation** compilation);
 
+/**
+ * Schedule synchronous evaluation of the execution.
+ *
+ * <p>Schedules synchronous evaluation of the execution. Returns once the
+ * execution has completed and the outputs are ready to be consumed.
+ * </p>
+ *
+ * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
+ *
+ * See {@link ANeuralNetworksExecution_startCompute} for asynchronous execution.
+ * Synchronous execution incurs lower overhead than asynchronous execution.
+ *
+ * Available since API level 29.
+ *
+ * @param execution The execution to be scheduled and executed.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if the execution completed normally.
+ */
+int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution);
+
 #endif  // __ANDROID_API__ >= __ANDROID_API_Q__
 
 #if __ANDROID_API__ >= 27
@@ -3483,6 +3558,7 @@ void ANeuralNetworksMemory_free(ANeuralNetworksMemory* memory) __INTRODUCED_IN(2
  * Create an empty {@link ANeuralNetworksModel}.
  *
  * <p>This only creates the object. Computation is performed once
+ * {@link ANeuralNetworksExecution_compute} or
  * {@link ANeuralNetworksExecution_startCompute} is invoked.
  *
  * The model should be constructed with calls to
@@ -3832,6 +3908,7 @@ int ANeuralNetworksCompilation_finish(ANeuralNetworksCompilation* compilation) _
 /**
  * Create a {@link ANeuralNetworksExecution} to apply the given compilation.
  * This only creates the object. Computation is only performed once
+ * {@link ANeuralNetworksExecution_compute} or
  * {@link ANeuralNetworksExecution_startCompute} is invoked.
  *
  * <p>The provided compilation must outlive the execution.</p>
@@ -4028,23 +4105,21 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
                                                  size_t length) __INTRODUCED_IN(27);
 
 /**
- * Schedule evaluation of the execution.
+ * Schedule asynchronous evaluation of the execution.
  *
- * <p>Schedules evaluation of the execution. Once the model has been
- * applied and the outputs are ready to be consumed, the returned event will be
- * signaled. Use {@link ANeuralNetworksEvent_wait} to wait for that event.
+ * <p>Schedules asynchronous evaluation of the execution. Once the model has
+ * been applied and the outputs are ready to be consumed, the returned event
+ * will be signaled. Use {@link ANeuralNetworksEvent_wait} to wait for that
+ * event.
  * </p>
- *
- * Multiple executions can be scheduled and evaluated concurrently. The
- * runtime makes no guarantee on the ordering of completion of
- * executions. If it's important to the application, the application
- * should enforce the ordering by using
- * {@link ANeuralNetworksEvent_wait}.
  *
  * ANeuralNetworksEvent_wait must be called to recuperate the resources used
  * by the execution.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
+ *
+ * See {@link ANeuralNetworksExecution_compute} for synchronous execution.
+ * Synchronous execution incurs lower overhead than asynchronous execution.
  *
  * Available since API level 27.
  *
