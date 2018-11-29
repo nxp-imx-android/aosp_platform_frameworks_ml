@@ -2823,6 +2823,21 @@ TEST_F(ValidationTest, conv2d_v1_2_nhwc_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nhwc_float16,
+                           conv2d_v1_2::is_ignored_nhwc_float16,
+                           conv2d_v1_2::get_examples_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_nhwc_weight_as_input,
@@ -2863,6 +2878,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input_quant8) {
 TEST_F(ValidationTest, conv2d_v1_2_nhwc_weight_as_input_quant8) {
   const Model model = conv2d_v1_2::createTestModel_nhwc_weight_as_input_quant8();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nhwc_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_nhwc_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -2913,6 +2943,21 @@ TEST_F(ValidationTest, conv2d_v1_2_nchw_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nchw_float16,
+                           conv2d_v1_2::is_ignored_nchw_float16,
+                           conv2d_v1_2::get_examples_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_nchw_weight_as_input,
@@ -2953,6 +2998,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input_quant8) {
 TEST_F(ValidationTest, conv2d_v1_2_nchw_weight_as_input_quant8) {
   const Model model = conv2d_v1_2::createTestModel_nchw_weight_as_input_quant8();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nchw_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_nchw_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nchw_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_nchw_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3003,6 +3063,21 @@ TEST_F(ValidationTest, conv2d_v1_2_nhwc_quant8_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nhwc_float16_2,
+                           conv2d_v1_2::is_ignored_nhwc_float16_2,
+                           conv2d_v1_2::get_examples_nhwc_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nhwc_float16_2) {
+  const Model model = conv2d_v1_2::createTestModel_nhwc_float16_2();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input_2) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_nhwc_weight_as_input_2,
@@ -3043,6 +3118,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input_quant8_2) {
 TEST_F(ValidationTest, conv2d_v1_2_nhwc_weight_as_input_quant8_2) {
   const Model model = conv2d_v1_2::createTestModel_nhwc_weight_as_input_quant8_2();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nhwc_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nhwc_weight_as_input_float16_2,
+                           conv2d_v1_2::is_ignored_nhwc_weight_as_input_float16_2,
+                           conv2d_v1_2::get_examples_nhwc_weight_as_input_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nhwc_weight_as_input_float16_2) {
+  const Model model = conv2d_v1_2::createTestModel_nhwc_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nhwc_weight_as_input_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3093,6 +3183,21 @@ TEST_F(ValidationTest, conv2d_v1_2_nchw_quant8_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nchw_float16_2,
+                           conv2d_v1_2::is_ignored_nchw_float16_2,
+                           conv2d_v1_2::get_examples_nchw_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nchw_float16_2) {
+  const Model model = conv2d_v1_2::createTestModel_nchw_float16_2();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input_2) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_nchw_weight_as_input_2,
@@ -3133,6 +3238,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input_quant8_2) {
 TEST_F(ValidationTest, conv2d_v1_2_nchw_weight_as_input_quant8_2) {
   const Model model = conv2d_v1_2::createTestModel_nchw_weight_as_input_quant8_2();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_nchw_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_nchw_weight_as_input_float16_2,
+                           conv2d_v1_2::is_ignored_nchw_weight_as_input_float16_2,
+                           conv2d_v1_2::get_examples_nchw_weight_as_input_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_nchw_weight_as_input_float16_2) {
+  const Model model = conv2d_v1_2::createTestModel_nchw_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_nchw_weight_as_input_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3183,6 +3303,21 @@ TEST_F(ValidationTest, conv2d_v1_2_channel_nhwc_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_channel_nhwc_float16,
+                           conv2d_v1_2::is_ignored_channel_nhwc_float16,
+                           conv2d_v1_2::get_examples_channel_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_channel_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_channel_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nhwc_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_channel_nhwc_weight_as_input,
@@ -3223,6 +3358,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nhwc_weight_as_input_quant8) 
 TEST_F(ValidationTest, conv2d_v1_2_channel_nhwc_weight_as_input_quant8) {
   const Model model = conv2d_v1_2::createTestModel_channel_nhwc_weight_as_input_quant8();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_channel_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_channel_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_channel_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_channel_nhwc_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_channel_nhwc_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nhwc_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3273,6 +3423,21 @@ TEST_F(ValidationTest, conv2d_v1_2_channel_nchw_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_channel_nchw_float16,
+                           conv2d_v1_2::is_ignored_channel_nchw_float16,
+                           conv2d_v1_2::get_examples_channel_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_channel_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_channel_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nchw_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_channel_nchw_weight_as_input,
@@ -3313,6 +3478,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nchw_weight_as_input_quant8) 
 TEST_F(ValidationTest, conv2d_v1_2_channel_nchw_weight_as_input_quant8) {
   const Model model = conv2d_v1_2::createTestModel_channel_nchw_weight_as_input_quant8();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_channel_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_channel_nchw_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_channel_nchw_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_channel_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_channel_nchw_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_channel_nchw_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_channel_nchw_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3363,6 +3543,21 @@ TEST_F(ValidationTest, conv2d_v1_2_large_nhwc_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_large_nhwc_float16,
+                           conv2d_v1_2::is_ignored_large_nhwc_float16,
+                           conv2d_v1_2::get_examples_large_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_large_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_large_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_large_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nhwc_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_large_nhwc_weight_as_input,
@@ -3403,6 +3598,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nhwc_weight_as_input_quant8) {
 TEST_F(ValidationTest, conv2d_v1_2_large_nhwc_weight_as_input_quant8) {
   const Model model = conv2d_v1_2::createTestModel_large_nhwc_weight_as_input_quant8();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_large_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_large_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_large_nhwc_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_large_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_large_nhwc_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_large_nhwc_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_large_nhwc_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3453,6 +3663,21 @@ TEST_F(ValidationTest, conv2d_v1_2_large_nchw_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_large_nchw_float16,
+                           conv2d_v1_2::is_ignored_large_nchw_float16,
+                           conv2d_v1_2::get_examples_large_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_large_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_large_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_large_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nchw_weight_as_input) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_large_nchw_weight_as_input,
@@ -3498,6 +3723,21 @@ TEST_F(ValidationTest, conv2d_v1_2_large_nchw_weight_as_input_quant8) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_large_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_large_nchw_weight_as_input_float16,
+                           conv2d_v1_2::is_ignored_large_nchw_weight_as_input_float16,
+                           conv2d_v1_2::get_examples_large_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_large_nchw_weight_as_input_float16) {
+  const Model model = conv2d_v1_2::createTestModel_large_nchw_weight_as_input_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_large_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_SAME_nhwc) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_1_H3_W2_SAME_nhwc,
@@ -3523,6 +3763,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_SAME_nhwc_relaxed) {
 TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_SAME_nhwc_relaxed) {
   const Model model = conv2d_v1_2::createTestModel_1_H3_W2_SAME_nhwc_relaxed();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_SAME_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_SAME_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_1_H3_W2_SAME_nhwc_float16,
+                           conv2d_v1_2::is_ignored_1_H3_W2_SAME_nhwc_float16,
+                           conv2d_v1_2::get_examples_1_H3_W2_SAME_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_SAME_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_1_H3_W2_SAME_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_SAME_nhwc_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3558,6 +3813,21 @@ TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_SAME_nchw_relaxed) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_SAME_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_1_H3_W2_SAME_nchw_float16,
+                           conv2d_v1_2::is_ignored_1_H3_W2_SAME_nchw_float16,
+                           conv2d_v1_2::get_examples_1_H3_W2_SAME_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_SAME_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_1_H3_W2_SAME_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_SAME_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_VALID_nhwc) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_1_H3_W2_VALID_nhwc,
@@ -3583,6 +3853,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_VALID_nhwc_relaxed) {
 TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_VALID_nhwc_relaxed) {
   const Model model = conv2d_v1_2::createTestModel_1_H3_W2_VALID_nhwc_relaxed();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_VALID_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_VALID_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_1_H3_W2_VALID_nhwc_float16,
+                           conv2d_v1_2::is_ignored_1_H3_W2_VALID_nhwc_float16,
+                           conv2d_v1_2::get_examples_1_H3_W2_VALID_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_VALID_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_1_H3_W2_VALID_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_VALID_nhwc_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3618,6 +3903,21 @@ TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_VALID_nchw_relaxed) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_1_H3_W2_VALID_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_1_H3_W2_VALID_nchw_float16,
+                           conv2d_v1_2::is_ignored_1_H3_W2_VALID_nchw_float16,
+                           conv2d_v1_2::get_examples_1_H3_W2_VALID_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_1_H3_W2_VALID_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_1_H3_W2_VALID_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_1_H3_W2_VALID_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_SAME_nhwc) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_3_H3_W2_SAME_nhwc,
@@ -3643,6 +3943,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_SAME_nhwc_relaxed) {
 TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_SAME_nhwc_relaxed) {
   const Model model = conv2d_v1_2::createTestModel_3_H3_W2_SAME_nhwc_relaxed();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_SAME_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_SAME_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_3_H3_W2_SAME_nhwc_float16,
+                           conv2d_v1_2::is_ignored_3_H3_W2_SAME_nhwc_float16,
+                           conv2d_v1_2::get_examples_3_H3_W2_SAME_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_SAME_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_3_H3_W2_SAME_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_SAME_nhwc_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -3678,6 +3993,21 @@ TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_SAME_nchw_relaxed) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_SAME_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_3_H3_W2_SAME_nchw_float16,
+                           conv2d_v1_2::is_ignored_3_H3_W2_SAME_nchw_float16,
+                           conv2d_v1_2::get_examples_3_H3_W2_SAME_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_SAME_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_3_H3_W2_SAME_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_SAME_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_VALID_nhwc) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_3_H3_W2_VALID_nhwc,
@@ -3708,6 +4038,21 @@ TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_VALID_nhwc_relaxed) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_VALID_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_3_H3_W2_VALID_nhwc_float16,
+                           conv2d_v1_2::is_ignored_3_H3_W2_VALID_nhwc_float16,
+                           conv2d_v1_2::get_examples_3_H3_W2_VALID_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_VALID_nhwc_float16) {
+  const Model model = conv2d_v1_2::createTestModel_3_H3_W2_VALID_nhwc_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_VALID_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_VALID_nchw) {
   generated_tests::Execute(device,
                            conv2d_v1_2::createTestModel_3_H3_W2_VALID_nchw,
@@ -3733,6 +4078,21 @@ TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_VALID_nchw_relaxed) {
 TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_VALID_nchw_relaxed) {
   const Model model = conv2d_v1_2::createTestModel_3_H3_W2_VALID_nchw_relaxed();
   const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_VALID_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_v1_2_3_H3_W2_VALID_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_v1_2::createTestModel_3_H3_W2_VALID_nchw_float16,
+                           conv2d_v1_2::is_ignored_3_H3_W2_VALID_nchw_float16,
+                           conv2d_v1_2::get_examples_3_H3_W2_VALID_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_v1_2_3_H3_W2_VALID_nchw_float16) {
+  const Model model = conv2d_v1_2::createTestModel_3_H3_W2_VALID_nchw_float16();
+  const std::vector<Request> requests = createRequests(conv2d_v1_2::get_examples_3_H3_W2_VALID_nchw_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7283,6 +7643,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_dim1_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim1_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_dim1_axis0_float16,
+                           l2_normalization_v1_2::get_examples_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_dim1_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim2_axis1) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_dim2_axis1,
@@ -7293,6 +7668,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim2_axis1) {
 TEST_F(ValidationTest, l2_normalization_v1_2_dim2_axis1) {
   const Model model = l2_normalization_v1_2::createTestModel_dim2_axis1();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_dim2_axis1());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim2_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_dim2_axis1_float16,
+                           l2_normalization_v1_2::get_examples_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_dim2_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_dim2_axis1_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7313,6 +7703,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_dim3_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_dim3_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_dim3_axis2_float16,
+                           l2_normalization_v1_2::get_examples_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_dim3_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim1_axis0) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_relaxed_dim1_axis0,
@@ -7323,6 +7728,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim1_axis0) {
 TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim1_axis0) {
   const Model model = l2_normalization_v1_2::createTestModel_relaxed_dim1_axis0();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_relaxed_dim1_axis0());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim1_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim1_axis0_float16,
+                           l2_normalization_v1_2::get_examples_relaxed_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim1_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_relaxed_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_relaxed_dim1_axis0_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7343,6 +7763,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim2_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim2_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim2_axis1_float16,
+                           l2_normalization_v1_2::get_examples_relaxed_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim2_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_relaxed_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_relaxed_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim3_axis2) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_relaxed_dim3_axis2,
@@ -7353,6 +7788,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim3_axis2) {
 TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim3_axis2) {
   const Model model = l2_normalization_v1_2::createTestModel_relaxed_dim3_axis2();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_relaxed_dim3_axis2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_relaxed_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_relaxed_dim3_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_relaxed_dim3_axis2_float16,
+                           l2_normalization_v1_2::get_examples_relaxed_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_relaxed_dim3_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_relaxed_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_relaxed_dim3_axis2_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7373,6 +7823,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim4_axis0_neg,
@@ -7383,6 +7848,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7403,6 +7883,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim4_axis1_neg,
@@ -7413,6 +7908,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7433,6 +7943,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis2_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim4_axis2_neg,
@@ -7443,6 +7968,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis2_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis2_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis2_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7463,6 +8003,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis3_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis3_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis3_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis3_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis3_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis3_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim4_axis3_neg,
@@ -7473,6 +8028,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis3_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis3_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis3_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim4_axis3_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim4_axis3_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7493,6 +8063,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim3_axis0_neg,
@@ -7503,6 +8088,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7523,6 +8123,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim3_axis1_neg,
@@ -7533,6 +8148,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7553,6 +8183,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis2_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim3_axis2_neg,
@@ -7563,6 +8208,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis2_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis2_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim3_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim3_axis2_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7583,6 +8243,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim2_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim2_axis0_neg,
@@ -7593,6 +8268,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7613,6 +8303,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim2_axis1_neg,
@@ -7623,6 +8328,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim2_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim2_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7643,6 +8363,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim1_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim1_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim1_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim1_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_dim1_axis0_neg,
@@ -7653,6 +8388,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0_neg) {
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim1_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_dim1_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim1_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_dim1_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_dim1_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7673,6 +8423,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg,
@@ -7683,6 +8448,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7703,6 +8483,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg,
@@ -7713,6 +8508,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7733,6 +8543,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg,
@@ -7743,6 +8568,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7763,6 +8603,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg,
@@ -7773,6 +8628,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7793,6 +8663,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg,
@@ -7803,6 +8688,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7823,6 +8723,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg,
@@ -7833,6 +8748,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7853,6 +8783,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg,
@@ -7863,6 +8808,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7883,6 +8843,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg,
@@ -7893,6 +8868,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7913,6 +8903,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg,
@@ -7923,6 +8928,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7943,6 +8963,21 @@ TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
   generated_tests::Execute(device,
                            l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg,
@@ -7953,6 +8988,21 @@ TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg
 TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
   const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg();
   const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16,
+                           l2_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_float16,
+                           l2_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, l2_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16) {
+  const Model model = l2_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(l2_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8192,6 +9242,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg,
@@ -8202,6 +9267,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8222,6 +9302,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg,
@@ -8232,6 +9327,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8252,6 +9362,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg,
@@ -8262,6 +9387,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8282,6 +9422,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg,
@@ -8292,6 +9447,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8312,6 +9482,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg,
@@ -8322,6 +9507,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8342,6 +9542,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg,
@@ -8352,6 +9567,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8372,6 +9602,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg,
@@ -8382,6 +9627,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8402,6 +9662,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg,
@@ -8412,6 +9687,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8432,6 +9722,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg,
@@ -8442,6 +9747,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8462,6 +9782,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg,
@@ -8472,6 +9807,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8492,6 +9842,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg,
@@ -8502,6 +9867,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8522,6 +9902,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg,
@@ -8532,6 +9927,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8552,6 +9962,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg,
@@ -8562,6 +9987,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8582,6 +10022,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg,
@@ -8592,6 +10047,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8612,6 +10082,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg,
@@ -8622,6 +10107,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8642,6 +10142,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg,
@@ -8652,6 +10167,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8672,6 +10202,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg,
@@ -8682,6 +10227,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8702,6 +10262,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg,
@@ -8712,6 +10287,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8732,6 +10322,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg,
@@ -8742,6 +10347,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8762,6 +10382,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg,
@@ -8772,6 +10407,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_float16,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8792,6 +10442,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_2,
@@ -8802,6 +10467,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8822,6 +10502,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_2,
@@ -8832,6 +10527,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8852,6 +10562,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_2,
@@ -8862,6 +10587,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8882,6 +10622,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_2,
@@ -8892,6 +10647,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8912,6 +10682,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_2,
@@ -8922,6 +10707,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8942,6 +10742,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_2,
@@ -8952,6 +10767,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -8972,6 +10802,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_2,
@@ -8982,6 +10827,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9002,6 +10862,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_2,
@@ -9012,6 +10887,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9032,6 +10922,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_2,
@@ -9042,6 +10947,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9062,6 +10982,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_2,
@@ -9072,6 +11007,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9092,6 +11042,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_2,
@@ -9102,6 +11067,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9122,6 +11102,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_2,
@@ -9132,6 +11127,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9152,6 +11162,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_2,
@@ -9162,6 +11187,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9182,6 +11222,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_2,
@@ -9192,6 +11247,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9212,6 +11282,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_2,
@@ -9222,6 +11307,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9242,6 +11342,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_2,
@@ -9252,6 +11367,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9272,6 +11402,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_2,
@@ -9282,6 +11427,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9302,6 +11462,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_2,
@@ -9312,6 +11487,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9332,6 +11522,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_2,
@@ -9342,6 +11547,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9362,6 +11582,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_2,
@@ -9372,6 +11607,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_2) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16_2) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_float16_2,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16_2());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16_2) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16_2();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9392,6 +11642,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_3,
@@ -9402,6 +11667,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9422,6 +11702,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_3,
@@ -9432,6 +11727,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9452,6 +11762,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_3,
@@ -9462,6 +11787,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis2_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis2_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis2_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9482,6 +11822,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_3,
@@ -9492,6 +11847,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim4_axis3_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim4_axis3_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim4_axis3_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim4_axis3_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9512,6 +11882,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_3,
@@ -9522,6 +11907,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9542,6 +11942,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_3,
@@ -9552,6 +11967,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9572,6 +12002,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_3,
@@ -9582,6 +12027,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim3_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim3_axis2_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim3_axis2_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim3_axis2_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9602,6 +12062,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_3,
@@ -9612,6 +12087,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9632,6 +12122,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_3,
@@ -9642,6 +12147,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim2_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim2_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim2_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim2_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9662,6 +12182,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_3,
@@ -9672,6 +12207,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_dim1_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_dim1_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_dim1_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_dim1_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9692,6 +12242,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_3,
@@ -9702,6 +12267,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9722,6 +12302,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_3,
@@ -9732,6 +12327,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9752,6 +12362,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_3,
@@ -9762,6 +12387,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis2_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis2_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis2_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9782,6 +12422,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_3,
@@ -9792,6 +12447,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim4_axis3_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim4_axis3_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim4_axis3_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim4_axis3_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9812,6 +12482,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_3,
@@ -9822,6 +12507,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9842,6 +12542,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_3,
@@ -9852,6 +12567,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9872,6 +12602,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_3,
@@ -9882,6 +12627,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim3_axis2_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim3_axis2_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim3_axis2_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim3_axis2_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9902,6 +12662,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_3,
@@ -9912,6 +12687,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9932,6 +12722,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_3,
@@ -9942,6 +12747,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim2_axis1_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim2_axis1_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim2_axis1_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim2_axis1_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9962,6 +12782,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_3) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_3,
@@ -9972,6 +12807,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_di
 TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_3) {
   const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_3();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16_3) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::is_ignored_axis_relaxed_dim1_axis0_neg_float16_3,
+                           local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16_3());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_axis_relaxed_dim1_axis0_neg_float16_3) {
+  const Model model = local_response_normalization_v1_2::createTestModel_axis_relaxed_dim1_axis0_neg_float16_3();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_axis_relaxed_dim1_axis0_neg_float16_3());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -9992,6 +12842,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_dim1_axis0) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim1_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_dim1_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_dim1_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_dim1_axis0_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim2_axis1) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_dim2_axis1,
@@ -10002,6 +12867,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim2_axis1) {
 TEST_F(ValidationTest, local_response_normalization_v1_2_dim2_axis1) {
   const Model model = local_response_normalization_v1_2::createTestModel_dim2_axis1();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_dim2_axis1());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim2_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_dim2_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_dim2_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_dim2_axis1_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -10022,6 +12902,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_dim3_axis2) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_dim3_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_dim3_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_dim3_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_dim3_axis2_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim1_axis0) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_relaxed_dim1_axis0,
@@ -10032,6 +12927,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim1_ax
 TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim1_axis0) {
   const Model model = local_response_normalization_v1_2::createTestModel_relaxed_dim1_axis0();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_relaxed_dim1_axis0());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim1_axis0_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim1_axis0_float16,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim1_axis0_float16,
+                           local_response_normalization_v1_2::get_examples_relaxed_dim1_axis0_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim1_axis0_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_relaxed_dim1_axis0_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_relaxed_dim1_axis0_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -10052,6 +12962,21 @@ TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim2_axis1) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim2_axis1_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim2_axis1_float16,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim2_axis1_float16,
+                           local_response_normalization_v1_2::get_examples_relaxed_dim2_axis1_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim2_axis1_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_relaxed_dim2_axis1_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_relaxed_dim2_axis1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim3_axis2) {
   generated_tests::Execute(device,
                            local_response_normalization_v1_2::createTestModel_relaxed_dim3_axis2,
@@ -10062,6 +12987,21 @@ TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim3_ax
 TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim3_axis2) {
   const Model model = local_response_normalization_v1_2::createTestModel_relaxed_dim3_axis2();
   const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_relaxed_dim3_axis2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, local_response_normalization_v1_2_relaxed_dim3_axis2_float16) {
+  generated_tests::Execute(device,
+                           local_response_normalization_v1_2::createTestModel_relaxed_dim3_axis2_float16,
+                           local_response_normalization_v1_2::is_ignored_relaxed_dim3_axis2_float16,
+                           local_response_normalization_v1_2::get_examples_relaxed_dim3_axis2_float16());
+}
+
+TEST_F(ValidationTest, local_response_normalization_v1_2_relaxed_dim3_axis2_float16) {
+  const Model model = local_response_normalization_v1_2::createTestModel_relaxed_dim3_axis2_float16();
+  const std::vector<Request> requests = createRequests(local_response_normalization_v1_2::get_examples_relaxed_dim3_axis2_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -11956,6 +14896,194 @@ TEST_F(ValidationTest, roi_align_nchw_quant8_3) {
 }
 
 
+// Generated from: roi_pooling.mod.py.
+namespace roi_pooling {
+// Generated roi_pooling test
+#include "examples/roi_pooling.example.cpp"
+// Generated model constructor
+#include "vts_models/roi_pooling.model.cpp"
+} // namespace roi_pooling
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc,
+                           roi_pooling::is_ignored_nhwc,
+                           roi_pooling::get_examples_nhwc());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc) {
+  const Model model = roi_pooling::createTestModel_nhwc();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc_relaxed,
+                           roi_pooling::is_ignored_nhwc_relaxed,
+                           roi_pooling::get_examples_nhwc_relaxed());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc_relaxed) {
+  const Model model = roi_pooling::createTestModel_nhwc_relaxed();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc_quant8,
+                           roi_pooling::is_ignored_nhwc_quant8,
+                           roi_pooling::get_examples_nhwc_quant8());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc_quant8) {
+  const Model model = roi_pooling::createTestModel_nhwc_quant8();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw,
+                           roi_pooling::is_ignored_nchw,
+                           roi_pooling::get_examples_nchw());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw) {
+  const Model model = roi_pooling::createTestModel_nchw();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw_relaxed,
+                           roi_pooling::is_ignored_nchw_relaxed,
+                           roi_pooling::get_examples_nchw_relaxed());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw_relaxed) {
+  const Model model = roi_pooling::createTestModel_nchw_relaxed();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw_quant8) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw_quant8,
+                           roi_pooling::is_ignored_nchw_quant8,
+                           roi_pooling::get_examples_nchw_quant8());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw_quant8) {
+  const Model model = roi_pooling::createTestModel_nchw_quant8();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc_2,
+                           roi_pooling::is_ignored_nhwc_2,
+                           roi_pooling::get_examples_nhwc_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc_2) {
+  const Model model = roi_pooling::createTestModel_nhwc_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc_relaxed_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc_relaxed_2,
+                           roi_pooling::is_ignored_nhwc_relaxed_2,
+                           roi_pooling::get_examples_nhwc_relaxed_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc_relaxed_2) {
+  const Model model = roi_pooling::createTestModel_nhwc_relaxed_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nhwc_quant8_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nhwc_quant8_2,
+                           roi_pooling::is_ignored_nhwc_quant8_2,
+                           roi_pooling::get_examples_nhwc_quant8_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nhwc_quant8_2) {
+  const Model model = roi_pooling::createTestModel_nhwc_quant8_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nhwc_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw_2,
+                           roi_pooling::is_ignored_nchw_2,
+                           roi_pooling::get_examples_nchw_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw_2) {
+  const Model model = roi_pooling::createTestModel_nchw_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw_relaxed_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw_relaxed_2,
+                           roi_pooling::is_ignored_nchw_relaxed_2,
+                           roi_pooling::get_examples_nchw_relaxed_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw_relaxed_2) {
+  const Model model = roi_pooling::createTestModel_nchw_relaxed_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_pooling_nchw_quant8_2) {
+  generated_tests::Execute(device,
+                           roi_pooling::createTestModel_nchw_quant8_2,
+                           roi_pooling::is_ignored_nchw_quant8_2,
+                           roi_pooling::get_examples_nchw_quant8_2());
+}
+
+TEST_F(ValidationTest, roi_pooling_nchw_quant8_2) {
+  const Model model = roi_pooling::createTestModel_nchw_quant8_2();
+  const std::vector<Request> requests = createRequests(roi_pooling::get_examples_nchw_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 // Generated from: rotated_bbox_transform.mod.py.
 namespace rotated_bbox_transform {
 // Generated rotated_bbox_transform test
@@ -12079,6 +15207,374 @@ TEST_F(NeuralnetworksHidlTest, rotated_bbox_transform_single_batch_relaxed) {
 TEST_F(ValidationTest, rotated_bbox_transform_single_batch_relaxed) {
   const Model model = rotated_bbox_transform::createTestModel_single_batch_relaxed();
   const std::vector<Request> requests = createRequests(rotated_bbox_transform::get_examples_single_batch_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+// Generated from: slice.mod.py.
+namespace slice {
+// Generated slice test
+#include "examples/slice.example.cpp"
+// Generated model constructor
+#include "vts_models/slice.model.cpp"
+} // namespace slice
+
+TEST_F(NeuralnetworksHidlTest, slice) {
+  generated_tests::Execute(device,
+                           slice::createTestModel,
+                           slice::is_ignored,
+                           slice::examples);
+}
+
+TEST_F(ValidationTest, slice) {
+  const Model model = slice::createTestModel();
+  const std::vector<Request> requests = createRequests(slice::examples);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed,
+                           slice::is_ignored_relaxed,
+                           slice::examples_relaxed);
+}
+
+TEST_F(ValidationTest, slice_relaxed) {
+  const Model model = slice::createTestModel_relaxed();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16,
+                           slice::is_ignored_float16,
+                           slice::examples_float16);
+}
+
+TEST_F(ValidationTest, slice_float16) {
+  const Model model = slice::createTestModel_float16();
+  const std::vector<Request> requests = createRequests(slice::examples_float16);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_2) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_2,
+                           slice::is_ignored_2,
+                           slice::examples_2);
+}
+
+TEST_F(ValidationTest, slice_2) {
+  const Model model = slice::createTestModel_2();
+  const std::vector<Request> requests = createRequests(slice::examples_2);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_2) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_2,
+                           slice::is_ignored_relaxed_2,
+                           slice::examples_relaxed_2);
+}
+
+TEST_F(ValidationTest, slice_relaxed_2) {
+  const Model model = slice::createTestModel_relaxed_2();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_2);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_2) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_2,
+                           slice::is_ignored_float16_2,
+                           slice::examples_float16_2);
+}
+
+TEST_F(ValidationTest, slice_float16_2) {
+  const Model model = slice::createTestModel_float16_2();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_2);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_3) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_3,
+                           slice::is_ignored_3,
+                           slice::examples_3);
+}
+
+TEST_F(ValidationTest, slice_3) {
+  const Model model = slice::createTestModel_3();
+  const std::vector<Request> requests = createRequests(slice::examples_3);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_3) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_3,
+                           slice::is_ignored_relaxed_3,
+                           slice::examples_relaxed_3);
+}
+
+TEST_F(ValidationTest, slice_relaxed_3) {
+  const Model model = slice::createTestModel_relaxed_3();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_3);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_3) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_3,
+                           slice::is_ignored_float16_3,
+                           slice::examples_float16_3);
+}
+
+TEST_F(ValidationTest, slice_float16_3) {
+  const Model model = slice::createTestModel_float16_3();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_3);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_4) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_4,
+                           slice::is_ignored_4,
+                           slice::examples_4);
+}
+
+TEST_F(ValidationTest, slice_4) {
+  const Model model = slice::createTestModel_4();
+  const std::vector<Request> requests = createRequests(slice::examples_4);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_4) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_4,
+                           slice::is_ignored_relaxed_4,
+                           slice::examples_relaxed_4);
+}
+
+TEST_F(ValidationTest, slice_relaxed_4) {
+  const Model model = slice::createTestModel_relaxed_4();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_4);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_4) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_4,
+                           slice::is_ignored_float16_4,
+                           slice::examples_float16_4);
+}
+
+TEST_F(ValidationTest, slice_float16_4) {
+  const Model model = slice::createTestModel_float16_4();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_4);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_5) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_5,
+                           slice::is_ignored_5,
+                           slice::examples_5);
+}
+
+TEST_F(ValidationTest, slice_5) {
+  const Model model = slice::createTestModel_5();
+  const std::vector<Request> requests = createRequests(slice::examples_5);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_5) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_5,
+                           slice::is_ignored_relaxed_5,
+                           slice::examples_relaxed_5);
+}
+
+TEST_F(ValidationTest, slice_relaxed_5) {
+  const Model model = slice::createTestModel_relaxed_5();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_5);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_5) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_5,
+                           slice::is_ignored_float16_5,
+                           slice::examples_float16_5);
+}
+
+TEST_F(ValidationTest, slice_float16_5) {
+  const Model model = slice::createTestModel_float16_5();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_5);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_6) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_6,
+                           slice::is_ignored_6,
+                           slice::examples_6);
+}
+
+TEST_F(ValidationTest, slice_6) {
+  const Model model = slice::createTestModel_6();
+  const std::vector<Request> requests = createRequests(slice::examples_6);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_6) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_6,
+                           slice::is_ignored_relaxed_6,
+                           slice::examples_relaxed_6);
+}
+
+TEST_F(ValidationTest, slice_relaxed_6) {
+  const Model model = slice::createTestModel_relaxed_6();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_6);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_6) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_6,
+                           slice::is_ignored_float16_6,
+                           slice::examples_float16_6);
+}
+
+TEST_F(ValidationTest, slice_float16_6) {
+  const Model model = slice::createTestModel_float16_6();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_6);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_7) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_7,
+                           slice::is_ignored_7,
+                           slice::examples_7);
+}
+
+TEST_F(ValidationTest, slice_7) {
+  const Model model = slice::createTestModel_7();
+  const std::vector<Request> requests = createRequests(slice::examples_7);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_7) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_7,
+                           slice::is_ignored_relaxed_7,
+                           slice::examples_relaxed_7);
+}
+
+TEST_F(ValidationTest, slice_relaxed_7) {
+  const Model model = slice::createTestModel_relaxed_7();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_7);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_7) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_7,
+                           slice::is_ignored_float16_7,
+                           slice::examples_float16_7);
+}
+
+TEST_F(ValidationTest, slice_float16_7) {
+  const Model model = slice::createTestModel_float16_7();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_7);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_8) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_8,
+                           slice::is_ignored_8,
+                           slice::examples_8);
+}
+
+TEST_F(ValidationTest, slice_8) {
+  const Model model = slice::createTestModel_8();
+  const std::vector<Request> requests = createRequests(slice::examples_8);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_relaxed_8) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_relaxed_8,
+                           slice::is_ignored_relaxed_8,
+                           slice::examples_relaxed_8);
+}
+
+TEST_F(ValidationTest, slice_relaxed_8) {
+  const Model model = slice::createTestModel_relaxed_8();
+  const std::vector<Request> requests = createRequests(slice::examples_relaxed_8);
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, slice_float16_8) {
+  generated_tests::Execute(device,
+                           slice::createTestModel_float16_8,
+                           slice::is_ignored_float16_8,
+                           slice::examples_float16_8);
+}
+
+TEST_F(ValidationTest, slice_float16_8) {
+  const Model model = slice::createTestModel_float16_8();
+  const std::vector<Request> requests = createRequests(slice::examples_float16_8);
   validateModel(model);
   validateRequests(model, requests);
 }

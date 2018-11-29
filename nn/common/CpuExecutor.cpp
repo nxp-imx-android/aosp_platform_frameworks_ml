@@ -842,6 +842,13 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                         reinterpret_cast<const float*>(bias.buffer), bias.shape(), padding_left,
                         padding_right, padding_top, padding_bottom, stride_width, stride_height,
                         activation, reinterpret_cast<float*>(output_tmp.buffer), outShape);
+            } else if (input_tmp.type == OperandType::TENSOR_FLOAT16) {
+                success = convFloat16(
+                        reinterpret_cast<const _Float16*>(input_tmp.buffer), input_tmp.shape(),
+                        reinterpret_cast<const _Float16*>(filter.buffer), filter.shape(),
+                        reinterpret_cast<const _Float16*>(bias.buffer), bias.shape(), padding_left,
+                        padding_right, padding_top, padding_bottom, stride_width, stride_height,
+                        activation, reinterpret_cast<_Float16*>(output_tmp.buffer), outShape);
             } else if (input_tmp.type == OperandType::TENSOR_QUANT8_ASYMM) {
                 success = convQuant8(
                         reinterpret_cast<const uint8_t*>(input_tmp.buffer), input_tmp.shape(),
@@ -1388,6 +1395,10 @@ int CpuExecutor::executeOperation(const Operation& operation) {
             if (input.type == OperandType::TENSOR_FLOAT32) {
                 success = l2normFloat32(reinterpret_cast<const float*>(input.buffer), input.shape(),
                                         axis, reinterpret_cast<float*>(output.buffer), outShape);
+            } else if (input.type == OperandType::TENSOR_FLOAT16) {
+                success = l2normFloat16(reinterpret_cast<const _Float16*>(input.buffer),
+                                        input.shape(), axis,
+                                        reinterpret_cast<_Float16*>(output.buffer), outShape);
             }
         } break;
         case OperationType::LOCAL_RESPONSE_NORMALIZATION: {
@@ -1414,6 +1425,11 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                 success = localResponseNormFloat32(
                         reinterpret_cast<const float*>(input.buffer), input.shape(), radius, bias,
                         alpha, beta, axis, reinterpret_cast<float*>(output.buffer), outShape);
+            } else if (input.type == OperandType::TENSOR_FLOAT16) {
+                success = localResponseNormFloat16(reinterpret_cast<const _Float16*>(input.buffer),
+                                                   input.shape(), radius, bias, alpha, beta, axis,
+                                                   reinterpret_cast<_Float16*>(output.buffer),
+                                                   outShape);
             }
         } break;
         case OperationType::RESHAPE: {
@@ -2651,6 +2667,26 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                       setInfoAndAllocateIfNeeded(&indices, indicesShape) &&
                       topk_v2::eval(input.buffer, input.shape(), k, values.buffer, valuesShape,
                                     indices.buffer, indicesShape);
+        } break;
+        case OperationType::SLICE: {
+            if (!allParametersPresent(3, 1)) {
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            const RunTimeOperandInfo& input = mOperands[ins[0]];
+            const RunTimeOperandInfo& begin = mOperands[ins[1]];
+            const RunTimeOperandInfo& size = mOperands[ins[2]];
+
+            RunTimeOperandInfo& output = mOperands[outs[0]];
+            Shape outputShape = output.shape();
+
+            const int32_t* beginBuffer = reinterpret_cast<int32_t*>(begin.buffer);
+            const int32_t* sizeBuffer = reinterpret_cast<int32_t*>(size.buffer);
+
+            success = slice::prepare(input.shape(), beginBuffer, begin.shape(), sizeBuffer,
+                                     size.shape(), &outputShape) &&
+                      setInfoAndAllocateIfNeeded(&output, outputShape) &&
+                      slice::eval(input.buffer, input.shape(), beginBuffer, begin.shape(),
+                                  sizeBuffer, size.shape(), output.buffer, output.shape());
         } break;
         default: {
             const OperationRegistration* operationRegistration =

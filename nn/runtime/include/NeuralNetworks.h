@@ -287,6 +287,7 @@ typedef enum {
      *         ) + bias[channel]
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      *
@@ -303,12 +304,13 @@ typedef enum {
      * * 1: A 4-D tensor, of shape
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter.
-     * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
-     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias
-     *      should also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias
-     *      should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of
-     *      0 and bias_scale == input_scale * filter_scale.
+     * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
+     *      type. For input tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias must be
+     *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
+     *      bias_scale == input_scale * filter_scale.
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
      *      the left, in the ‘width’ dimension.
      * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
@@ -335,9 +337,10 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias should
-     *      also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input tensor
-     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
+     *      type. For input tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias must be
      *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
      *      bias_scale == input_scale * filter_scale.
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the implicit
@@ -708,6 +711,7 @@ typedef enum {
      * 1-D slice along dimension dim.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: up to 4
@@ -823,6 +827,7 @@ typedef enum {
      * 1-D slice along specified dimension.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: up to 4
@@ -2690,6 +2695,39 @@ typedef enum {
     ANEURALNETWORKS_RSQRT = 75,
     ANEURALNETWORKS_SELECT = 76,
     ANEURALNETWORKS_SIN = 77,
+    /**
+     * Extracts a slice of specified size from the input tensor starting at a
+     * specified location.
+     *
+     * The starting location is specified as a 1-D tensor containing offsets
+     * for each dimension. The size is specified as a 1-D tensor containing
+     * either size of a slice along corresponding dimension or -1. In the latter
+     * case, all the remaining elements in dimension are included in the slice.
+     * Slice size in each dimension cannot be zero.
+     *
+     * A sum of begin offset and a size of a slice must not exceed size of a
+     * corresponding dimension.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     *
+     * Supported tensor rank: from 1
+     *
+     * Inputs:
+     * * 0: An n-D tensor to take slice from.
+     * * 1: A 1-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32} specifying
+     *      the beginning indices of the slice in each dimension.
+     * * 2: A 1-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32} specifying
+     *      the size of the slice in each dimension.
+     *
+     * Outputs:
+     * * 0: An n-D tensor of the same type as the input containing the slice.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_SLICE = 78,
     ANEURALNETWORKS_SPARSE_TO_DENSE = 79,
 

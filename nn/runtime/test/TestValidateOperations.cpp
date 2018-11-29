@@ -1587,6 +1587,10 @@ void normalizationOpTest(ANeuralNetworksOperationType operationCode, int32_t ope
     EXPECT_TRUE(normalizationAxisTest.testMutatingOutputOperandCounts());
 }
 
+TEST(OperationValidationTest, L2_NORMALIZATION_float16) {
+    normalizationOpTest(ANEURALNETWORKS_L2_NORMALIZATION, ANEURALNETWORKS_TENSOR_FLOAT16);
+}
+
 TEST(OperationValidationTest, L2_NORMALIZATION_float32) {
     normalizationOpTest(ANEURALNETWORKS_L2_NORMALIZATION, ANEURALNETWORKS_TENSOR_FLOAT32);
 }
@@ -1614,6 +1618,10 @@ void localResponseNormOpTest(int32_t operandCode) {
     EXPECT_TRUE(lrnAxisTest.testMutatingInputOperandCounts());
     EXPECT_TRUE(lrnAxisTest.testMutatingOutputOperandCode());
     EXPECT_TRUE(lrnAxisTest.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, LOCAL_RESPONSE_NORMALIZATION_float16) {
+    localResponseNormOpTest(ANEURALNETWORKS_TENSOR_FLOAT16);
 }
 
 TEST(OperationValidationTest, LOCAL_RESPONSE_NORMALIZATION_float32) {
@@ -1659,4 +1667,36 @@ TEST(OperationValidationTest, ROTATED_BBOX_TRANSFORM_float32) {
     EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCode());
     EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCounts());
 }
+
+void sliceTest(int32_t operandCode) {
+    uint32_t inputDim[] = {3, 3, 3};
+    uint32_t startDim[] = {3};
+    uint32_t sizeDim[] = {3};
+    uint32_t outputDim[] = {1, 2, 3};
+
+    OperationTestBase sliceTest(ANEURALNETWORKS_SLICE,
+                                {getOpType(operandCode, 3, inputDim),
+                                 getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, startDim),
+                                 getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, sizeDim)},
+                                {getOpType(operandCode, 3, outputDim)});
+
+    EXPECT_TRUE(sliceTest.testMutatingInputOperandCode());
+    EXPECT_TRUE(sliceTest.testMutatingInputOperandCounts());
+    EXPECT_TRUE(sliceTest.testMutatingOutputOperandCode());
+    EXPECT_TRUE(sliceTest.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, SLICE_float32) {
+    sliceTest(ANEURALNETWORKS_TENSOR_FLOAT32);
+}
+TEST(OperationValidationTest, SLICE_int32) {
+    sliceTest(ANEURALNETWORKS_TENSOR_INT32);
+}
+TEST(OperationValidationTest, SLICE_uint8) {
+    sliceTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+}
+TEST(OperationValidationTest, SLICE_float16) {
+    sliceTest(ANEURALNETWORKS_TENSOR_FLOAT16);
+}
+
 }  // end namespace

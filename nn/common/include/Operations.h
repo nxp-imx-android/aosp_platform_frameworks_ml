@@ -29,6 +29,7 @@
 #include "operations/QuantizedLSTM.h"
 #include "operations/RNN.h"
 #include "operations/SVDF.h"
+#include "operations/Slice.h"
 #include "operations/Tile.h"
 #include "operations/TopK_V2.h"
 
@@ -81,6 +82,11 @@ bool depthwiseConvQuant8(const uint8_t* inputData, const Shape& inputShape,
                          int32_t strideWidth, int32_t strideHeight, int32_t depthMultiplier,
                          int32_t activation, uint8_t* outputData, const Shape& outputShape);
 
+bool convFloat16(const _Float16* inputData, const Shape& inputShape, const _Float16* filterData,
+                 const Shape& filterShape, const _Float16* biasData, const Shape& biasShape,
+                 int32_t padding_left, int32_t padding_right, int32_t padding_top,
+                 int32_t padding_bottom, int32_t stride_width, int32_t stride_height,
+                 int32_t activation, _Float16* outputData, const Shape& outputShape);
 bool convFloat32(const float* inputData, const Shape& inputShape, const float* filterData,
                  const Shape& filterShape, const float* biasData, const Shape& biasShape,
                  int32_t padding_left, int32_t padding_right, int32_t padding_top,
@@ -168,8 +174,13 @@ bool concatenation(const std::vector<const T*>& inputDataPtrs,
                    const std::vector<Shape>& inputShapes, int32_t axis, T* outputData,
                    const Shape& outputShape);
 
+bool l2normFloat16(const _Float16* inputData, const Shape& inputShape, int32_t axis,
+                   _Float16* outputData, const Shape& outputShape);
 bool l2normFloat32(const float* inputData, const Shape& inputShape, int32_t axis, float* outputData,
                    const Shape& outputShape);
+bool localResponseNormFloat16(const _Float16* inputData, const Shape& inputShape, int32_t radius,
+                              float bias, float alpha, float beta, int32_t axis,
+                              _Float16* outputData, const Shape& outputShape);
 bool localResponseNormFloat32(const float* inputData, const Shape& inputShape, int32_t radius,
                               float bias, float alpha, float beta, int32_t axis, float* outputData,
                               const Shape& outputShape);
