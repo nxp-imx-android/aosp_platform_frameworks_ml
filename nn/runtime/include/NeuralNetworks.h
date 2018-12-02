@@ -2181,6 +2181,7 @@ typedef enum {
      * The number of channels must be divisible by num_groups.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      *
@@ -2428,6 +2429,34 @@ typedef enum {
     ANEURALNETWORKS_LOGICAL_AND = 60,
     ANEURALNETWORKS_LOGICAL_NOT = 61,
     ANEURALNETWORKS_LOGICAL_OR = 62,
+
+    /**
+     * Computes the log softmax activations given logits.
+     *
+     * The output is calculated using this formula:
+     *
+     *     output = logits * beta - log(reduce_sum(exp(logits * beta), axis))
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor specifying the input logits.
+     * * 1: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the positive
+     *      scaling factor for the exponent, beta.
+     * * 2: An {@link ANEURALNETWORKS_INT32} scalar specifying the axis to
+     *      reduce across. Negative index is used to specify axis from the
+     *      end (e.g. -1 for the last axis). Must be in the range [-n, n).
+     *
+     * Outputs:
+     * * 0: The output tensor of the same {@link OperandCode} and shape as
+     *      input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_LOG_SOFTMAX = 63,
 
     /**
@@ -2827,6 +2856,7 @@ typedef enum {
      * padding.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      *
@@ -2844,9 +2874,10 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias should
-     *      also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input tensor
-     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
+     *      same type. For input tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
      *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
      *      bias_scale == input_scale * filter_scale.
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
@@ -2874,9 +2905,10 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias should
-     *      also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input tensor
-     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
+     *      same type. For input tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
      *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
      *      bias_scale == input_scale * filter_scale.
      * * 3: An {@link ANEURALNETWORKS_TENSOR_INT32} tensor, specifying the output
