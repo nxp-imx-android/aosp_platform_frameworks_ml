@@ -27,13 +27,21 @@ namespace nn {
 const OperationRegistration* register_ABS();
 const OperationRegistration* register_CHANNEL_SHUFFLE();
 const OperationRegistration* register_GATHER();
+const OperationRegistration* register_LOGICAL_AND();
+const OperationRegistration* register_LOGICAL_NOT();
+const OperationRegistration* register_LOGICAL_OR();
 const OperationRegistration* register_LOG_SOFTMAX();
+const OperationRegistration* register_PRELU();
 
 OperationResolver::OperationResolver() {
     registerOperation(register_ABS());
     registerOperation(register_CHANNEL_SHUFFLE());
     registerOperation(register_GATHER());
+    registerOperation(register_LOGICAL_AND());
+    registerOperation(register_LOGICAL_NOT());
+    registerOperation(register_LOGICAL_OR());
     registerOperation(register_LOG_SOFTMAX());
+    registerOperation(register_PRELU());
 }
 
 const OperationRegistration* OperationResolver::findOperation(OperationType operationType) const {
