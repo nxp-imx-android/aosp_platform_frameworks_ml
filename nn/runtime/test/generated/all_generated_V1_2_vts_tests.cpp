@@ -5848,6 +5848,21 @@ TEST_F(ValidationTest, expand_dims_int32) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, expand_dims_float16) {
+  generated_tests::Execute(device,
+                           expand_dims::createTestModel_float16,
+                           expand_dims::is_ignored_float16,
+                           expand_dims::get_examples_float16());
+}
+
+TEST_F(ValidationTest, expand_dims_float16) {
+  const Model model = expand_dims::createTestModel_float16();
+  const std::vector<Request> requests = createRequests(expand_dims::get_examples_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, expand_dims_2) {
   generated_tests::Execute(device,
                            expand_dims::createTestModel_2,
@@ -5903,6 +5918,21 @@ TEST_F(NeuralnetworksHidlTest, expand_dims_int32_2) {
 TEST_F(ValidationTest, expand_dims_int32_2) {
   const Model model = expand_dims::createTestModel_int32_2();
   const std::vector<Request> requests = createRequests(expand_dims::get_examples_int32_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, expand_dims_float16_2) {
+  generated_tests::Execute(device,
+                           expand_dims::createTestModel_float16_2,
+                           expand_dims::is_ignored_float16_2,
+                           expand_dims::get_examples_float16_2());
+}
+
+TEST_F(ValidationTest, expand_dims_float16_2) {
+  const Model model = expand_dims::createTestModel_float16_2();
+  const std::vector<Request> requests = createRequests(expand_dims::get_examples_float16_2());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -5968,6 +5998,21 @@ TEST_F(ValidationTest, expand_dims_int32_3) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, expand_dims_float16_3) {
+  generated_tests::Execute(device,
+                           expand_dims::createTestModel_float16_3,
+                           expand_dims::is_ignored_float16_3,
+                           expand_dims::get_examples_float16_3());
+}
+
+TEST_F(ValidationTest, expand_dims_float16_3) {
+  const Model model = expand_dims::createTestModel_float16_3();
+  const std::vector<Request> requests = createRequests(expand_dims::get_examples_float16_3());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, expand_dims_4) {
   generated_tests::Execute(device,
                            expand_dims::createTestModel_4,
@@ -6023,6 +6068,21 @@ TEST_F(NeuralnetworksHidlTest, expand_dims_int32_4) {
 TEST_F(ValidationTest, expand_dims_int32_4) {
   const Model model = expand_dims::createTestModel_int32_4();
   const std::vector<Request> requests = createRequests(expand_dims::get_examples_int32_4());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, expand_dims_float16_4) {
+  generated_tests::Execute(device,
+                           expand_dims::createTestModel_float16_4,
+                           expand_dims::is_ignored_float16_4,
+                           expand_dims::get_examples_float16_4());
+}
+
+TEST_F(ValidationTest, expand_dims_float16_4) {
+  const Model model = expand_dims::createTestModel_float16_4();
+  const std::vector<Request> requests = createRequests(expand_dims::get_examples_float16_4());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -6802,6 +6862,36 @@ TEST_F(ValidationTest, grouped_conv2d_nhwc_none_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_none_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_none_float16,
+                           grouped_conv2d::is_ignored_nhwc_none_float16,
+                           grouped_conv2d::get_examples_nhwc_none_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_none_float16) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_none_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_none_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_none_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_none_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nhwc_none_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nhwc_none_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_none_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_none_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_none_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_nhwc_relu,
@@ -6887,6 +6977,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu_quant8_weight_as_input) 
 TEST_F(ValidationTest, grouped_conv2d_nhwc_relu_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_nhwc_relu_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu_float16,
+                           grouped_conv2d::is_ignored_nhwc_relu_float16,
+                           grouped_conv2d::get_examples_nhwc_relu_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu_float16) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nhwc_relu_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nhwc_relu_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -6982,6 +7102,36 @@ TEST_F(ValidationTest, grouped_conv2d_nhwc_relu1_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu1_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu1_float16,
+                           grouped_conv2d::is_ignored_nhwc_relu1_float16,
+                           grouped_conv2d::get_examples_nhwc_relu1_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu1_float16) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu1_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu1_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu1_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nhwc_relu1_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nhwc_relu1_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu1_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu1_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu1_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu6) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_nhwc_relu6,
@@ -7067,6 +7217,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu6_quant8_weight_as_input)
 TEST_F(ValidationTest, grouped_conv2d_nhwc_relu6_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_nhwc_relu6_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu6_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu6_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu6_float16,
+                           grouped_conv2d::is_ignored_nhwc_relu6_float16,
+                           grouped_conv2d::get_examples_nhwc_relu6_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu6_float16) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu6_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu6_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nhwc_relu6_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nhwc_relu6_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nhwc_relu6_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nhwc_relu6_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nhwc_relu6_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nhwc_relu6_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nhwc_relu6_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7162,6 +7342,36 @@ TEST_F(ValidationTest, grouped_conv2d_nchw_none_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_none_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_none_float16,
+                           grouped_conv2d::is_ignored_nchw_none_float16,
+                           grouped_conv2d::get_examples_nchw_none_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_none_float16) {
+  const Model model = grouped_conv2d::createTestModel_nchw_none_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_none_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_none_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_none_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nchw_none_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nchw_none_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_none_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nchw_none_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_none_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_nchw_relu,
@@ -7247,6 +7457,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu_quant8_weight_as_input) 
 TEST_F(ValidationTest, grouped_conv2d_nchw_relu_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_nchw_relu_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu_float16,
+                           grouped_conv2d::is_ignored_nchw_relu_float16,
+                           grouped_conv2d::get_examples_nchw_relu_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu_float16) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nchw_relu_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nchw_relu_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7342,6 +7582,36 @@ TEST_F(ValidationTest, grouped_conv2d_nchw_relu1_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu1_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu1_float16,
+                           grouped_conv2d::is_ignored_nchw_relu1_float16,
+                           grouped_conv2d::get_examples_nchw_relu1_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu1_float16) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu1_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu1_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu1_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu1_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nchw_relu1_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nchw_relu1_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu1_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu1_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu1_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu6) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_nchw_relu6,
@@ -7427,6 +7697,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu6_quant8_weight_as_input)
 TEST_F(ValidationTest, grouped_conv2d_nchw_relu6_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_nchw_relu6_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu6_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu6_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu6_float16,
+                           grouped_conv2d::is_ignored_nchw_relu6_float16,
+                           grouped_conv2d::get_examples_nchw_relu6_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu6_float16) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu6_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu6_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_nchw_relu6_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_nchw_relu6_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_nchw_relu6_float16_weight_as_input,
+                           grouped_conv2d::get_examples_nchw_relu6_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_nchw_relu6_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_nchw_relu6_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_nchw_relu6_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7522,6 +7822,36 @@ TEST_F(ValidationTest, grouped_conv2d_large_nhwc_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nhwc_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_large_nhwc_float16,
+                           grouped_conv2d::is_ignored_large_nhwc_float16,
+                           grouped_conv2d::get_examples_large_nhwc_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_large_nhwc_float16) {
+  const Model model = grouped_conv2d::createTestModel_large_nhwc_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_large_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nhwc_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_large_nhwc_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_large_nhwc_float16_weight_as_input,
+                           grouped_conv2d::get_examples_large_nhwc_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_large_nhwc_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_large_nhwc_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_large_nhwc_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nchw) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_large_nchw,
@@ -7607,6 +7937,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nchw_quant8_weight_as_input)
 TEST_F(ValidationTest, grouped_conv2d_large_nchw_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_large_nchw_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_large_nchw_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nchw_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_large_nchw_float16,
+                           grouped_conv2d::is_ignored_large_nchw_float16,
+                           grouped_conv2d::get_examples_large_nchw_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_large_nchw_float16) {
+  const Model model = grouped_conv2d::createTestModel_large_nchw_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_large_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_large_nchw_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_large_nchw_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_large_nchw_float16_weight_as_input,
+                           grouped_conv2d::get_examples_large_nchw_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_large_nchw_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_large_nchw_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_large_nchw_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -7702,6 +8062,36 @@ TEST_F(ValidationTest, grouped_conv2d_channel_nhwc_quant8_weight_as_input) {
 }
 
 
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nhwc_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_channel_nhwc_float16,
+                           grouped_conv2d::is_ignored_channel_nhwc_float16,
+                           grouped_conv2d::get_examples_channel_nhwc_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_channel_nhwc_float16) {
+  const Model model = grouped_conv2d::createTestModel_channel_nhwc_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_channel_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nhwc_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_channel_nhwc_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_channel_nhwc_float16_weight_as_input,
+                           grouped_conv2d::get_examples_channel_nhwc_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_channel_nhwc_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_channel_nhwc_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_channel_nhwc_float16_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nchw) {
   generated_tests::Execute(device,
                            grouped_conv2d::createTestModel_channel_nchw,
@@ -7787,6 +8177,36 @@ TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nchw_quant8_weight_as_inpu
 TEST_F(ValidationTest, grouped_conv2d_channel_nchw_quant8_weight_as_input) {
   const Model model = grouped_conv2d::createTestModel_channel_nchw_quant8_weight_as_input();
   const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_channel_nchw_quant8_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nchw_float16) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_channel_nchw_float16,
+                           grouped_conv2d::is_ignored_channel_nchw_float16,
+                           grouped_conv2d::get_examples_channel_nchw_float16());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_channel_nchw_float16) {
+  const Model model = grouped_conv2d::createTestModel_channel_nchw_float16();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_channel_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, grouped_conv2d_channel_nchw_float16_weight_as_input) {
+  generated_tests::Execute(device,
+                           grouped_conv2d::createTestModel_channel_nchw_float16_weight_as_input,
+                           grouped_conv2d::is_ignored_channel_nchw_float16_weight_as_input,
+                           grouped_conv2d::get_examples_channel_nchw_float16_weight_as_input());
+}
+
+TEST_F(ValidationTest, grouped_conv2d_channel_nchw_float16_weight_as_input) {
+  const Model model = grouped_conv2d::createTestModel_channel_nchw_float16_weight_as_input();
+  const std::vector<Request> requests = createRequests(grouped_conv2d::get_examples_channel_nchw_float16_weight_as_input());
   validateModel(model);
   validateRequests(model, requests);
 }
