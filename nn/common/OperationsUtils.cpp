@@ -284,7 +284,8 @@ bool floorPrepare(const Shape& input, Shape* output) {
 
 bool dequantizePrepare(const Shape& input, Shape* output) {
     if (input.type != OperandType::TENSOR_QUANT8_ASYMM ||
-            output->type != OperandType::TENSOR_FLOAT32) {
+        (output->type != OperandType::TENSOR_FLOAT16 &&
+         output->type != OperandType::TENSOR_FLOAT32)) {
         LOG(ERROR) << "bad input / output operand type.";
         return false;
     }
@@ -1038,36 +1039,6 @@ bool roiAlignPrepare(const Shape& input, const float* roiData, const Shape& roiS
     output->type = input.type;
     output->dimensions = {numRois, static_cast<uint32_t>(outputShapeData[0]),
                           static_cast<uint32_t>(outputShapeData[1]), inDepth};
-    return true;
-}
-
-bool heatmapMaxKeypointPrepare(const Shape& heatmapShape, const float* boxesData,
-                               const Shape& boxesShape, Shape* output) {
-    uint32_t numBoxes = getSizeOfDimension(heatmapShape, 0);
-    uint32_t heatmapSize = getSizeOfDimension(heatmapShape, 1);
-    uint32_t numKeypoints = getSizeOfDimension(heatmapShape, 3);
-    uint32_t boxInfoLength = getSizeOfDimension(boxesShape, 1);
-
-    NN_OPS_CHECK(getNumberOfDimensions(heatmapShape) == 4);
-    NN_OPS_CHECK(getNumberOfDimensions(boxesShape) == 2);
-
-    NN_OPS_CHECK(getSizeOfDimension(heatmapShape, 2) == heatmapSize);
-    NN_OPS_CHECK(heatmapSize >= 2);
-
-    NN_OPS_CHECK(getSizeOfDimension(boxesShape, 0) == numBoxes);
-    NN_OPS_CHECK(boxInfoLength == 4);
-
-    const float* boxesDataEnd = boxesData + numBoxes * boxInfoLength;
-    for (const float* boxInfo = boxesData; boxInfo < boxesDataEnd; boxInfo += boxInfoLength) {
-        NN_OPS_CHECK(boxInfo[0] < boxInfo[2]);
-        NN_OPS_CHECK(boxInfo[1] < boxInfo[3]);
-    }
-
-    output->type = heatmapShape.type;
-    output->dimensions = {numBoxes, 3, numKeypoints};
-    output->offset = heatmapShape.offset;
-    output->scale = heatmapShape.scale;
-
     return true;
 }
 
