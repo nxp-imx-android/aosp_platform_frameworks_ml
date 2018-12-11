@@ -33,6 +33,8 @@ cc_defaults {
         "operations/LogicalNot.cpp",
         "operations/LogSoftmax.cpp",
         "operations/PRelu.cpp",
+        "operations/Reduce.cpp",
+        "operations/Select.cpp",
     ],
 }
 
