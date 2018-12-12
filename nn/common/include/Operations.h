@@ -125,6 +125,12 @@ bool l2PoolFloat32(const float* inputData, const Shape& inputShape, int32_t padd
                    int32_t stride_width, int32_t stride_height, int32_t filter_width,
                    int32_t filter_height, int32_t activation, float* outputData,
                    const Shape& outputShape);
+
+bool maxPoolFloat16(const _Float16* inputData, const Shape& inputShape, int32_t padding_left,
+                    int32_t padding_right, int32_t padding_top, int32_t padding_bottom,
+                    int32_t stride_width, int32_t stride_height, int32_t filter_width,
+                    int32_t filter_height, int32_t activation, _Float16* outputData,
+                    const Shape& outputShape);
 bool maxPoolFloat32(const float* inputData, const Shape& inputShape, int32_t padding_left,
                     int32_t padding_right, int32_t padding_top, int32_t padding_bottom,
                     int32_t stride_width, int32_t stride_height, int32_t filter_width,
@@ -277,18 +283,6 @@ bool splitInt32(const int32_t* inputData, const Shape& inputShape, const int32_t
 bool splitQuant8(const uint8_t* inputData, const Shape& inputShape, const int32_t axis,
                  const std::vector<uint8_t*>* outputDataPtrs,
                  const std::vector<Shape>& outputShapes);
-
-bool roiAlignFloat32(const float* inputData, const Shape& inputShape, const float* roiData,
-                     const Shape& roiShape, float spatialScale, int32_t samplingRatio,
-                     float* outputData, const Shape& outputShape);
-
-bool roiAlignQuant8(const uint8_t* inputData, const Shape& inputShape, const float* roiData,
-                    const Shape& roiShape, float spatialScale, int32_t samplingRatio,
-                    uint8_t* outputData, const Shape& outputShape);
-
-bool roiPoolingGeneric(const uint8_t* inputData, const Shape& inputShape, const uint8_t* roiData,
-                       const Shape& roiShape, float spatialScale, uint8_t* outputData,
-                       const Shape& outputShape);
 
 bool groupedConvFloat16(const _Float16* inputData, const Shape& inputShape,
                         const _Float16* filterData, const Shape& filterShape,

@@ -1144,6 +1144,12 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                          padding_top, padding_bottom, stride_width, stride_height,
                                          filter_width, filter_height, activation,
                                          reinterpret_cast<float*>(output_tmp.buffer), outShape);
+            } else if (input_tmp.type == OperandType::TENSOR_FLOAT16) {
+                success = maxPoolFloat16(reinterpret_cast<const _Float16*>(input_tmp.buffer),
+                                         input_tmp.shape(), padding_left, padding_right,
+                                         padding_top, padding_bottom, stride_width, stride_height,
+                                         filter_width, filter_height, activation,
+                                         reinterpret_cast<_Float16*>(output_tmp.buffer), outShape);
             } else if (input_tmp.type == OperandType::TENSOR_QUANT8_ASYMM) {
                 success = maxPoolQuant8(reinterpret_cast<const uint8_t*>(input_tmp.buffer),
                                         input_tmp.shape(), padding_left, padding_right, padding_top,
@@ -2199,98 +2205,6 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                                           input.shape(), axis, &outputDataPtrs, outputShapes);
                 } break;
                 default: { return ANEURALNETWORKS_BAD_DATA; }
-            }
-        } break;
-        case OperationType::ROI_ALIGN: {
-            if (!allParametersPresent(6, 1)) {
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            const RunTimeOperandInfo& input = mOperands[ins[0]];
-            const RunTimeOperandInfo& roi = mOperands[ins[1]];
-            const RunTimeOperandInfo& outputShape = mOperands[ins[2]];
-            const float spatialScale = getScalarData<float>(mOperands[ins[3]]);
-            const int32_t samplingRatio = getScalarData<int32_t>(mOperands[ins[4]]);
-            const bool data_layout = getScalarData<bool>(mOperands[ins[5]]);
-
-            RunTimeOperandInfo& out = mOperands[outs[0]];
-            Shape outShape = out.shape();
-
-            RunTimeOperandInfo input_tmp, out_tmp;
-            std::unique_ptr<uint8_t[]> input_tmp_guard, out_tmp_guard;
-            if (!convertToNhwc(input_tmp, input, input_tmp_guard, data_layout)) {
-                success = false;
-                break;
-            }
-            out_tmp.lifetime = OperandLifeTime::TEMPORARY_VARIABLE;
-            out_tmp.buffer = data_layout ? nullptr : out.buffer;
-
-            if (!roiAlignPrepare(input_tmp.shape(), reinterpret_cast<const float*>(roi.buffer),
-                                 roi.shape(), reinterpret_cast<const int32_t*>(outputShape.buffer),
-                                 outputShape.shape(), spatialScale, &outShape) ||
-                !setInfoAndAllocateIfNeeded(&out_tmp, outShape)) {
-                success = false;
-                break;
-            }
-
-            if (input_tmp.type == OperandType::TENSOR_FLOAT32) {
-                success = roiAlignFloat32(
-                        reinterpret_cast<const float*>(input_tmp.buffer), input_tmp.shape(),
-                        reinterpret_cast<const float*>(roi.buffer), roi.shape(), spatialScale,
-                        samplingRatio, reinterpret_cast<float*>(out_tmp.buffer), outShape);
-            } else if (input_tmp.type == OperandType::TENSOR_QUANT8_ASYMM) {
-                success = roiAlignQuant8(
-                        reinterpret_cast<const uint8_t*>(input_tmp.buffer), input_tmp.shape(),
-                        reinterpret_cast<const float*>(roi.buffer), roi.shape(), spatialScale,
-                        samplingRatio, reinterpret_cast<uint8_t*>(out_tmp.buffer), outShape);
-            }
-
-            if (data_layout) {
-                out_tmp_guard.reset(out_tmp.buffer);
-            }
-            if (!success || !convertFromNhwc(out, out_tmp, data_layout)) {
-                success = false;
-                break;
-            }
-        } break;
-        case OperationType::ROI_POOLING: {
-            if (!allParametersPresent(5, 1)) {
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            const RunTimeOperandInfo& input = mOperands[ins[0]];
-            const RunTimeOperandInfo& roi = mOperands[ins[1]];
-            const RunTimeOperandInfo& outputShape = mOperands[ins[2]];
-            const float spatialScale = getScalarData<float>(mOperands[ins[3]]);
-            const bool data_layout = getScalarData<bool>(mOperands[ins[4]]);
-
-            RunTimeOperandInfo& out = mOperands[outs[0]];
-            Shape outShape = out.shape();
-
-            RunTimeOperandInfo input_tmp, out_tmp;
-            std::unique_ptr<uint8_t[]> input_tmp_guard, out_tmp_guard;
-            if (!convertToNhwc(input_tmp, input, input_tmp_guard, data_layout)) {
-                success = false;
-                break;
-            }
-            out_tmp.lifetime = OperandLifeTime::TEMPORARY_VARIABLE;
-            out_tmp.buffer = data_layout ? nullptr : out.buffer;
-
-            if (!roiAlignPrepare(input_tmp.shape(), reinterpret_cast<const float*>(roi.buffer),
-                                 roi.shape(), reinterpret_cast<const int32_t*>(outputShape.buffer),
-                                 outputShape.shape(), spatialScale, &outShape) ||
-                !setInfoAndAllocateIfNeeded(&out_tmp, outShape)) {
-                success = false;
-                break;
-            }
-
-            success = roiPoolingGeneric(input_tmp.buffer, input_tmp.shape(), roi.buffer,
-                                        roi.shape(), spatialScale, out_tmp.buffer, outShape);
-
-            if (data_layout) {
-                out_tmp_guard.reset(out_tmp.buffer);
-            }
-            if (!success || !convertFromNhwc(out, out_tmp, data_layout)) {
-                success = false;
-                break;
             }
         } break;
         case OperationType::MAXIMUM:

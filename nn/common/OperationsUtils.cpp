@@ -136,9 +136,9 @@ bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
     NN_OPS_CHECK(double_multiplier > 0.);
     const double q = std::frexp(double_multiplier, right_shift);
     *right_shift *= -1;
-    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1ll << 31)));
-    NN_OPS_CHECK(q_fixed <= (1ll << 31));
-    if (q_fixed == (1ll << 31)) {
+    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1LL << 31)));
+    NN_OPS_CHECK(q_fixed <= (1LL << 31));
+    if (q_fixed == (1LL << 31)) {
         q_fixed /= 2;
         --*right_shift;
     }
@@ -153,9 +153,9 @@ bool QuantizeMultiplierGreaterThanOne(double double_multiplier,
                                       int* left_shift) {
     NN_OPS_CHECK(double_multiplier > 1.);
     const double q = std::frexp(double_multiplier, left_shift);
-    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1ll << 31)));
-    NN_OPS_CHECK(q_fixed <= (1ll << 31));
-    if (q_fixed == (1ll << 31)) {
+    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1LL << 31)));
+    NN_OPS_CHECK(q_fixed <= (1LL << 31));
+    if (q_fixed == (1LL << 31)) {
         q_fixed /= 2;
         ++*left_shift;
     }
@@ -236,8 +236,8 @@ void CalculateActivationRangeFloat(int32_t activation,
 
 int32_t CalculateInputRadius(int input_integer_bits, int input_left_shift) {
     const double max_input_rescaled = 1.0 * ((1 << input_integer_bits) - 1) *
-                                      (1ll << (31 - input_integer_bits)) /
-                                      (1ll << input_left_shift);
+                                      (1LL << (31 - input_integer_bits)) /
+                                      (1LL << input_left_shift);
     // Tighten bound using floor.  Suppose that we could use the exact value.
     // After scaling the difference, the result would be at the maximum.  Thus we
     // must ensure that our value has lower magnitude.
@@ -996,54 +996,6 @@ bool splitPrepare(const Shape& input, int32_t axis, int32_t numOutputs,
         output->at(i).offset = input.offset;
         output->at(i).scale = input.scale;
     }
-    return true;
-}
-
-bool roiAlignPrepare(const Shape& input, const float* roiData, const Shape& roiShape,
-                     const int32_t* outputShapeData, const Shape& outputShapeShape,
-                     const float spatialScale, Shape* output) {
-    const uint32_t kRoiDim = 4;
-
-    NN_OPS_CHECK(getNumberOfDimensions(input) == 4);
-    NN_OPS_CHECK(getNumberOfDimensions(roiShape) == 2);
-    NN_OPS_CHECK(getNumberOfDimensions(outputShapeShape) == 1);
-
-    uint32_t numBatches = getSizeOfDimension(input, 0);
-    uint32_t inHeight = getSizeOfDimension(input, 1);
-    uint32_t inWidth = getSizeOfDimension(input, 2);
-    uint32_t inDepth = getSizeOfDimension(input, 3);
-    uint32_t numRois = getSizeOfDimension(roiShape, 0);
-    uint32_t roiInfoLength = getSizeOfDimension(roiShape, 1);
-
-    NN_OPS_CHECK(roiInfoLength == (kRoiDim + 1) || (roiInfoLength == kRoiDim && numBatches == 1));
-    NN_OPS_CHECK(getSizeOfDimension(outputShapeShape, 0) == 2);
-
-    const float* roiDataEnd = roiData + numRois * roiInfoLength;
-    for (const float* roiInfo = roiData; roiInfo < roiDataEnd; roiInfo += kRoiDim) {
-        if (roiInfoLength == kRoiDim + 1) {
-            NN_OPS_CHECK(roiInfo[0] >= 0);
-            NN_OPS_CHECK(roiInfo[0] < numBatches);
-            roiInfo++;
-        }
-
-        // Check for malformed data
-        // 1. Region out of bound: x1|x2|y1|y2 < 0 || x1|x2 > inWidth || y1|y2 > inHeight
-        // 2. Invalid region: x2 <= x1 || y2 <= y1
-        NN_OPS_CHECK(roiInfo[0] >= 0);
-        NN_OPS_CHECK(roiInfo[1] >= 0);
-        NN_OPS_CHECK(roiInfo[2] >= 0);
-        NN_OPS_CHECK(roiInfo[3] >= 0);
-        NN_OPS_CHECK(roiInfo[0] * spatialScale <= inWidth);
-        NN_OPS_CHECK(roiInfo[1] * spatialScale <= inHeight);
-        NN_OPS_CHECK(roiInfo[2] * spatialScale <= inWidth);
-        NN_OPS_CHECK(roiInfo[3] * spatialScale <= inHeight);
-        NN_OPS_CHECK(roiInfo[0] < roiInfo[2]);
-        NN_OPS_CHECK(roiInfo[1] < roiInfo[3]);
-    }
-
-    output->type = input.type;
-    output->dimensions = {numRois, static_cast<uint32_t>(outputShapeData[0]),
-                          static_cast<uint32_t>(outputShapeData[1]), inDepth};
     return true;
 }
 
