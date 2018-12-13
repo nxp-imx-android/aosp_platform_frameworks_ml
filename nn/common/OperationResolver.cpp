@@ -25,8 +25,10 @@ namespace nn {
 
 // TODO(b/119608412): Find a way to not reference every operation here.
 const OperationRegistration* register_ABS();
+const OperationRegistration* register_AXIS_ALIGNED_BBOX_TRANSFORM();
 const OperationRegistration* register_CHANNEL_SHUFFLE();
 const OperationRegistration* register_EQUAL();
+const OperationRegistration* register_EXP();
 const OperationRegistration* register_GATHER();
 const OperationRegistration* register_GREATER();
 const OperationRegistration* register_GREATER_EQUAL();
@@ -37,6 +39,7 @@ const OperationRegistration* register_LOGICAL_AND();
 const OperationRegistration* register_LOGICAL_NOT();
 const OperationRegistration* register_LOGICAL_OR();
 const OperationRegistration* register_LOG_SOFTMAX();
+const OperationRegistration* register_NEG();
 const OperationRegistration* register_NOT_EQUAL();
 const OperationRegistration* register_PRELU();
 const OperationRegistration* register_REDUCE_ALL();
@@ -47,12 +50,15 @@ const OperationRegistration* register_REDUCE_PROD();
 const OperationRegistration* register_REDUCE_SUM();
 const OperationRegistration* register_ROI_ALIGN();
 const OperationRegistration* register_ROI_POOLING();
+const OperationRegistration* register_ROTATED_BBOX_TRANSFORM();
 const OperationRegistration* register_SELECT();
 
 OperationResolver::OperationResolver() {
     registerOperation(register_ABS());
+    registerOperation(register_AXIS_ALIGNED_BBOX_TRANSFORM());
     registerOperation(register_CHANNEL_SHUFFLE());
     registerOperation(register_EQUAL());
+    registerOperation(register_EXP());
     registerOperation(register_GATHER());
     registerOperation(register_GREATER());
     registerOperation(register_GREATER_EQUAL());
@@ -63,6 +69,7 @@ OperationResolver::OperationResolver() {
     registerOperation(register_LOGICAL_NOT());
     registerOperation(register_LOGICAL_OR());
     registerOperation(register_LOG_SOFTMAX());
+    registerOperation(register_NEG());
     registerOperation(register_NOT_EQUAL());
     registerOperation(register_PRELU());
     registerOperation(register_REDUCE_ALL());
@@ -73,6 +80,7 @@ OperationResolver::OperationResolver() {
     registerOperation(register_REDUCE_SUM());
     registerOperation(register_ROI_ALIGN());
     registerOperation(register_ROI_POOLING());
+    registerOperation(register_ROTATED_BBOX_TRANSFORM());
     registerOperation(register_SELECT());
 }
 

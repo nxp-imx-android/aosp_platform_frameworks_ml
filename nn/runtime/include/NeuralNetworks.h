@@ -914,6 +914,7 @@ typedef enum {
      * Projects an input to a bit vector via locality senstive hashing.
      *
      * Supported input tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
@@ -935,7 +936,7 @@ typedef enum {
      *      Tensor[1].Dim[0] == Tensor[2].Dim[0]
      * * 3: Type:
      *        Sparse:
-     *          Value LSHProjectionType_SPARSE(=3).
+     *          Value LSHProjectionType_SPARSE(=3) (since API level 29).
      *          Computed bit vector is considered to be sparse.
      *          Each output element is an int32 made up of multiple bits
      *          computed from hash functions.
@@ -963,7 +964,7 @@ typedef enum {
      *      A flattened tensor that represents projected bit vectors.
      *
      * Available since API level 27.
-     * The offset value for sparse projections was added in API level 28.
+     * The offset value for sparse projections was added in API level 29.
      */
     ANEURALNETWORKS_LSH_PROJECTION = 15,
 
@@ -2133,6 +2134,7 @@ typedef enum {
      * the image.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Inputs:
@@ -2233,6 +2235,24 @@ typedef enum {
     ANEURALNETWORKS_CHANNEL_SHUFFLE = 46,
     ANEURALNETWORKS_DETECTION_OUTPUT = 47,
     ANEURALNETWORKS_EMBEDDING_LOOKUP_SPARSE = 48,
+
+    /**
+     * Computes exponential of x element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_EXP = 49,
 
     /**
@@ -2689,7 +2709,26 @@ typedef enum {
      */
     ANEURALNETWORKS_MINIMUM = 65,
 
+    /**
+     * Computes numerical negative value element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_NEG = 66,
+
     /**
      * Computes the power of one value to another.
      *
@@ -3195,6 +3234,7 @@ typedef enum {
      * boxes with angle less than a threshold are cliped.
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Inputs:
@@ -3226,7 +3266,7 @@ typedef enum {
      *      the upper bound of the angle in degree. The bounded region
      *      (angle_bound_high - angle_bound_low) should be a multiple of 180
      *      degrees. If input5 is negative, this field is ignored.
-     * * 8: An {@link ANEURALNETWORKS_INT32} scalar, specifying the angle
+     * * 8: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the angle
      *      threshold for box clipping. For all bounding boxes with absolute
      *      value of angle less than the threshold, they are considered to be
      *      almost upright and will be clipped against the image edges. Set
