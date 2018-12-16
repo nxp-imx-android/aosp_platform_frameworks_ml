@@ -72,7 +72,7 @@ typedef enum {
     /** A tensor of 32 bit integer values. */
     ANEURALNETWORKS_TENSOR_INT32 = 4,
     /**
-     * A tensor of 8 bit integers that represent real numbers.
+     * A tensor of 8 bit unsigned integers that represent real numbers.
      *
      * Attached to this tensor are two numbers that be used to convert the
      * 8 bit integer to the real value and vice versa. These two numbers are:
@@ -80,7 +80,7 @@ typedef enum {
      * - zeroPoint: a 32 bit integer, in range [0, 255].
      *
      * The formula is:
-     * real_value = (integer_value - zeroPoint) * scale.
+     *   real_value = (integer_value - zeroPoint) * scale.
      */
     ANEURALNETWORKS_TENSOR_QUANT8_ASYMM = 5,
     /**
@@ -125,6 +125,31 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_FLOAT16 = 10,
+    /**
+     * A tensor of 8 bit signed integers that represent real numbers.
+     *
+     * This tensor is associated with additional fields that can
+     * be used to convert the 8 bit signed integer to the real value and vice versa.
+     * These fields are:
+     * - channelDim: a 32 bit unsigned integer indicating channel dimension.
+     * - scales: an array of positive 32 bit floating point values.
+     * The size of the scales array must be equal to dimensions[channelDim].
+     * These fields are located inside Operand's extraParams union, inside the
+     * {@link ANeuralNetworksSymmPerChannelQuantParams} struct.
+     *
+     * An Operand of this type must use 'channelQuant' field of its extraParams
+     * union.
+     *
+     * The channel dimension of this tensor must not be unknown (dimensions[channelDim] != 0).
+     *
+     * The formula is:
+     * realValue[..., C, ...] =
+     *     integerValue[..., C, ...] * scales[C]
+     * where C is an index in the Channel dimension.
+     *
+     * Available since API level 29.
+     */
+    ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL = 11,
 } OperandCode;
 
 /**
@@ -308,10 +333,24 @@ typedef enum {
      *             filter[channel, di, dj, k]
      *         ) + bias[channel]
      *
-     * Supported tensor {@link OperandCode}:
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * Supported tensor {@link OperandCode} configurations:
+     * * 32 bit Floating point :
+     * * * {@link ANEURALNETWORKS_TENSOR_FLOAT32} for input, filter, output, and bias.
+     *
+     * * Quantized:
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} for input, filter, and output.
+     * * * {@link ANEURALNETWORKS_TENSOR_INT32} for bias (with scale set to
+     * * * input.scale * filter.scale).
+     *
+     * Available since API level 29:
+     * * Quantized with symetric per channel quantization for the filter:
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} for input, and output.
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+     * * * {@link ANEURALNETWORKS_TENSOR_INT32} for bias (scale set to 0.0,
+     * * * each value scaling is seperate and equal to input.scale * filter.scales[channel]).
+     *
+     * * 16 bit Floating point:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} for input, filter, output, and bias.
      *
      * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
      * With the default data layout NHWC, the data is stored in the order of:
@@ -325,14 +364,19 @@ typedef enum {
      *      specifying the input.
      * * 1: A 4-D tensor, of shape
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
-     *      filter.
+     *      filter. For tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
+     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
-     *      type. For input tensor of type
-     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias must be
-     *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-     *      bias_scale == input_scale * filter_scale.
+     *      type. For filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM},
+     *      the bias should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint
+     *      of 0 and bias_scale == input_scale * filter_scale. For filter tensor
+     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}, the bias
+     *      should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of
+     *      0 and bias_scale of 0. The actual scale of each value 'i' is equal to
+     *      bias_scale[i] = input_scale * filter_scale[i].
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
      *      the left, in the ‘width’ dimension.
      * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
@@ -357,14 +401,19 @@ typedef enum {
      *      specifying the input.
      * * 1: A 4-D tensor, of shape
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
-     *      filter.
+     *      filter. For tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
+     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
-     *      type. For input tensor of type
-     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias must be
-     *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-     *      bias_scale == input_scale * filter_scale.
+     *      type. For filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM},
+     *      the bias should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint
+     *      of 0 and bias_scale == input_scale * filter_scale. For filter tensor
+     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}, the bias
+     *      should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of
+     *      0 and bias_scale of 0. The actual scale of each value 'i' is equal to
+     *      bias_scale[i] = input_scale * filter_scale[i].
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the implicit
      *      padding scheme, has to be one of the
      *      {@link PaddingCode} values.
@@ -383,7 +432,9 @@ typedef enum {
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth_out]. For output tensor of
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the following condition
-     *      must be satisfied: output_scale > input_scale * filter_scale.
+     *      must be satisfied: output_scale > input_scale * filter_scale (for
+     *      filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}
+     *      this condition must be true for all filter scales).
      *
      * Available since API level 27.
      */
@@ -2574,6 +2625,24 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_LESS_EQUAL = 58,
+
+    /**
+     * Computes natural logarithm of x element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_LOG = 59,
 
     /**
@@ -2978,7 +3047,26 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_ROI_ALIGN = 74,
+
+    /**
+     * Computes reciprocal of square root of x element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_RSQRT = 75,
+
     /**
      * Using a tensor of booleans c and input tensors x and y select values
      * elementwise from both input tensors:
@@ -3006,7 +3094,26 @@ typedef enum {
      *
      */
     ANEURALNETWORKS_SELECT = 76,
+
+    /**
+     * Computes sin of x element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_SIN = 77,
+
     /**
      * Extracts a slice of specified size from the input tensor starting at a
      * specified location.
@@ -3041,6 +3148,40 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_SLICE = 78,
+
+    /**
+     * Converts a sparse tensor representation into a dense tensor.
+     *
+     * If sparse_indices is a vector, then for each i:
+     * dense[sparse_indices[i]] = sparse_values[i]
+     *
+     * If sparse_indices is an n by d matrix, then for each i in [0, n):
+     * dense[sparse_indices[i][0], ..., sparse_indices[i][d-1]] = sparse_values[i]
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     *
+     * Inputs:
+     * * 0: A 1-D or 2-D tensor of type {@link ANEURALNETWORKS_INT32} containing
+     *      indices of the sparse tensor elements.
+     * * 1: A 1-D tensor of type {@link ANEURALNETWORKS_INT32} containing shape
+     *      of the dense output tensor.
+     * * 2: A 1-D tensor of any type listed above in supported types section.
+     *      Contains values corresponding to each index in input0.
+     * * 3: A scalar value of the same type as values in input2. If input2 is of
+     *      type {@link ANEURALNETWORKS_QUANT8_ASYMM}, the scalar should be of
+     *      type {@link ANEURALNETWORKS_INT32} lying in a range of [0, 256).
+     *      The value is used to populate all the elements of the dense tensor
+     *      except for the ones listed in sparse values.
+     *
+     * Outputs:
+     * * 0: Resulting dense tensor.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_SPARSE_TO_DENSE = 79,
 
     /**
@@ -3068,6 +3209,23 @@ typedef enum {
      */
     ANEURALNETWORKS_SPLIT = 80,
 
+    /**
+     * Computes square root of x element-wise.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: from 1.
+     *
+     * Inputs:
+     * * 0: A tensor.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape as input0.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_SQRT = 81,
 
     /**
@@ -3826,6 +3984,18 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
 typedef struct ANeuralNetworksExecution ANeuralNetworksExecution;
 
 /**
+ * Parameters for ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL operand.
+ */
+typedef struct ANeuralNetworksSymmPerChannelQuantParams {
+    /** The array of scaling values for each channel. Each value must be greater than zero. */
+    const float* scales;
+    /** The size of the scale array. Should be equal to dimension[channelDim] of the Operand. */
+    uint32_t scaleCount;
+    /* The index of the channel dimension. */
+    uint32_t channelDim;
+} ANeuralNetworksSymmPerChannelQuantParams;
+
+/**
  * ANeuralNetworksOperandType describes the type of an operand.
  * This structure is used to describe both scalars and tensors.
  *
@@ -3881,6 +4051,36 @@ typedef struct ANeuralNetworksOperandType {
      */
     float scale;
     int32_t zeroPoint;
+
+    // This struct was extended with additional fields in API29, changing this struct
+    // size. For binary compatibility with pre-API29 code, fields below this comment
+    // must not be accessed by the runtime if there is no guarantee that client compiled
+    // against API29+.
+    // Usage of operand types that were added in API29 is a strong signal that this is
+    // true. Fields below this comment should be accessed only if tensor type is set to
+    // - ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL
+    // - ANEURALNETWORKS_TENSOR_FLOAT16
+    // - ANEURALNETWORKS_TENSOR_QUANT16_SYMM
+    // - ANEURALNETWORKS_BOOL
+    // ExtraParams is aligned to a byte to prevent binary compatibility problems that may
+    // arise from extending it with new fields. In particular, we want to avoid altering
+    // ANeuralNetorksOperandType alignment.
+    /**
+     * Union of extra parameters, used by some types of Operands that need additional
+     * information for the complete definition of an Operand.
+     *
+     * Available since API level 29.
+     */
+    union ExtraParams {
+        /** Must be set to null if no extra params are expected
+         * (only if compiled against API level 29 and later). */
+        const void* none;
+
+        /** Used with {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}
+         * operand type.
+         */
+        ANeuralNetworksSymmPerChannelQuantParams channelQuant;
+    } __attribute__((aligned(1))) extraParams;
 } ANeuralNetworksOperandType;
 
 typedef int32_t ANeuralNetworksOperationType;
