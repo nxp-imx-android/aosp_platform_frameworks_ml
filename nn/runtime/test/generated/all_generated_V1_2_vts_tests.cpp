@@ -18516,6 +18516,29 @@ TEST_F(ValidationTest, resize_bilinear_v1_2_nchw_float16_2) {
 }
 
 
+// Generated from: rnn_float16.mod.py.
+namespace rnn_float16 {
+// Generated rnn_float16 test
+#include "examples/rnn_float16.example.cpp"
+// Generated model constructor
+#include "vts_models/rnn_float16.model.cpp"
+} // namespace rnn_float16
+
+TEST_F(NeuralnetworksHidlTest, rnn_float16) {
+  generated_tests::Execute(device,
+                           rnn_float16::createTestModel,
+                           rnn_float16::is_ignored,
+                           rnn_float16::get_examples());
+}
+
+TEST_F(ValidationTest, rnn_float16) {
+  const Model model = rnn_float16::createTestModel();
+  const std::vector<Request> requests = createRequests(rnn_float16::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
 // Generated from: roi_align.mod.py.
 namespace roi_align {
 // Generated roi_align test
@@ -25712,6 +25735,52 @@ TEST_F(NeuralnetworksHidlTest, sub_quantized_different_scales_64) {
 TEST_F(ValidationTest, sub_quantized_different_scales_64) {
   const Model model = sub_quantized_different_scales::createTestModel_64();
   const std::vector<Request> requests = createRequests(sub_quantized_different_scales::get_examples_64());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+// Generated from: svdf_float16.mod.py.
+namespace svdf_float16 {
+// Generated svdf_float16 test
+#include "examples/svdf_float16.example.cpp"
+// Generated model constructor
+#include "vts_models/svdf_float16.model.cpp"
+} // namespace svdf_float16
+
+TEST_F(NeuralnetworksHidlTest, svdf_float16) {
+  generated_tests::Execute(device,
+                           svdf_float16::createTestModel,
+                           svdf_float16::is_ignored,
+                           svdf_float16::get_examples());
+}
+
+TEST_F(ValidationTest, svdf_float16) {
+  const Model model = svdf_float16::createTestModel();
+  const std::vector<Request> requests = createRequests(svdf_float16::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+// Generated from: svdf_state_float16.mod.py.
+namespace svdf_state_float16 {
+// Generated svdf_state_float16 test
+#include "examples/svdf_state_float16.example.cpp"
+// Generated model constructor
+#include "vts_models/svdf_state_float16.model.cpp"
+} // namespace svdf_state_float16
+
+TEST_F(NeuralnetworksHidlTest, svdf_state_float16) {
+  generated_tests::Execute(device,
+                           svdf_state_float16::createTestModel,
+                           svdf_state_float16::is_ignored,
+                           svdf_state_float16::get_examples());
+}
+
+TEST_F(ValidationTest, svdf_state_float16) {
+  const Model model = svdf_state_float16::createTestModel();
+  const std::vector<Request> requests = createRequests(svdf_state_float16::get_examples());
   validateModel(model);
   validateRequests(model, requests);
 }
