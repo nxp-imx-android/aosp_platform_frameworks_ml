@@ -462,9 +462,21 @@ typedef enum {
      *             filter[1, di, dj, k * channel_multiplier + q]
      *         ) + bias[k * channel_multiplier + q]
      *
-     * Supported tensor {@link OperandCode}:
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * Supported tensor {@link OperandCode} configurations:
+     * * 32 bit Floating point :
+     * * * {@link ANEURALNETWORKS_TENSOR_FLOAT32} for input, filter, output, and bias.
+     *
+     * * Quantized:
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} for input, filter, and output.
+     * * * {@link ANEURALNETWORKS_TENSOR_INT32} for bias (with scale set to
+     * * * input.scale * filter.scale).
+     *
+     * Available since API level 29:
+     * * Quantized with symetric per channel quantization for the filter:
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} for input, and output.
+     * * * {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+     * * * {@link ANEURALNETWORKS_TENSOR_INT32} for bias (scale set to 0.0,
+     * * * each value scaling is seperate and equal to input.scale * filter.scales[channel]).
      *
      * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
      * With the default data layout NHWC, the data is stored in the order of:
@@ -477,13 +489,19 @@ typedef enum {
      * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
      *      specifying the input.
      * * 1: A 4-D tensor, of shape [1, filter_height, filter_width, depth_out],
-     *      specifying the filter.
+     *      specifying the filter. For tensor of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
+     *      dimension (extraParams.channelQuant.channelDim) must be set to 3.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias should
-     *      also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input tensor
-     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
-     *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-     *      bias_scale == input_scale * filter_scale.
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
+     *      type. For filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM},
+     *      the bias should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint
+     *      of 0 and bias_scale == input_scale * filter_scale. For filter tensor
+     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}, the bias
+     *      should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of
+     *      0 and bias_scale of 0. The actual scale of each value 'i' is equal to
+     *      bias_scale[i] = input_scale * filter_scale[i].
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
      *      the left, in the ‘width’ dimension.
      * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
@@ -511,11 +529,15 @@ typedef enum {
      * * 1: A 4-D tensor, of shape [1, filter_height, filter_width, depth_out],
      *      specifying the filter.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-     *      tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias should
-     *      also be of {@link ANEURALNETWORKS_TENSOR_FLOAT32}. For input tensor
-     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
-     *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-     *      bias_scale == input_scale * filter_scale.
+     *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
+     *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
+     *      type. For filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM},
+     *      the bias should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint
+     *      of 0 and bias_scale == input_scale * filter_scale. For filter tensor
+     *      of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}, the bias
+     *      should be of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of
+     *      0 and bias_scale of 0. The actual scale of each value 'i' is equal to
+     *      bias_scale[i] = input_scale * filter_scale[i].
      * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the implicit
      *      padding scheme, has to be one of the
      *      {@link PaddingCode} values.
@@ -536,7 +558,9 @@ typedef enum {
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth_out]. For output tensor of
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the following condition
-     *      must be satisfied: output_scale > input_scale * filter_scale.
+     *      must be satisfied: output_scale > input_scale * filter_scale (for
+     *      filter tensor of {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}
+     *      this condition must be true for all filter scales).
      *
      * Available since API level 27.
      */
@@ -2281,6 +2305,64 @@ typedef enum {
      */
     ANEURALNETWORKS_CHANNEL_SHUFFLE = 46,
     ANEURALNETWORKS_DETECTION_OUTPUT = 47,
+
+    /**
+     * Op that looks up items from a sparse tensor in an embedding matrix.
+     * The sparse lookup tensor is represented by three individual tensors:
+     * lookupIds, indices, and denseShape. The representation assumes that the
+     * corresponding dense tensor would satisfy:
+     * * dense.shape = denseShape
+     * * dense[indices[i][0], ..., indices[i][n]] = lookupIds[i]
+     *
+     * The op also assumes that indices in the representation are sorted.
+     *
+     * For each row in the dense tensor represented by indices, the op looks up
+     * the embeddings for all ids in that row, multiplies them by the
+     * corresponding weight, and combines these embeddings as specified.
+     *
+     * In other words, if
+     *     shape(params) = [p0, p1, ..., pm]
+     * and
+     *     denseShape = [d0, d1, ..., dn]
+     * then
+     *     shape(output) = [d0, d1, ..., dn-1, p1, ..., pm].
+     *
+     * For instance, if params is a 10x20 matrix, and ids and weights are
+     *     [0, 0]: id 1, weight 2.0
+     *     [0, 1]: id 3, weight 0.5
+     *     [1, 0]: id 0, weight 1.0
+     *     [2, 3]: id 1, weight 3.0
+     *
+     * with combiner="mean", then the output will be a 3x20 matrix where
+     *     output[0, :] = (params[1, :] * 2.0 + params[3, :] * 0.5) / (2.0 + 0.5)
+     *     output[1, :] = (params[0, :] * 1.0) / 1.0
+     *     output[2, :] = (params[1, :] * 3.0) / 3.0
+     *
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Inputs:
+     * * 0: A 1-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     *      containing lookupIds.
+     * * 1: A 2-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     *      containing indices of the lookupIds in sparse lookup tensor.
+     * * 2: A 1-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     *      containing shape of dense tensor corresponding to the input sparse
+     *      tensor.
+     * * 3: A 1-D tensor of the same type as input5 containing weights for
+     *      aggregation.
+     * * 4: An {@link ANEURAL_NETWORKS_INT32} scalar, representing aggregation
+     *      mode for an operation.
+     *      * 0 corresponds to SUM
+     *      * 1 corresponds to MEAN
+     *      * 2 corresponds to SQRTN
+     * * 5: An N-D tensor (N >= 2) of one of supported types. Contains
+     *      embeddings to look up.
+     * Outputs:
+     * * 0: An n-D output tensor of the same type as input5.
+     */
     ANEURALNETWORKS_EMBEDDING_LOOKUP_SPARSE = 48,
 
     /**
