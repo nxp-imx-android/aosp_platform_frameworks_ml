@@ -3086,7 +3086,7 @@ typedef enum {
      * The region of interest is represented by its upper-left corner coordinate
      * (x1,y1) and lower-right corner coordinate (x2,y2) in the original image.
      * A spatial scaling factor is applied to map into feature map coordinate.
-     * A valid region of interest should satisfy x1 < x2 and y1 < y2.
+     * A valid region of interest should satisfy x1 <= x2 and y1 <= y2.
      *
      * No rounding is applied in this operation. The sampling points are unified
      * distributed in the pooling bin and their values are calculated by bilinear
@@ -3108,14 +3108,21 @@ typedef enum {
      *      of the regions of interest, each line with format
      *      [<optional batch_id>, x1, y1, x2, y2]. The batch_id is optional if
      *      there is only one batch.
-     * * 2: A 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32},
-     *      specifying the size of the output tensor [out_height, out_width].
-     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
-     *      scaling factor from original image to feature map.
-     * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the number of
-     *      sampling points used to compute the output. Set to 0 for adaptive
-     *      value of ceil(roi_width/out_width) and ceil(roi_height/out_height).
-     * * 5: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
+     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      height of the output tensor.
+     * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      width of the output tensor.
+     * * 4: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
+     *      scaling factor from the height of original image to feature map.
+     * * 5: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
+     *      scaling factor from the width of original image to feature map.
+     * * 6: An {@link ANEURALNETWORKS_INT32} scalar, specifying the number of
+     *      sampling points in height dimension used to compute the output.
+     *      Set to 0 for adaptive value of ceil(roi_height/out_height).
+     * * 7: An {@link ANEURALNETWORKS_INT32} scalar, specifying the number of
+     *      sampling points in width dimension used to compute the output.
+     *      Set to 0 for adaptive value of ceil(roi_width/out_width).
+     * * 8: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
      *      NCHW data layout for input0 and output0. Set to false for NHWC.
      *
      * Outputs:
@@ -3546,7 +3553,7 @@ typedef enum {
      * The region of interest is represented by its upper-left corner coordinate
      * (x1,y1) and lower-right corner coordinate (x2,y2) in the original image.
      * A spatial scaling factor is applied to map into feature map coordinate.
-     * A valid region of interest should satisfy x1 < x2 and y1 < y2.
+     * A valid region of interest should satisfy x1 <= x2 and y1 <= y2.
      *
      * Rounding is applied in this operation to ensure integer boundary for
      * regions of interest and pooling bins.
@@ -3567,11 +3574,15 @@ typedef enum {
      *      of the regions of interest, each line with format
      *      [<optional batch_id>, x1, y1, x2, y2]. The batch_id is optional if
      *      there is only one batch.
-     * * 2: A 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32},
-     *      specifying the size of the output tensor [out_height, out_width].
-     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
-     *      scaling factor from original image to feature map.
-     * * 4: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
+     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      height of the output tensor.
+     * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      width of the output tensor.
+     * * 4: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
+     *      scaling factor from the height of original image to feature map.
+     * * 5: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the spatial
+     *      scaling factor from the width of original image to feature map.
+     * * 6: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
      *      NCHW data layout for input0 and output0. Set to false for NHWC.
      *
      * Outputs:
@@ -3772,6 +3783,50 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_REDUCE_ALL = 96,
+
+    /**
+     * Applies instance normalization to the input tensor.
+     *
+     * The values in the output tensor are computed as:
+     *
+     *     output[b, h, w, c] =
+     *         (input[b, h, w, c] - mean[b, c]) * gamma /
+     *         sqrt(var[b, c] + epsilon) + beta
+     *
+     * Where the mean and variance are computed across the spatial dimensions:
+     *
+     *     mean[b, c] =
+     *         sum_{h, w}(input[b, h, w, c]) / sum(1)
+     *
+     *     var[b, c] =
+     *         sum_{h, w}(pow(input[b, h, w, c] - mean[b, c], 2)) / sum(1)
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
+     * With the default data layout NHWC, the data is stored in the order of:
+     * [batch, height, width, channels]. Alternatively, the data layout could
+     * be NCHW, the data storage order of: [batch, channels, height, width].
+     *
+     * Inputs:
+     * * 0: An n-D tensor, specifying the tensor to be normalized.
+     * * 1: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying gamma, the
+     *      scale applied to the normalized tensor.
+     * * 2: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying beta, the
+     *      offset applied to the normalized tensor.
+     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying epsilon, the
+     *      small value added to variance to avoid dividing by zero.
+     * * 4: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
+     *      NCHW data layout for input0 and output0. Set to false for NHWC.
+     *
+     * Outputs:
+     * * 0: A tensor of the same {@link OperandCode} and same shape as input0.
+     *
+     * Available since API level 29.
+     */
+    ANEURALNETWORKS_INSTANCE_NORMALIZATION = 97,
 } OperationCode;
 
 /**
