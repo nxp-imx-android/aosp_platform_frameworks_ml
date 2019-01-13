@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "NeuralNetworksWrapper.h"
 #include "NeuralNetworksOEM.h"
+#include "NeuralNetworksWrapper.h"
 
 #include <gtest/gtest.h>
 #include <optional>
@@ -52,61 +52,61 @@ struct OperandTypeWithExtraParams {
 };
 
 class OperationTestBase {
-public:
- OperationTestBase(ANeuralNetworksOperationType opCode,
-                   std::vector<ANeuralNetworksOperandType> validInputs,
-                   std::vector<ANeuralNetworksOperandType> validOutputs)
-     : mOpCode(opCode) {
-     for (ANeuralNetworksOperandType input : validInputs) {
-         mValidInputs.push_back(input);
-     }
-     for (ANeuralNetworksOperandType output : validOutputs) {
-         mValidOutputs.push_back(output);
-     }
- }
+   public:
+    OperationTestBase(ANeuralNetworksOperationType opCode,
+                      std::vector<ANeuralNetworksOperandType> validInputs,
+                      std::vector<ANeuralNetworksOperandType> validOutputs)
+        : mOpCode(opCode) {
+        for (ANeuralNetworksOperandType input : validInputs) {
+            mValidInputs.push_back(input);
+        }
+        for (ANeuralNetworksOperandType output : validOutputs) {
+            mValidOutputs.push_back(output);
+        }
+    }
 
- void setInputSymmPerChannelQuantParams(
-         int32_t index, const ANeuralNetworksSymmPerChannelQuantParams& channelQuant) {
-     mValidInputs[index].channelQuant = channelQuant;
- }
+    void setInputSymmPerChannelQuantParams(
+            int32_t index, const ANeuralNetworksSymmPerChannelQuantParams& channelQuant) {
+        mValidInputs[index].channelQuant = channelQuant;
+    }
 
- void setOutputSymmPerChannelQuantParams(
-         int32_t index, const ANeuralNetworksSymmPerChannelQuantParams& channelQuant) {
-     mValidOutputs[index].channelQuant = channelQuant;
- }
+    void setOutputSymmPerChannelQuantParams(
+            int32_t index, const ANeuralNetworksSymmPerChannelQuantParams& channelQuant) {
+        mValidOutputs[index].channelQuant = channelQuant;
+    }
 
- // Add each operand separately and add the operation using these operands.
- // This function does not cover the cases that an operand is used mutiple times.
- int32_t addOperation(const std::vector<OperandTypeWithExtraParams>& inputs,
-                      const std::vector<OperandTypeWithExtraParams>& outputs) {
-     ANeuralNetworksModel* model = nullptr;
-     ANeuralNetworksModel_create(&model);
+    // Add each operand separately and add the operation using these operands.
+    // This function does not cover the cases that an operand is used mutiple times.
+    int32_t addOperation(const std::vector<OperandTypeWithExtraParams>& inputs,
+                         const std::vector<OperandTypeWithExtraParams>& outputs) {
+        ANeuralNetworksModel* model = nullptr;
+        ANeuralNetworksModel_create(&model);
 
-     uint32_t opIdx = 0;
-     std::vector<uint32_t> inputIds;
-     std::vector<uint32_t> outputIds;
-     for (uint32_t i = 0; i < inputs.size(); i++) {
-         ANeuralNetworksModel_addOperand(model, &inputs[i].operandType);
-         if (inputs[i].channelQuant) {
-             ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
-                     model, opIdx, &inputs[i].channelQuant.value());
-         }
-         inputIds.push_back(opIdx++);
-     }
-     for (uint32_t i = 0; i < outputs.size(); i++) {
-         ANeuralNetworksModel_addOperand(model, &outputs[i].operandType);
-         if (outputs[i].channelQuant) {
-             ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
-                     model, opIdx, &outputs[i].channelQuant.value());
-         }
-         outputIds.push_back(opIdx++);
-     }
+        uint32_t opIdx = 0;
+        std::vector<uint32_t> inputIds;
+        std::vector<uint32_t> outputIds;
+        for (uint32_t i = 0; i < inputs.size(); i++) {
+            ANeuralNetworksModel_addOperand(model, &inputs[i].operandType);
+            if (inputs[i].channelQuant) {
+                ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
+                        model, opIdx, &inputs[i].channelQuant.value());
+            }
+            inputIds.push_back(opIdx++);
+        }
+        for (uint32_t i = 0; i < outputs.size(); i++) {
+            ANeuralNetworksModel_addOperand(model, &outputs[i].operandType);
+            if (outputs[i].channelQuant) {
+                ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
+                        model, opIdx, &outputs[i].channelQuant.value());
+            }
+            outputIds.push_back(opIdx++);
+        }
 
-     int32_t result = ANeuralNetworksModel_addOperation(
-             model, mOpCode, static_cast<uint32_t>(inputIds.size()), inputIds.data(),
-             static_cast<uint32_t>(outputIds.size()), outputIds.data());
-     ANeuralNetworksModel_free(model);
-     return result;
+        int32_t result = ANeuralNetworksModel_addOperation(
+                model, mOpCode, static_cast<uint32_t>(inputIds.size()), inputIds.data(),
+                static_cast<uint32_t>(outputIds.size()), outputIds.data());
+        ANeuralNetworksModel_free(model);
+        return result;
     }
 
     bool testMutatingInputOperandCode() {
@@ -148,6 +148,14 @@ public:
                          originalOperandCode == ANEURALNETWORKS_INT32)) {
                         continue;
                     }
+                }
+
+                // QUANTIZE supports both types below and its output type does
+                // not depend on the input type.
+                if (mOpCode == ANEURALNETWORKS_QUANTIZE && i == 0 &&
+                    (newOperandCode == ANEURALNETWORKS_TENSOR_FLOAT16 ||
+                     newOperandCode == ANEURALNETWORKS_TENSOR_FLOAT32)) {
+                    continue;
                 }
 
                 newType.operandType.type = newOperandCode;
@@ -218,7 +226,7 @@ public:
         return true;
     }
 
-private:
+   private:
     ANeuralNetworksOperationType mOpCode;
     // The dimensions in the ANeuralNetworksOperandType must outlive the test object.
     std::vector<OperandTypeWithExtraParams> mValidInputs;
@@ -263,6 +271,31 @@ TEST(OperationValidationTest, DEQUANTIZE_float32) {
     EXPECT_TRUE(dequantizeTest.testMutatingInputOperandCounts());
     EXPECT_TRUE(dequantizeTest.testMutatingOutputOperandCode());
     EXPECT_TRUE(dequantizeTest.testMutatingOutputOperandCounts());
+}
+
+void quantizeOpTest(int32_t operandCode) {
+    uint32_t inputDimensions[4] = {2, 2, 2, 2};
+    ANeuralNetworksOperandType input = {
+            .type = operandCode, .dimensionCount = 4, .dimensions = inputDimensions};
+    ANeuralNetworksOperandType output = {.type = ANEURALNETWORKS_TENSOR_QUANT8_ASYMM,
+                                         .dimensionCount = 4,
+                                         .dimensions = inputDimensions,
+                                         .scale = 1.0f,
+                                         .zeroPoint = 0};
+    OperationTestBase test(ANEURALNETWORKS_QUANTIZE, {input}, {output});
+
+    EXPECT_TRUE(test.testMutatingInputOperandCode());
+    EXPECT_TRUE(test.testMutatingInputOperandCounts());
+    EXPECT_TRUE(test.testMutatingOutputOperandCode());
+    EXPECT_TRUE(test.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, QUANTIZE_float16) {
+    quantizeOpTest(ANEURALNETWORKS_TENSOR_FLOAT16);
+}
+
+TEST(OperationValidationTest, QUANTIZE_float32) {
+    quantizeOpTest(ANEURALNETWORKS_TENSOR_FLOAT32);
 }
 
 void simpleMathOpTest(ANeuralNetworksOperationType operationCode, int32_t operandCode) {
@@ -521,10 +554,10 @@ TEST(OperationValidationTest, LOGISTIC_quant8) {
 void softmaxOpTest(int32_t operandCode) {
     uint32_t inputDimensions[4] = {2, 2, 2, 2};
     ANeuralNetworksOperandType input = {.type = operandCode,
-                                         .dimensionCount = 4,
-                                         .dimensions = inputDimensions,
-                                         .scale = 0.0f,
-                                         .zeroPoint = 0};
+                                        .dimensionCount = 4,
+                                        .dimensions = inputDimensions,
+                                        .scale = 0.0f,
+                                        .zeroPoint = 0};
     if (operandCode == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM) {
         input.scale = 1.f / 256;
     }
@@ -590,11 +623,8 @@ void poolingOpTest(ANeuralNetworksOperationType operationCode, int32_t operandCo
     ANeuralNetworksOperandType activation = scalar;
 
     OperationTestBase explicitPoolingTest(operationCode,
-                                          {input,
-                                           padLeft, padRight, padTop, padBottom,
-                                           strideWidth, strideHeight,
-                                           filterWidth, filterHeight,
-                                           activation},
+                                          {input, padLeft, padRight, padTop, padBottom, strideWidth,
+                                           strideHeight, filterWidth, filterHeight, activation},
                                           {output});
 
     EXPECT_TRUE(explicitPoolingTest.testMutatingInputOperandCode());
@@ -603,13 +633,10 @@ void poolingOpTest(ANeuralNetworksOperationType operationCode, int32_t operandCo
     EXPECT_TRUE(explicitPoolingTest.testMutatingOutputOperandCounts());
 
     ANeuralNetworksOperandType padImplicit = scalar;
-    OperationTestBase implicitPoolingTest(operationCode,
-                                          {input,
-                                           padImplicit,
-                                           strideWidth, strideHeight,
-                                           filterWidth, filterHeight,
-                                           activation},
-                                          {output});
+    OperationTestBase implicitPoolingTest(
+            operationCode,
+            {input, padImplicit, strideWidth, strideHeight, filterWidth, filterHeight, activation},
+            {output});
 
     EXPECT_TRUE(implicitPoolingTest.testMutatingInputOperandCode());
     EXPECT_TRUE(implicitPoolingTest.testMutatingInputOperandCounts());
@@ -898,10 +925,8 @@ void convOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
     ANeuralNetworksOperandType activation = scalar;
 
     OperationTestBase explicitConvTest(ANEURALNETWORKS_CONV_2D,
-                                       {input, filter, bias,
-                                        padLeft, padRight, padTop, padBottom,
-                                        strideWidth, strideHeight,
-                                        activation},
+                                       {input, filter, bias, padLeft, padRight, padTop, padBottom,
+                                        strideWidth, strideHeight, activation},
                                        {output});
     if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
         explicitConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
@@ -913,12 +938,9 @@ void convOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
     EXPECT_TRUE(explicitConvTest.testMutatingOutputOperandCounts());
 
     ANeuralNetworksOperandType padImplicit = scalar;
-    OperationTestBase implicitConvTest(ANEURALNETWORKS_CONV_2D,
-                                       {input, filter, bias,
-                                        padImplicit,
-                                        strideWidth, strideHeight,
-                                        activation},
-                                       {output});
+    OperationTestBase implicitConvTest(
+            ANEURALNETWORKS_CONV_2D,
+            {input, filter, bias, padImplicit, strideWidth, strideHeight, activation}, {output});
     if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
         implicitConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
     }
@@ -966,6 +988,9 @@ void convOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
             {input, filter, bias, padLeft, padRight, padTop, padBottom, strideWidth, strideHeight,
              activation, layout, dilationWidthFactor, dilationHeightFactor},
             {output});
+    if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+        explicitDilateConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
+    }
 
     EXPECT_TRUE(explicitDilateConvTest.testMutatingInputOperandCode());
     EXPECT_TRUE(explicitDilateConvTest.testMutatingInputOperandCounts());
@@ -977,6 +1002,9 @@ void convOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
             {input, filter, bias, padImplicit, strideWidth, strideHeight, activation, layout,
              dilationWidthFactor, dilationHeightFactor},
             {output});
+    if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+        implicitDilateConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
+    }
 
     EXPECT_TRUE(implicitDilateConvTest.testMutatingInputOperandCode());
     EXPECT_TRUE(implicitDilateConvTest.testMutatingInputOperandCounts());
@@ -1052,12 +1080,11 @@ void depthwiseConvOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
     ANeuralNetworksOperandType multiplier = scalar;
     ANeuralNetworksOperandType activation = scalar;
 
-    OperationTestBase explicitDepthwiseConvTest(ANEURALNETWORKS_DEPTHWISE_CONV_2D,
-                                                {input, filter, bias,
-                                                 padLeft, padRight, padTop, padBottom,
-                                                 strideWidth, strideHeight,
-                                                 multiplier, activation},
-                                                {output});
+    OperationTestBase explicitDepthwiseConvTest(
+            ANEURALNETWORKS_DEPTHWISE_CONV_2D,
+            {input, filter, bias, padLeft, padRight, padTop, padBottom, strideWidth, strideHeight,
+             multiplier, activation},
+            {output});
     if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
         explicitDepthwiseConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
     }
@@ -1068,12 +1095,10 @@ void depthwiseConvOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
     EXPECT_TRUE(explicitDepthwiseConvTest.testMutatingOutputOperandCounts());
 
     ANeuralNetworksOperandType padImplicit = scalar;
-    OperationTestBase implicitDepthwiseConvTest(ANEURALNETWORKS_DEPTHWISE_CONV_2D,
-                                                {input, filter, bias,
-                                                 padImplicit,
-                                                 strideWidth, strideHeight,
-                                                 multiplier, activation},
-                                                {output});
+    OperationTestBase implicitDepthwiseConvTest(
+            ANEURALNETWORKS_DEPTHWISE_CONV_2D,
+            {input, filter, bias, padImplicit, strideWidth, strideHeight, multiplier, activation},
+            {output});
     if (filterOperandCode == ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL) {
         implicitDepthwiseConvTest.setInputSymmPerChannelQuantParams(1, filterChannelQuantParams);
     }
@@ -1168,8 +1193,7 @@ void fullyConnectedOpTest(int32_t operandCode) {
                                              .zeroPoint = 0};
 
     OperationTestBase fullyConnectedTest(ANEURALNETWORKS_FULLY_CONNECTED,
-                                         {input, weights, bias, activation},
-                                         {output});
+                                         {input, weights, bias, activation}, {output});
 
     EXPECT_TRUE(fullyConnectedTest.testMutatingInputOperandCode());
     EXPECT_TRUE(fullyConnectedTest.testMutatingInputOperandCounts());
@@ -1192,10 +1216,10 @@ TEST(OperationValidationTest, FULLY_CONNECTED_quant8) {
 void concatenationTest(int32_t operandCode) {
     uint32_t inputDimensions[2] = {5, 5};
     ANeuralNetworksOperandType input1 = {.type = operandCode,
-                                        .dimensionCount = 2,
-                                        .dimensions = inputDimensions,
-                                        .scale = 0.0f,
-                                        .zeroPoint = 0};
+                                         .dimensionCount = 2,
+                                         .dimensions = inputDimensions,
+                                         .scale = 0.0f,
+                                         .zeroPoint = 0};
     if (operandCode == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM) {
         input1.scale = 0.5f;
     }
@@ -1208,15 +1232,14 @@ void concatenationTest(int32_t operandCode) {
                                              .scale = 0.0f,
                                              .zeroPoint = 0};
 
-    OperationTestBase concat2Test(ANEURALNETWORKS_CONCATENATION,
-                                  {input1, input2, activation}, {output});
+    OperationTestBase concat2Test(ANEURALNETWORKS_CONCATENATION, {input1, input2, activation},
+                                  {output});
 
     EXPECT_TRUE(concat2Test.testMutatingInputOperandCode());
     EXPECT_TRUE(concat2Test.testMutatingOutputOperandCode());
     EXPECT_TRUE(concat2Test.testMutatingOutputOperandCounts());
 
-    OperationTestBase concat1Test(ANEURALNETWORKS_CONCATENATION,
-                                  {input1, activation}, {output});
+    OperationTestBase concat1Test(ANEURALNETWORKS_CONCATENATION, {input1, activation}, {output});
 
     EXPECT_TRUE(concat1Test.testMutatingInputOperandCode());
     EXPECT_TRUE(concat1Test.testMutatingOutputOperandCode());
@@ -1246,8 +1269,7 @@ TEST(OperationValidationTest, RESIZE_BILINEAR_float32) {
     ANeuralNetworksOperandType width = height;
     ANeuralNetworksOperandType output = input;
 
-    OperationTestBase resizeTest(ANEURALNETWORKS_RESIZE_BILINEAR,
-                                 {input, height, width}, {output});
+    OperationTestBase resizeTest(ANEURALNETWORKS_RESIZE_BILINEAR, {input, height, width}, {output});
     EXPECT_TRUE(resizeTest.testMutatingInputOperandCode());
     EXPECT_TRUE(resizeTest.testMutatingInputOperandCounts());
     EXPECT_TRUE(resizeTest.testMutatingOutputOperandCode());
@@ -1285,8 +1307,7 @@ void embeddingLookupTest(int32_t operandCode) {
     }
     ANeuralNetworksOperandType output = input;
 
-    OperationTestBase embedLookupTest(ANEURALNETWORKS_EMBEDDING_LOOKUP,
-                                      {lookup, input}, {output});
+    OperationTestBase embedLookupTest(ANEURALNETWORKS_EMBEDDING_LOOKUP, {lookup, input}, {output});
 
     EXPECT_TRUE(embedLookupTest.testMutatingInputOperandCode());
     EXPECT_TRUE(embedLookupTest.testMutatingInputOperandCounts());
@@ -1326,8 +1347,8 @@ void hashtableLookupTest(int32_t operandCode) {
     hits.type = ANEURALNETWORKS_TENSOR_QUANT8_ASYMM;
     hits.scale = 1.0f;
 
-    OperationTestBase hashLookupTest(ANEURALNETWORKS_HASHTABLE_LOOKUP,
-                                      {lookup, keys, values}, {output, hits});
+    OperationTestBase hashLookupTest(ANEURALNETWORKS_HASHTABLE_LOOKUP, {lookup, keys, values},
+                                     {output, hits});
 
     EXPECT_TRUE(hashLookupTest.testMutatingInputOperandCode());
     EXPECT_TRUE(hashLookupTest.testMutatingInputOperandCounts());
@@ -1373,8 +1394,8 @@ void lshProjectionTest(int32_t operandCode, int32_t hashAndWeightOperandCode) {
     ANeuralNetworksOperandType output = weight;
     output.type = ANEURALNETWORKS_TENSOR_INT32;
 
-    OperationTestBase lshProjTest(ANEURALNETWORKS_LSH_PROJECTION,
-                                  {hash, input, weight, type}, {output});
+    OperationTestBase lshProjTest(ANEURALNETWORKS_LSH_PROJECTION, {hash, input, weight, type},
+                                  {output});
 
     EXPECT_TRUE(lshProjTest.testMutatingInputOperandCode());
     EXPECT_TRUE(lshProjTest.testMutatingInputOperandCounts());
@@ -1450,11 +1471,30 @@ TEST(OperationValidationTest, LSTM_float32) {
     ANeuralNetworksOperandType output = floatTensor2D;
 
     OperationTestBase lstmTest(ANEURALNETWORKS_LSTM,
-        {input, inputToInput, inputToForget, inputToCell, inputToOutput, recurrentToInput,
-         recurrentToForget, recurrentToCell, recurrentToOutput, cellToInput, cellToForget,
-         cellToOutput, inputGateBias, forgetGateBias, cellBias, outputGateBias, projWeights,
-         projBias, outputStateIn, cellStateIn, activation, clipCellState, clipProjLayer},
-        {scratch, outputStateOut, cellStateOut, output});
+                               {input,
+                                inputToInput,
+                                inputToForget,
+                                inputToCell,
+                                inputToOutput,
+                                recurrentToInput,
+                                recurrentToForget,
+                                recurrentToCell,
+                                recurrentToOutput,
+                                cellToInput,
+                                cellToForget,
+                                cellToOutput,
+                                inputGateBias,
+                                forgetGateBias,
+                                cellBias,
+                                outputGateBias,
+                                projWeights,
+                                projBias,
+                                outputStateIn,
+                                cellStateIn,
+                                activation,
+                                clipCellState,
+                                clipProjLayer},
+                               {scratch, outputStateOut, cellStateOut, output});
 
     EXPECT_TRUE(lstmTest.testMutatingInputOperandCode());
     EXPECT_TRUE(lstmTest.testMutatingInputOperandCounts(3));
@@ -1462,15 +1502,15 @@ TEST(OperationValidationTest, LSTM_float32) {
     EXPECT_TRUE(lstmTest.testMutatingOutputOperandCounts());
 }
 
-TEST(OperationValidationTest, LSTM_V1_2_float32) {
+void lstmTestV1_2(int32_t operandCode) {
     uint32_t oneDimensional[1] = {5};
     uint32_t twoDimensional[2] = {5, 5};
-    ANeuralNetworksOperandType floatTensor1D = {.type = ANEURALNETWORKS_TENSOR_FLOAT32,
+    ANeuralNetworksOperandType floatTensor1D = {.type = operandCode,
                                                 .dimensionCount = 1,
                                                 .dimensions = oneDimensional,
                                                 .scale = 0.0f,
                                                 .zeroPoint = 0};
-    ANeuralNetworksOperandType floatTensor2D = {.type = ANEURALNETWORKS_TENSOR_FLOAT32,
+    ANeuralNetworksOperandType floatTensor2D = {.type = operandCode,
                                                 .dimensionCount = 2,
                                                 .dimensions = twoDimensional,
                                                 .scale = 0.0f,
@@ -1553,6 +1593,11 @@ TEST(OperationValidationTest, LSTM_V1_2_float32) {
     EXPECT_TRUE(lstmTest.testMutatingInputOperandCounts());
     EXPECT_TRUE(lstmTest.testMutatingOutputOperandCode());
     EXPECT_TRUE(lstmTest.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, LSTM_V1_2) {
+    lstmTestV1_2(ANEURALNETWORKS_TENSOR_FLOAT32);
+    lstmTestV1_2(ANEURALNETWORKS_TENSOR_FLOAT16);
 }
 
 TEST(OperationValidationTest, RANDOM_MULTINOMIAL_float16) {
@@ -1715,9 +1760,10 @@ TEST(OperationValidationTest, SVDF_float32) {
     ANeuralNetworksOperandType stateOut = floatTensor2D;
     ANeuralNetworksOperandType output = floatTensor2D;
 
-    OperationTestBase svdfTest(ANEURALNETWORKS_SVDF,
-        {input, weightsFeature, weightsTime, bias, stateIn, rank, activation},
-        {stateOut, output});
+    OperationTestBase svdfTest(
+            ANEURALNETWORKS_SVDF,
+            {input, weightsFeature, weightsTime, bias, stateIn, rank, activation},
+            {stateOut, output});
 
     EXPECT_TRUE(svdfTest.testMutatingInputOperandCode());
     EXPECT_TRUE(svdfTest.testMutatingInputOperandCounts());
@@ -1796,10 +1842,9 @@ void stridedSliceOpTest(int32_t operandCode) {
     ANeuralNetworksOperandType endMask = beginMask;
     ANeuralNetworksOperandType shrinkAxisMask = beginMask;
 
-    OperationTestBase stridedSliceTest(ANEURALNETWORKS_STRIDED_SLICE,
-                                       {input, begins, ends, strides,
-                                        beginMask, endMask, shrinkAxisMask},
-                                       {output});
+    OperationTestBase stridedSliceTest(
+            ANEURALNETWORKS_STRIDED_SLICE,
+            {input, begins, ends, strides, beginMask, endMask, shrinkAxisMask}, {output});
 
     EXPECT_TRUE(stridedSliceTest.testMutatingInputOperandCode());
     EXPECT_TRUE(stridedSliceTest.testMutatingInputOperandCounts());
@@ -2094,14 +2139,14 @@ TEST(OperationValidationTest, LOCAL_RESPONSE_NORMALIZATION_float32) {
 }
 
 void axisAlignedBBoxTransformOpTest(int32_t operandCode) {
-    uint32_t roiDim[] = {5, 5}, deltaDim[] = {5, 8}, imageDim[] = {5, 3}, weightDim[] = {4};
-    uint32_t outDim[] = {5, 8}, bsDim[] = {5};
+    uint32_t roiDim[] = {5, 4}, deltaDim[] = {5, 8}, bsDim[] = {5}, imageDim[] = {5, 3};
+    uint32_t outDim[] = {5, 8};
     OperationTestBase axisAlignedBBoxTransformTest(
             ANEURALNETWORKS_AXIS_ALIGNED_BBOX_TRANSFORM,
             {getOpType(operandCode, 2, roiDim), getOpType(operandCode, 2, deltaDim),
-             getOpType(operandCode, 2, imageDim), getOpType(operandCode, 1, weightDim),
-             getOpType(ANEURALNETWORKS_BOOL)},
-            {getOpType(operandCode, 2, outDim), getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, bsDim)});
+             getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, bsDim),
+             getOpType(operandCode, 2, imageDim)},
+            {getOpType(operandCode, 2, outDim)});
 
     EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingInputOperandCode());
     EXPECT_TRUE(axisAlignedBBoxTransformTest.testMutatingInputOperandCounts());
@@ -2115,33 +2160,6 @@ TEST(OperationValidationTest, AXIS_ALIGNED_BBOX_TRANSFORM_float16) {
 
 TEST(OperationValidationTest, AXIS_ALIGNED_BBOX_TRANSFORM_float32) {
     axisAlignedBBoxTransformOpTest(ANEURALNETWORKS_TENSOR_FLOAT32);
-}
-
-void rotatedBBoxTransformOpTest(int32_t tensorOperandCode, int32_t scalarOperandCode) {
-    uint32_t roiDim[] = {5, 5}, deltaDim[] = {5, 8}, imageDim[] = {5, 3}, weightDim[] = {4};
-    uint32_t outDim[] = {5, 8}, bsDim[] = {5};
-    OperationTestBase rotatedBBoxTransformTest(
-            ANEURALNETWORKS_ROTATED_BBOX_TRANSFORM,
-            {getOpType(tensorOperandCode, 2, roiDim), getOpType(tensorOperandCode, 2, deltaDim),
-             getOpType(tensorOperandCode, 2, imageDim), getOpType(tensorOperandCode, 1, weightDim),
-             getOpType(ANEURALNETWORKS_BOOL), getOpType(ANEURALNETWORKS_BOOL),
-             getOpType(ANEURALNETWORKS_INT32), getOpType(ANEURALNETWORKS_INT32),
-             getOpType(scalarOperandCode)},
-            {getOpType(tensorOperandCode, 2, outDim),
-             getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, bsDim)});
-
-    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingInputOperandCode());
-    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingInputOperandCounts());
-    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCode());
-    EXPECT_TRUE(rotatedBBoxTransformTest.testMutatingOutputOperandCounts());
-}
-
-TEST(OperationValidationTest, ROTATED_BBOX_TRANSFORM_float16) {
-    rotatedBBoxTransformOpTest(ANEURALNETWORKS_TENSOR_FLOAT16, ANEURALNETWORKS_FLOAT16);
-}
-
-TEST(OperationValidationTest, ROTATED_BBOX_TRANSFORM_float32) {
-    rotatedBBoxTransformOpTest(ANEURALNETWORKS_TENSOR_FLOAT32, ANEURALNETWORKS_FLOAT32);
 }
 
 void sliceTest(int32_t operandCode) {
@@ -2470,6 +2488,27 @@ void embeddingLookupSparseTest(int32_t inputOperandType) {
 TEST(OperationValidationTest, EMBEDDING_LOOKUP_SPARSE) {
     embeddingLookupSparseTest(ANEURALNETWORKS_TENSOR_FLOAT16);
     embeddingLookupSparseTest(ANEURALNETWORKS_TENSOR_FLOAT32);
+}
+
+void powTest(int32_t inputOperandType) {
+    const uint32_t inputDimensions[] = {3, 3};
+    ANeuralNetworksOperandType inputType = {.type = inputOperandType,
+                                            .dimensionCount = 2,
+                                            .dimensions = inputDimensions,
+                                            .scale = 0.0f,
+                                            .zeroPoint = 0};
+
+    OperationTestBase test(ANEURALNETWORKS_POW, {inputType, inputType}, {inputType});
+
+    EXPECT_TRUE(test.testMutatingInputOperandCode());
+    EXPECT_TRUE(test.testMutatingInputOperandCounts());
+    EXPECT_TRUE(test.testMutatingOutputOperandCode());
+    EXPECT_TRUE(test.testMutatingOutputOperandCounts());
+}
+
+TEST(OperationValidationTest, POW) {
+    powTest(ANEURALNETWORKS_TENSOR_FLOAT16);
+    powTest(ANEURALNETWORKS_TENSOR_FLOAT32);
 }
 
 }  // end namespace

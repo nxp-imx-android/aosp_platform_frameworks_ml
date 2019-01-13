@@ -1170,73 +1170,57 @@ typedef enum {
      * Jimmy Ba et al. "Layer Normalization"
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * All input and output tensors must be of the same type.
      *
      * Inputs:
      * * 0: The input (\f$x_t\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, input_size], where “batch_size” corresponds to the
-     *      batching dimension, and “input_size” is the size of the input.
+     *      A 2-D tensor of shape [batch_size, input_size], where “batch_size”
+     *      corresponds to the batching dimension, and “input_size” is the size
+     *      of the input.
      * * 1: The input-to-input weights (\f$W_{xi}\f$). Optional.
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, input_size], where “num_units” corresponds to the
-     *      number of cell units.
+     *      A 2-D tensor of shape [num_units, input_size], where “num_units”
+     *      corresponds to the number of cell units.
      * * 2: The input-to-forget weights (\f$W_{xf}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, input_size].
+     *      A 2-D tensor of shape [num_units, input_size].
      * * 3: The input-to-cell weights (\f$W_{xc}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, input_size].
+     *      A 2-D tensor of shape [num_units, input_size].
      * * 4: The input-to-output weights (\f$W_{xo}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, input_size].
+     *      A 2-D tensor of shape [num_units, input_size].
      * * 5: The recurrent-to-input weights (\f$W_{hi}\f$). Optional.
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, output_size], where “output_size” corresponds to either
-     *      the number of cell units (i.e., “num_units”), or the second
-     *      dimension of the “projection_weights”, if defined.
+     *      A 2-D tensor of shape [num_units, output_size], where “output_size”
+     *      corresponds to either the number of cell units (i.e., “num_units”),
+     *      or the second dimension of the “projection_weights”, if defined.
      * * 6: The recurrent-to-forget weights (\f$W_{hf}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, output_size].
+     *      A 2-D tensor of shape [num_units, output_size].
      * * 7: The recurrent-to-cell weights (\f$W_{hc}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, output_size].
+     *      A 2-D tensor of shape [num_units, output_size].
      * * 8: The recurrent-to-output weights (\f$W_{ho}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units, output_size].
+     *      A 2-D tensor of shape [num_units, output_size].
      * * 9: The cell-to-input weights (\f$W_{ci}\f$). Optional.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 10:The cell-to-forget weights (\f$W_{cf}\f$). Optional.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 11:The cell-to-output weights (\f$W_{co}\f$). Optional.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 12:The input gate bias (\f$b_i\f$). Optional.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 13:The forget gate bias (\f$b_f\f$).
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 14:The cell bias (\f$b_c\f$).
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 15:The output gate bias (\f$b_o\f$).
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units].
+     *      A 1-D tensor of shape [num_units].
      * * 16:The projection weights (\f$W_{proj}\f$). Optional.
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [output_size, num_units].
+     *      A 2-D tensor of shape [output_size, num_units].
      * * 17:The projection bias (\f$b_{proj}\f$). Optional.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [output_size].
+     *      A 1-D tensor of shape [output_size].
      * * 18:The output state (in) (\f$h_{t-1}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, output_size].
+     *      A 2-D tensor of shape [batch_size, output_size].
      * * 19:The cell state (in) (\f$C_{t-1}\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, num_units].
+     *      A 2-D tensor of shape [batch_size, num_units].
      * * 20:The activation function (\f$g\f$).
      *      A value indicating the activation function:
      *      <ul>
@@ -1249,42 +1233,48 @@ typedef enum {
      * * 21:The clipping threshold (\f$t_{cell}\f$) for the cell state, such
      *      that values are bound within [-cell_clip, cell_clip]. If set to 0.0
      *      then clipping is disabled.
+     *      Until API level 29 this scalar must be of type {@link
+     *      ANEURALNETWORKS_FLOAT32}. Since API level 29, if all the input
+     *      tensors have type {@link ANEURALNETWORKS_TENSOR_FLOAT32}, this
+     *      scalar must be of the type {@link ANEURALNETOWORKS_FLOAT32},
+     *      otherwise if all the input tensors have the type {@link
+     *      ANEURALNETWORKS_TENSOR_FLOAT16}, this scalar must be of type {@link
+     *      ANEURALNETWORKS_FLOAT16}.
      * * 22:The clipping threshold (\f$t_{proj}\f$) for the output from the
      *      projection layer, such that values are bound within
      *      [-proj_clip, proj_clip]. If set to 0.0 then clipping is disabled.
+     *      Until API level 29 this scalar must be of type {@link
+     *      ANEURALNETWORKS_FLOAT32}. Since API level 29, if all the input
+     *      tensors have type {@link ANEURALNETWORKS_TENSOR_FLOAT32}, this
+     *      scalar must be of the type {@link ANEURALNETOWORKS_FLOAT32},
+     *      otherwise if all the input tensors have the type {@link
+     *      ANEURALNETWORKS_TENSOR_FLOAT16}, this scalar must be of type {@link
+     *      ANEURALNETWORKS_FLOAT16}.
      * Since API level 29 there are additional inputs to this op:
      * * 23:The input layer normalization weights.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units]. Used to rescale normalized inputs to activation at
-     *      input gate.
+     *      A 1-D tensor of shape [num_units]. Used to rescale normalized inputs
+     *      to activation at input gate.
      * * 24:The forget layer normalization weights.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units]. Used to rescale normalized inputs to activation at
-     *      forget gate.
+     *      A 1-D tensor of shape [num_units]. Used to rescale normalized inputs
+     *      to activation at forget gate.
      * * 25:The cell layer normalization weights.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units]. Used to rescale normalized inputs to activation at
-     *      cell gate.
+     *      A 1-D tensor of shape [num_units]. Used to rescale normalized inputs
+     *      to activation at cell gate.
      * * 26:The output layer normalization weights.
-     *      A 1-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [num_units]. Used to rescale normalized inputs to activation at
-     *      output gate.
+     *      A 1-D tensor of shape [num_units]. Used to rescale normalized inputs
+     *      to activation at output gate.
      *
      * Outputs:
      * * 0: The scratch buffer.
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, num_units * 4] with CIFG, or
+     *      A 2-D tensor of shape [batch_size, num_units * 4] with CIFG, or
      *      [batch_size, num_units * 3] without CIFG.
      * * 1: The output state (out) (\f$h_t\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, output_size].
+     *      A 2-D tensor of shape [batch_size, output_size].
      * * 2: The cell state (out) (\f$C_t\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, num_units].
+     *      A 2-D tensor of shape [batch_size, num_units].
      * * 3: The output (\f$o_t\f$).
-     *      A 2-D tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, of shape
-     *      [batch_size, output_size]. This is effectively the same as the
-     *      current “output state (out)” value.
+     *      A 2-D tensor of shape [batch_size, output_size]. This is effectively
+     *      the same as the current “output state (out)” value.
      *
      * Available since API level 27.
      */
@@ -2230,10 +2220,8 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Inputs:
-     * * 0: A 2-D Tensor of shape [num_rois, 5 or 4], specifying the locations
-     *      of the bounding box proposals, each line with format
-     *      [<optional batch_id>, x1, y1, x2, y2]. The batch_id is optional if
-     *      there is only one batch.
+     * * 0: A 2-D Tensor of shape [num_rois, 4], specifying the locations of the
+     *      bounding box proposals, each line with format [x1, y1, x2, y2].
      * * 1: A 2-D Tensor of shape [num_rois, num_classes * 4], specifying the
      *      bounding box delta for each region of interest and each class. The
      *      bounding box deltas are organized in the following order
@@ -2241,20 +2229,16 @@ typedef enum {
      *      for the center position of the bounding box with respect to the width
      *      and height, dw and dh is the log-scale relative correction factor
      *      for the width and height.
-     * * 2: A 2-D Tensor of shape [batches, 3], specifying the information of
+     * * 2: An 1-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor, of shape
+     *      [batches], specifying the number of output boxes for each batch.
+     * * 3: A 2-D Tensor of shape [batches, 3], specifying the information of
      *      each image in the batch, each line with format
      *      [image_height, image_width, image_scale].
-     * * 3: An 1-D Tensor of shape [4], specifying the weights for the deltas.
-     *      The weights are organized in the order of [wx, wy, ww, wh].
-     * * 4: An {@link ANEURALNETWORKS_BOOL} scalar, apply_scale. If true,
-     *      apply the image scale to the boxes after the transformation.
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0, with shape
      *      [num_rois, num_classes * 4], specifying the coordinates of each
      *      output bounding box for each class, with format [x1, y1, x2, y2].
-     * * 1: A 1-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor, of shape
-     *      [batches], specifying the number of output boxes for each batch.
      *
      * Available since API level 29.
      */
@@ -2913,6 +2897,7 @@ typedef enum {
      *     output.dimension   = {5, 4, 3, 2}
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: from 1
@@ -2976,12 +2961,13 @@ typedef enum {
      *     output = max(0, min(255, round(input / scale) + zeroPoint)
      *
      * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Supported tensor rank: from 1
      *
      * Inputs:
-     * * 0: A tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}.
+     * * 0: A tensor.
      *
      * Outputs:
      * * 0: The output tensor of same shape as input0, but with
@@ -3485,68 +3471,7 @@ typedef enum {
 
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_LSTM = 85,
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_RNN = 86,
-
-    /**
-     * Transform rotated bounding box proposals using bounding box deltas.
-     *
-     * Given the positions and rotations of bounding box proposals and the
-     * corresponding bounding box deltas for each class, return the refined
-     * bounding box regions.
-     *
-     * Optionally, the angles can be bounded into a specified range due to the
-     * fact that rotations are the same if they are 180 degrees apart. Only
-     * boxes with angle less than a threshold are cliped.
-     *
-     * Supported tensor {@link OperandCode}:
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
-     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     *
-     * Inputs:
-     * * 0: A 2-D Tensor of shape [num_rois, 6 or 5], specifying the locations
-     *      of the bounding box proposals, each line with format
-     *      [<optional batch_id>, center_x, center_y, width, height, angle].
-     *      The batch_id is optional if there is only one batch.
-     * * 1: A 2-D Tensor of shape [num_rois, num_classes * 5], specifying the
-     *      bounding box delta for each region of interest and each class. The
-     *      bounding box deltas are organized in the following order
-     *      [dx, dy, dw, dh, da], where dx and dy is the relative correction
-     *      factor for the center position of the bounding box with respect to
-     *      the width and height, dw and dh is the log-scale relative correction
-     *      factor for the width and height, da is the correction factor for
-     *      the angle in radix.
-     * * 2: A 2-D Tensor of shape [batches, 3], specifying the information of
-     *      each image in the batch, each line with format
-     *      [image_height, image_width, image_scale].
-     * * 3: An 1-D Tensor of shape [4], specifying the weights for the deltas.
-     *      The weights are organized in the order of [wx, wy, ww, wh].
-     * * 4: An {@link ANEURALNETWORKS_BOOL} scalar, apply_scale. If true,
-     *      apply the image scale to the boxes after the transformation.
-     * * 5: An {@link ANEURALNETWORKS_BOOL} scalar, angle_bound_on. If true,
-     *      normalized the angle into a specified bound.
-     * * 6: An {@link ANEURALNETWORKS_INT32} scalar, angle_bound_low, specifying
-     *      the lower bound of the angle in degree. If input5 is negative, this
-     *      field is ignored.
-     * * 7: An {@link ANEURALNETWORKS_INT32} scalar, angle_bound_high, specifying
-     *      the upper bound of the angle in degree. The bounded region
-     *      (angle_bound_high - angle_bound_low) should be a multiple of 180
-     *      degrees. If input5 is negative, this field is ignored.
-     * * 8: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the angle
-     *      threshold for box clipping. For all bounding boxes with absolute
-     *      value of angle less than the threshold, they are considered to be
-     *      almost upright and will be clipped against the image edges. Set
-     *      to a negative value to disbale all the clipping.
-     *
-     * Outputs:
-     * * 0: A tensor of the same {@link OperandCode} as input0, with shape
-     *      [num_rois, num_classes * 5], specifying the coordinates of each
-     *      output bounding box for each class, with format
-     *      [center_x, center_y, width, height, angle].
-     * * 1: A 1-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor, of shape
-     *      [batches], specifying the number of output boxes for each batch.
-     *
-     * Available since API level 29.
-     */
-    ANEURALNETWORKS_ROTATED_BBOX_TRANSFORM = 87,
+    ANEURALNETWORKS_DETECTION_POSTPROCESS = 87,
 
     /**
      * Computes the absolute value of a tensor, element-wise.
