@@ -27,17 +27,13 @@
 namespace android {
 namespace nn {
 
-CompilationBuilder::CompilationBuilder(const ModelBuilder* model) :
-        mModel(model), mPartitioning(DeviceManager::get()->getPartitioning()) {
+CompilationBuilder::CompilationBuilder(const ModelBuilder* model,
+                                       const std::vector<std::shared_ptr<Device>>& devices)
+    : mModel(model), mPartitioning(DeviceManager::get()->getPartitioning()), mDevices(devices) {
     VLOG(COMPILATION) << "CompilationBuilder::CompilationBuilder";
 }
 
 int CompilationBuilder::finish() {
-    // Get the list of HAL devices.
-    return finish(DeviceManager::get()->getDrivers());
-}
-
-int CompilationBuilder::finish(const std::vector<std::shared_ptr<Device>>& devices) {
     if (mFinished) {
         LOG(ERROR) << "ANeuralNetworksCompilation_finish called more than once";
         return ANEURALNETWORKS_BAD_STATE;
@@ -47,10 +43,10 @@ int CompilationBuilder::finish(const std::vector<std::shared_ptr<Device>>& devic
     mFinished = true;
 
     if (mPartitioning) {
-        int n = mModel->partitionTheWork(devices, mPreference, &mPlan);
+        int n = mModel->partitionTheWork(mDevices, mPreference, &mPlan);
         switch (n) {
             case ANEURALNETWORKS_NO_ERROR:
-                break;
+                return n;
             case ANEURALNETWORKS_UNEXPECTED_NULL:
             case ANEURALNETWORKS_BAD_DATA:
                 // The two error codes above should only be used for errors in the user's
@@ -64,11 +60,19 @@ int CompilationBuilder::finish(const std::vector<std::shared_ptr<Device>>& devic
                 if (!DeviceManager::partitioningAllowsFallback(mPartitioning)) {
                     return n;
                 }
+                if (mModel->hasOEMOperation()) {
+                    LOG(ERROR) << "Because of OEM op cannot fall back to CPU";
+                    return n;
+                }
                 break;
         }
     }
 
-    return ANEURALNETWORKS_NO_ERROR;
+    // Fallback to CPU
+    VLOG(COMPILATION) << "CompilationBuilder::finish with CPU fallback";
+    mPlan.reset();
+    mPlan.becomeSingleStep(DeviceManager::getCpuDevice(), mModel);
+    return mPlan.finish(mModel, mPreference);
 }
 
 int CompilationBuilder::setPreference(int32_t preference) {
@@ -100,6 +104,11 @@ int CompilationBuilder::setPartitioning(uint32_t partitioning) {
 int CompilationBuilder::createExecution(ExecutionBuilder **execution) {
     if (!mFinished) {
         LOG(ERROR) << "ANeuralNetworksExecution_create passed an unfinished compilation";
+        *execution = nullptr;
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (!mPlan.isValid()) {
+        LOG(ERROR) << "ANeuralNetworksExecution_create passed an invalid compilation";
         *execution = nullptr;
         return ANEURALNETWORKS_BAD_STATE;
     }

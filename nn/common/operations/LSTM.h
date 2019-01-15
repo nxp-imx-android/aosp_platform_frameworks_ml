@@ -18,21 +18,14 @@
 #define FRAMEWORKS_ML_NN_LSTMCELL_H
 
 #include "ActivationFunctor.h"
+#include "HalOperation.h"
 #include "tensorflow/contrib/lite/kernels/internal/tensor_utils.h"
 
 #include <algorithm>
 #include <cmath>
 
-namespace android {
-namespace hardware {
-namespace neuralnetworks {
-namespace V1_1 {
-struct Operation;
-}
-}  // namespace neuralnetworks
-}  // namespace hardware
-}  // namespace android
-
+// TODO(levp): Format the file.
+// clang-format off
 namespace android {
 namespace nn {
 
@@ -47,15 +40,15 @@ struct Shape;
 
 class LSTMCell {
  public:
-  LSTMCell(const android::hardware::neuralnetworks::V1_1::Operation &operation,
+  LSTMCell(const Operation &operation,
            std::vector<RunTimeOperandInfo> &operands);
 
-  static bool Prepare(const android::hardware::neuralnetworks::V1_1::Operation &operation,
-                      std::vector<RunTimeOperandInfo> &operands,
-                      Shape *scratchShape,
-                      Shape *outputStateShape,
-                      Shape *cellStateShape,
-                      Shape *outputShape);
+  bool Prepare(const Operation &operation,
+               std::vector<RunTimeOperandInfo> &operands,
+               Shape *scratchShape,
+               Shape *outputStateShape,
+               Shape *cellStateShape,
+               Shape *outputShape);
   bool Eval();
 
   // Input Tensors of size {n_batch, n_input}
@@ -96,17 +89,24 @@ class LSTMCell {
   static constexpr int kCellClipParam = 21;
   static constexpr int kProjClipParam = 22;
 
+  // Layer norm weights tensors of size {n_cell}, representing a diagonal matrix.
+  static constexpr int kInputLayerNormWeightsTensor = 23;
+  static constexpr int kForgetLayerNormWeightsTensor = 24;
+  static constexpr int kCellLayerNormWeightsTensor = 25;
+  static constexpr int kOutputLayerNormWeightsTensor = 26;
+
   // Output tensors.
   static constexpr int kScratchBufferTensor = 0;
   static constexpr int kOutputStateOutTensor = 1;
   static constexpr int kCellStateOutTensor = 2;
   static constexpr int kOutputTensor = 3;
 
+  static constexpr float kLayerNormEpsilon = 1e-8;
+
  private:
-  static bool CheckInputTensorDimensions(
-      const android::hardware::neuralnetworks::V1_1::Operation &operation,
-      std::vector<RunTimeOperandInfo> &operands, uint32_t n_input,
-      uint32_t n_output, uint32_t n_cell);
+  bool CheckInputTensorDimensions(const Operation& operation,
+                                  std::vector<RunTimeOperandInfo>& operands,
+                                  uint32_t n_input, uint32_t n_output, uint32_t n_cell);
   LSTMParams params_;
 
   const RunTimeOperandInfo *input_;
@@ -135,6 +135,11 @@ class LSTMCell {
 
   const RunTimeOperandInfo *output_state_in_;
   const RunTimeOperandInfo *cell_state_in_;
+
+  const RunTimeOperandInfo *input_layer_norm_weights_;
+  const RunTimeOperandInfo *forget_layer_norm_weights_;
+  const RunTimeOperandInfo *cell_layer_norm_weights_;
+  const RunTimeOperandInfo *output_layer_norm_weights_;
 
   RunTimeOperandInfo *output_state_out_;
   RunTimeOperandInfo *cell_state_out_;

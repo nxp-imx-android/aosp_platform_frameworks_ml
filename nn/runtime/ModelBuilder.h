@@ -40,6 +40,8 @@ public:
     int setOperandValue(uint32_t index, const void* buffer, size_t length);
     int setOperandValueFromMemory(uint32_t index, const Memory* memory, uint32_t offset,
                                   size_t length);
+    int setOperandSymmPerChannelQuantParams(
+            uint32_t index, const ANeuralNetworksSymmPerChannelQuantParams& extraParams);
 
     int addOperation(ANeuralNetworksOperationType type, uint32_t inputCount, const uint32_t* inputs,
                      uint32_t outputCount, const uint32_t* outputs);
@@ -50,8 +52,12 @@ public:
 
     int finish();
     bool isFinished() const { return mCompletedModel; }
+    bool isValid() const { return !mInvalidModel; }
 
-    int createCompilation(CompilationBuilder** compilation);
+    bool hasOEMOperation() const { return mHasOEMOperation; }
+
+    int createCompilation(CompilationBuilder** compilation,
+                          const std::vector<std::shared_ptr<Device>>& devices);
 
     void setHidlModel(Model* model) const;
 
@@ -77,6 +83,9 @@ public:
     const Operation& getOperation(uint32_t index) const { return mOperations[index]; }
     const MemoryTracker& getMemories() const { return mMemories; }
     const std::vector<Operation>& getOperations() const { return mOperations; }
+    const std::vector<uint32_t>& getSortedOperationMapping() const {
+        return mSortedOperationIndexMap;
+    }
     const uint8_t* getPointerToOperandValue(uint32_t offset) const {
         return mSmallOperandValues.data() + offset;
     }
@@ -84,13 +93,12 @@ public:
     int partitionTheWork(const std::vector<std::shared_ptr<Device>>& devices,
                          uint32_t preference, ExecutionPlan* plan) const;
 
- private:
+   private:
     // TODO: move partitionTheWork, findBestDeviceForEachOperation,
     // sortIntoRunOrder to CompilationBuilder?
 
     int findBestDeviceForEachOperation(uint32_t preference,
                                        const std::vector<std::shared_ptr<Device>>& devices,
-                                       const size_t deviceCount,
                                        std::vector<int>* bestDeviceForOperation) const;
     PerformanceInfo getPerformanceInfo(const std::shared_ptr<Device> device,
                                        uint32_t operationIndex) const;
@@ -107,6 +115,11 @@ public:
 
     // The operations of the graph.
     std::vector<Operation> mOperations;
+    // The mapping from sorted index to the original index of operations in mOperations.
+    // mSortedOperationIndexMap is empty before sortIntoRunOrder() is called.
+    std::vector<uint32_t> mSortedOperationIndexMap;
+    // Is at least one of those operations an OEM_OPERATION?
+    bool mHasOEMOperation = false;
     // The description of the operands of the graph.
     std::vector<Operand> mOperands;
     // Specifies where to find the list of indexes identifying
@@ -132,11 +145,11 @@ public:
 
     // Once the model has been finished, we should not allow further
     // modifications to the model.
-    mutable bool mCompletedModel = false;
+    bool mCompletedModel = false;
 
     // Any invalid manipulation of the model will mark the model invalid.
     // No further modifications are allowed to the model.
-    mutable bool mInvalidModel = false;
+    bool mInvalidModel = false;
 
     // 'true' indicates TENSOR_FLOAT32 may be calculated with range and/or
     // precision as low as that of the IEEE 754 16-bit floating-point format.

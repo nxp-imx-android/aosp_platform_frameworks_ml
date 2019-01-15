@@ -1,7 +1,8 @@
+// clang-format off
 // Generated file (from: depth_to_space_float_2.mod.py). Do not edit
 void CreateModel(Model *model) {
-  OperandType type1(Type::INT32, {});
   OperandType type0(Type::TENSOR_FLOAT32, {1, 2, 2, 4});
+  OperandType type1(Type::INT32, {});
   OperandType type2(Type::TENSOR_FLOAT32, {1, 4, 4, 1});
   // Phase 1, operands
   auto input = model->addOperand(&type0);
@@ -18,7 +19,8 @@ void CreateModel(Model *model) {
   assert(model->isValid());
 }
 
-bool is_ignored(int i) {
+inline bool is_ignored(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+

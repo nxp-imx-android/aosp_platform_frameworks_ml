@@ -22,6 +22,7 @@
 #include "NeuralNetworks.h"
 
 #include <math.h>
+#include <optional>
 #include <vector>
 
 namespace android {
@@ -35,6 +36,12 @@ enum class Type {
     TENSOR_FLOAT32 = ANEURALNETWORKS_TENSOR_FLOAT32,
     TENSOR_INT32 = ANEURALNETWORKS_TENSOR_INT32,
     TENSOR_QUANT8_ASYMM = ANEURALNETWORKS_TENSOR_QUANT8_ASYMM,
+    BOOL = ANEURALNETWORKS_BOOL,
+    TENSOR_QUANT16_SYMM = ANEURALNETWORKS_TENSOR_QUANT16_SYMM,
+    TENSOR_FLOAT16 = ANEURALNETWORKS_TENSOR_FLOAT16,
+    TENSOR_BOOL8 = ANEURALNETWORKS_TENSOR_BOOL8,
+    FLOAT16 = ANEURALNETWORKS_FLOAT16,
+    TENSOR_QUANT8_SYMM_PER_CHANNEL = ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL,
 };
 
 enum class ExecutePreference {
@@ -54,18 +61,45 @@ enum class Result {
     BAD_STATE = ANEURALNETWORKS_BAD_STATE,
 };
 
+struct SymmPerChannelQuantParams {
+    ANeuralNetworksSymmPerChannelQuantParams params;
+    std::vector<float> scales;
+
+    SymmPerChannelQuantParams(std::vector<float> scalesVec, uint32_t channelDim)
+        : scales(std::move(scalesVec)) {
+        params = {
+                .channelDim = channelDim,
+                .scaleCount = static_cast<uint32_t>(scales.size()),
+                .scales = scales.size() > 0 ? scales.data() : nullptr,
+        };
+    }
+};
+
 struct OperandType {
     ANeuralNetworksOperandType operandType;
     std::vector<uint32_t> dimensions;
+    std::optional<SymmPerChannelQuantParams> channelQuant;
 
     OperandType(Type type, std::vector<uint32_t> d, float scale = 0.0f, int32_t zeroPoint = 0)
-            : dimensions(std::move(d)) {
+        : dimensions(std::move(d)), channelQuant(std::nullopt) {
         operandType = {
-            .type = static_cast<int32_t>(type),
-            .dimensionCount = static_cast<uint32_t>(dimensions.size()),
-            .dimensions = dimensions.size() > 0 ? dimensions.data() : nullptr,
-            .scale = scale,
-            .zeroPoint = zeroPoint,
+                .type = static_cast<int32_t>(type),
+                .dimensionCount = static_cast<uint32_t>(dimensions.size()),
+                .dimensions = dimensions.size() > 0 ? dimensions.data() : nullptr,
+                .scale = scale,
+                .zeroPoint = zeroPoint,
+        };
+    }
+
+    OperandType(Type type, std::vector<uint32_t> data, float scale, int32_t zeroPoint,
+                SymmPerChannelQuantParams&& channelQuant)
+        : dimensions(std::move(data)), channelQuant(std::move(channelQuant)) {
+        operandType = {
+                .type = static_cast<int32_t>(type),
+                .dimensionCount = static_cast<uint32_t>(dimensions.size()),
+                .dimensions = dimensions.size() > 0 ? dimensions.data() : nullptr,
+                .scale = scale,
+                .zeroPoint = zeroPoint,
         };
     }
 };
@@ -155,6 +189,13 @@ public:
         if (ANeuralNetworksModel_addOperand(mModel, &(type->operandType)) !=
             ANEURALNETWORKS_NO_ERROR) {
             mValid = false;
+        }
+        if (type->channelQuant) {
+            if (ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
+                        mModel, mNextOperandId, &type->channelQuant.value().params) !=
+                ANEURALNETWORKS_NO_ERROR) {
+                mValid = false;
+            }
         }
         return mNextOperandId++;
     }
@@ -351,21 +392,9 @@ public:
         return result;
     }
 
-    Result compute() {
-        ANeuralNetworksEvent* event = nullptr;
-        Result result =
-                    static_cast<Result>(ANeuralNetworksExecution_startCompute(mExecution, &event));
-        if (result != Result::NO_ERROR) {
-            return result;
-        }
-        // TODO how to manage the lifetime of events when multiple waiters is not
-        // clear.
-        result = static_cast<Result>(ANeuralNetworksEvent_wait(event));
-        ANeuralNetworksEvent_free(event);
-        return result;
-    }
+    Result compute() { return static_cast<Result>(ANeuralNetworksExecution_compute(mExecution)); }
 
-private:
+   private:
     ANeuralNetworksExecution* mExecution = nullptr;
 };
 

@@ -55,6 +55,8 @@ struct RunTimeOperandInfo {
     // always 0.
     uint32_t numberOfUsesLeft;
 
+    Operand::ExtraParams extraParams;
+
     Shape shape() const {
         return Shape{.type = type, .dimensions = dimensions, .scale = scale, .offset = zeroPoint};
     }
@@ -75,8 +77,8 @@ public:
     explicit RunTimePoolInfo(uint8_t* buffer);
 
     // Implement move
-    RunTimePoolInfo(RunTimePoolInfo&& other);
-    RunTimePoolInfo& operator=(RunTimePoolInfo&& other);
+    RunTimePoolInfo(RunTimePoolInfo&& other) noexcept;
+    RunTimePoolInfo& operator=(RunTimePoolInfo&& other) noexcept;
 
     // Forbid copy
     RunTimePoolInfo(const RunTimePoolInfo&) = delete;
@@ -107,10 +109,7 @@ public:
     // specified in the constructor.
     // The model must outlive the executor.  We prevent it from being modified
     // while this is executing.
-    int run(const V1_0::Model& model, const Request& request,
-            const std::vector<RunTimePoolInfo>& modelPoolInfos,
-            const std::vector<RunTimePoolInfo>& requestPoolInfos);
-    int run(const V1_1::Model& model, const Request& request,
+    int run(const Model& model, const Request& request,
             const std::vector<RunTimePoolInfo>& modelPoolInfos,
             const std::vector<RunTimePoolInfo>& requestPoolInfos);
 
@@ -142,9 +141,9 @@ private:
 //
 // Currently sets a low blocktime: the time OpenMP threads busy-wait for more
 // work before going to sleep. See b/79159165, https://reviews.llvm.org/D18577.
-// The default is 200ms, we set to 20ms here, see b/109645291. This keeps the
-// cores enabled throughout inference computation without too much extra power
-// consumption afterwards.
+// The default is 200ms, we set to 1ms here. This should allow for the threads
+// to not sleep before the next operation, but release CPU to other work
+// quickly.
 //
 // The OpenMP settings are thread-local (applying only to worker threads formed
 // from that thread), see https://software.intel.com/en-us/node/522688 and
@@ -181,9 +180,9 @@ namespace {
 
 template <typename T>
 T getScalarData(const RunTimeOperandInfo& info) {
-  // TODO: Check buffer is at least as long as size of data.
-  T* data = reinterpret_cast<T*>(info.buffer);
-  return data[0];
+    // TODO: Check buffer is at least as long as size of data.
+    T* data = reinterpret_cast<T*>(info.buffer);
+    return data[0];
 }
 
 inline bool IsNullInput(const RunTimeOperandInfo *input) {

@@ -21,8 +21,8 @@
 #include "Manager.h"
 #include "ModelBuilder.h"
 #include "NeuralNetworks.h"
-#include "NeuralNetworksWrapper.h"
 #include "SampleDriver.h"
+#include "TestNeuralNetworksWrapper.h"
 #include "ValidateHal.h"
 
 #include <algorithm>
@@ -36,54 +36,94 @@ namespace android {
 using CompilationBuilder = nn::CompilationBuilder;
 using Device = nn::Device;
 using DeviceManager = nn::DeviceManager;
-using HidlModel = hardware::neuralnetworks::V1_1::Model;
-using PreparedModelCallback = hardware::neuralnetworks::V1_0::implementation::PreparedModelCallback;
-using Result = nn::wrapper::Result;
+using HidlModel = hardware::neuralnetworks::V1_2::Model;
+using PreparedModelCallback = hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
+using Result = nn::test_wrapper::Result;
 using SampleDriver = nn::sample_driver::SampleDriver;
-using WrapperCompilation = nn::wrapper::Compilation;
-using WrapperEvent = nn::wrapper::Event;
-using WrapperExecution = nn::wrapper::Execution;
-using WrapperModel = nn::wrapper::Model;
-using WrapperOperandType = nn::wrapper::OperandType;
-using WrapperType = nn::wrapper::Type;
+using WrapperCompilation = nn::test_wrapper::Compilation;
+using WrapperEvent = nn::test_wrapper::Event;
+using WrapperExecution = nn::test_wrapper::Execution;
+using WrapperModel = nn::test_wrapper::Model;
+using WrapperOperandType = nn::test_wrapper::OperandType;
+using WrapperType = nn::test_wrapper::Type;
 
 namespace {
 
-// Wraps an IPreparedModel to allow dummying up the execution status.
-class TestPreparedModel : public IPreparedModel {
-public:
+// Wraps an V1_2::IPreparedModel to allow dummying up the execution status.
+class TestPreparedModel12 : public V1_2::IPreparedModel {
+   public:
     // If errorStatus is NONE, then execute behaves normally (and sends back
     // the actual execution status).  Otherwise, don't bother to execute, and
     // just send back errorStatus (as the execution status, not the launch
     // status).
-    TestPreparedModel(sp<IPreparedModel> preparedModel, ErrorStatus errorStatus) :
-            mPreparedModel(preparedModel), mErrorStatus(errorStatus) {}
+    TestPreparedModel12(sp<V1_0::IPreparedModel> preparedModel, ErrorStatus errorStatus)
+        : mPreparedModelV1_0(preparedModel),
+          mPreparedModelV1_2(V1_2::IPreparedModel::castFrom(preparedModel).withDefault(nullptr)),
+          mErrorStatus(errorStatus) {}
 
     Return<ErrorStatus> execute(const Request& request,
-                                const sp<IExecutionCallback>& callback) override {
+                                const sp<V1_0::IExecutionCallback>& callback) override {
+        CHECK(mPreparedModelV1_0 != nullptr) << "V1_0 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
-            return mPreparedModel->execute(request, callback);
+            return mPreparedModelV1_0->execute(request, callback);
         } else {
             callback->notify(mErrorStatus);
             return ErrorStatus::NONE;
         }
     }
-private:
-    sp<IPreparedModel> mPreparedModel;
+
+    Return<ErrorStatus> execute_1_2(const Request& request,
+                                    const sp<V1_2::IExecutionCallback>& callback) override {
+        CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
+        if (mErrorStatus == ErrorStatus::NONE) {
+            return mPreparedModelV1_2->execute_1_2(request, callback);
+        } else {
+            callback->notify_1_2(mErrorStatus);
+            return ErrorStatus::NONE;
+        }
+    }
+
+    Return<ErrorStatus> executeSynchronously(const Request& request) override {
+        CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
+        if (mErrorStatus == ErrorStatus::NONE) {
+            return mPreparedModelV1_2->executeSynchronously(request);
+        } else {
+            return mErrorStatus;
+        }
+    }
+
+   private:
+    sp<V1_0::IPreparedModel> mPreparedModelV1_0;
+    sp<V1_2::IPreparedModel> mPreparedModelV1_2;
     ErrorStatus mErrorStatus;
 };
 
+// Like TestPreparedModel12, but implementing 1.0
+class TestPreparedModel10 : public V1_0::IPreparedModel {
+   public:
+    TestPreparedModel10(sp<V1_0::IPreparedModel> preparedModel, ErrorStatus errorStatus)
+        : m12PreparedModel(preparedModel, errorStatus) {}
+
+    Return<ErrorStatus> execute(const Request& request,
+                                const sp<V1_0::IExecutionCallback>& callback) override {
+        return m12PreparedModel.execute(request, callback);
+    }
+
+   private:
+    TestPreparedModel12 m12PreparedModel;
+};
+
 // Behaves like SampleDriver, except that it produces wrapped IPreparedModel.
-class TestDriver11 : public SampleDriver {
-public:
+class TestDriver12 : public SampleDriver {
+   public:
     // Allow dummying up the error status for execution of all models
     // prepared from this driver.  If errorStatus is NONE, then
     // execute behaves normally (and sends back the actual execution
     // status).  Otherwise, don't bother to execute, and just send
     // back errorStatus (as the execution status, not the launch
     // status).
-    TestDriver11(const std::string& name, ErrorStatus errorStatus) :
-                 SampleDriver(name.c_str()), mErrorStatus(errorStatus) { }
+    TestDriver12(const std::string& name, ErrorStatus errorStatus)
+        : SampleDriver(name.c_str()), mErrorStatus(errorStatus) {}
 
     Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
         android::nn::initVLogMask();
@@ -95,8 +135,8 @@ public:
         return Void();
     }
 
-    Return<void> getSupportedOperations_1_1(const HidlModel& model,
-                                            getSupportedOperations_cb cb) override {
+    Return<void> getSupportedOperations_1_2(const HidlModel& model,
+                                            getSupportedOperations_1_2_cb cb) override {
         if (nn::validateModel(model)) {
             std::vector<bool> supported(model.operations.size(), true);
             cb(ErrorStatus::NONE, supported);
@@ -107,11 +147,37 @@ public:
         return Void();
     }
 
-    Return<ErrorStatus> prepareModel_1_1(
-        const HidlModel& model,
-        ExecutionPreference preference,
-        const sp<IPreparedModelCallback>& actualCallback) override {
+    Return<ErrorStatus> prepareModel_1_2(
+            const HidlModel& model, ExecutionPreference preference,
+            const sp<IPreparedModelCallback>& actualCallback) override {
+        sp<PreparedModelCallback> localCallback = new PreparedModelCallback;
+        Return<ErrorStatus> prepareModelReturn =
+                SampleDriver::prepareModel_1_2(model, preference, localCallback);
+        if (!prepareModelReturn.isOkUnchecked()) {
+            return prepareModelReturn;
+        }
+        if (prepareModelReturn != ErrorStatus::NONE) {
+            actualCallback->notify_1_2(
+                    localCallback->getStatus(),
+                    V1_2::IPreparedModel::castFrom(localCallback->getPreparedModel()));
+            return prepareModelReturn;
+        }
+        localCallback->wait();
+        if (localCallback->getStatus() != ErrorStatus::NONE) {
+            actualCallback->notify_1_2(
+                    localCallback->getStatus(),
+                    V1_2::IPreparedModel::castFrom(localCallback->getPreparedModel()));
+        } else {
+            actualCallback->notify_1_2(
+                    ErrorStatus::NONE,
+                    new TestPreparedModel12(localCallback->getPreparedModel(), mErrorStatus));
+        }
+        return prepareModelReturn;
+    }
 
+    Return<ErrorStatus> prepareModel_1_1(
+            const V1_1::Model& model, ExecutionPreference preference,
+            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         sp<PreparedModelCallback> localCallback = new PreparedModelCallback;
         Return<ErrorStatus> prepareModelReturn =
                 SampleDriver::prepareModel_1_1(model, preference, localCallback);
@@ -126,72 +192,108 @@ public:
         if (localCallback->getStatus() != ErrorStatus::NONE) {
             actualCallback->notify(localCallback->getStatus(), localCallback->getPreparedModel());
         } else {
-            actualCallback->notify(ErrorStatus::NONE,
-                                   new TestPreparedModel(localCallback->getPreparedModel(),
-                                                         mErrorStatus));
+            actualCallback->notify(
+                    ErrorStatus::NONE,
+                    new TestPreparedModel10(localCallback->getPreparedModel(), mErrorStatus));
         }
         return prepareModelReturn;
     }
 
-private:
+    Return<ErrorStatus> prepareModel(
+            const V1_0::Model& model,
+            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
+        return prepareModel_1_1(nn::convertToV1_1(model), ExecutionPreference::FAST_SINGLE_ANSWER,
+                                actualCallback);
+    }
+
+   private:
     ErrorStatus mErrorStatus;
+};
+
+// Like TestDriver, but implementing 1.1
+class TestDriver11 : public V1_1::IDevice {
+   public:
+    TestDriver11(const std::string& name, ErrorStatus errorStatus) : m12Driver(name, errorStatus) {}
+    Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
+        return m12Driver.getCapabilities_1_1(_hidl_cb);
+    }
+    Return<void> getSupportedOperations_1_1(const V1_1::Model& model,
+                                            getSupportedOperations_1_1_cb _hidl_cb) override {
+        return m12Driver.getSupportedOperations_1_1(model, _hidl_cb);
+    }
+    Return<ErrorStatus> prepareModel_1_1(
+            const V1_1::Model& model, ExecutionPreference preference,
+            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
+        return m12Driver.prepareModel_1_1(model, preference, actualCallback);
+    }
+    Return<DeviceStatus> getStatus() override { return m12Driver.getStatus(); }
+    Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
+        return m12Driver.getCapabilities(_hidl_cb);
+    }
+    Return<void> getSupportedOperations(const V1_0::Model& model,
+                                        getSupportedOperations_cb _hidl_cb) override {
+        return m12Driver.getSupportedOperations(model, _hidl_cb);
+    }
+    Return<ErrorStatus> prepareModel(
+            const V1_0::Model& model,
+            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
+        return m12Driver.prepareModel(model, actualCallback);
+    }
+
+   private:
+    TestDriver12 m12Driver;
 };
 
 // Like TestDriver, but implementing 1.0
 class TestDriver10 : public V1_0::IDevice {
-public:
-    TestDriver10(const std::string& name, ErrorStatus errorStatus) : m11Driver(name, errorStatus) {}
+   public:
+    TestDriver10(const std::string& name, ErrorStatus errorStatus) : m12Driver(name, errorStatus) {}
     Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return m11Driver.getCapabilities(_hidl_cb);
+        return m12Driver.getCapabilities(_hidl_cb);
     }
     Return<void> getSupportedOperations(const V1_0::Model& model,
                                         getSupportedOperations_cb _hidl_cb) override {
-        return m11Driver.getSupportedOperations(model, _hidl_cb);
+        return m12Driver.getSupportedOperations(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel(
-        const V1_0::Model& model,
-        const sp<IPreparedModelCallback>& actualCallback) override {
-        return m11Driver.prepareModel(model, actualCallback);
+            const V1_0::Model& model,
+            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
+        return m12Driver.prepareModel(model, actualCallback);
     }
-    Return<DeviceStatus> getStatus() override {
-        return m11Driver.getStatus();
-    }
-private:
-    TestDriver11 m11Driver;
+    Return<DeviceStatus> getStatus() override { return m12Driver.getStatus(); }
+
+   private:
+    TestDriver12 m12Driver;
 };
 
-// This class adds some simple utilities on top of
-// ::android::nn::wrapper::Compilation in order to provide access to
-// certain features from CompilationBuilder that are not exposed by
-// the base class.
+// This class adds some simple utilities on top of WrapperCompilation in order
+// to provide access to certain features from CompilationBuilder that are not
+// exposed by the base class.
 template<typename DriverClass>
 class TestCompilation : public WrapperCompilation {
 public:
-    TestCompilation(const WrapperModel* model) : WrapperCompilation(model) {
-        // We need to ensure that we use our TestDriver and do not
-        // fall back to CPU.  (If we allow CPU fallback, then when our
-        // TestDriver reports an execution failure, we'll re-execute
-        // on CPU, and will not see the failure.)
-        builder()->setPartitioning(DeviceManager::kPartitioningWithoutFallback);
-    }
-
     // Allow dummying up the error status for all executions from this
     // compilation.  If errorStatus is NONE, then execute behaves
     // normally (and sends back the actual execution status).
     // Otherwise, don't bother to execute, and just send back
     // errorStatus (as the execution status, not the launch status).
-    Result finish(const std::string& deviceName, ErrorStatus errorStatus) {
+    TestCompilation(const WrapperModel* model, const std::string& deviceName,
+                    ErrorStatus errorStatus) {
         std::vector<std::shared_ptr<Device>> devices;
-        auto device = std::make_shared<Device>(deviceName,
-                                               new DriverClass(deviceName, errorStatus));
-        assert(device->initialize());
+        auto device = DeviceManager::forTest_makeDriverDevice(
+                deviceName, new DriverClass(deviceName, errorStatus));
         devices.push_back(device);
-        return static_cast<Result>(builder()->finish(devices));
-    }
 
-private:
-    CompilationBuilder* builder() {
-        return reinterpret_cast<CompilationBuilder*>(getHandle());
+        nn::ModelBuilder* m = reinterpret_cast<nn::ModelBuilder*>(model->getHandle());
+        CompilationBuilder* c = nullptr;
+        int result = m->createCompilation(&c, devices);
+        EXPECT_EQ(result, 0);
+        // We need to ensure that we use our TestDriver and do not
+        // fall back to CPU.  (If we allow CPU fallback, then when our
+        // TestDriver reports an execution failure, we'll re-execute
+        // on CPU, and will not see the failure.)
+        c->setPartitioning(DeviceManager::kPartitioningWithoutFallback);
+        mCompilation = reinterpret_cast<ANeuralNetworksCompilation*>(c);
     }
 };
 
@@ -204,7 +306,7 @@ public:
             kForceErrorStatus(std::get<0>(GetParam())),
             kExpectResult(std::get<1>(GetParam())),
             mModel(makeModel()),
-            mCompilation(&mModel) { }
+            mCompilation(&mModel, kName, kForceErrorStatus) {}
 
 protected:
     // Unit test method
@@ -227,12 +329,16 @@ protected:
     TestCompilation<DriverClass> mCompilation;
 
     void setInputOutput(WrapperExecution* execution) {
+        mInputBuffer = kInputBuffer;
+        mOutputBuffer = kOutputBufferInitial;
         ASSERT_EQ(execution->setInput(0, &mInputBuffer, sizeof(mInputBuffer)), Result::NO_ERROR);
         ASSERT_EQ(execution->setOutput(0, &mOutputBuffer, sizeof(mOutputBuffer)), Result::NO_ERROR);
     }
 
-    float mInputBuffer  = 3.14;
-    float mOutputBuffer = 0;
+    const float kInputBuffer = 3.14;
+    const float kOutputBufferInitial = 0;
+    float mInputBuffer;
+    float mOutputBuffer;
     const float kOutputBufferExpected = 3;
 
 private:
@@ -252,14 +358,27 @@ private:
 
 template<class DriverClass> void ExecutionTestTemplate<DriverClass>::TestWait() {
     SCOPED_TRACE(kName);
-    ASSERT_EQ(mCompilation.finish(kName, kForceErrorStatus), Result::NO_ERROR);
-    WrapperExecution execution(&mCompilation);
-    ASSERT_NO_FATAL_FAILURE(setInputOutput(&execution));
-    WrapperEvent event;
-    ASSERT_EQ(execution.startCompute(&event), Result::NO_ERROR);
-    ASSERT_EQ(event.wait(), kExpectResult);
-    if (kExpectResult == Result::NO_ERROR) {
-        ASSERT_EQ(mOutputBuffer, kOutputBufferExpected);
+    ASSERT_EQ(mCompilation.finish(), Result::NO_ERROR);
+
+    {
+        SCOPED_TRACE("startCompute");
+        WrapperExecution execution(&mCompilation);
+        ASSERT_NO_FATAL_FAILURE(setInputOutput(&execution));
+        WrapperEvent event;
+        ASSERT_EQ(execution.startCompute(&event), Result::NO_ERROR);
+        ASSERT_EQ(event.wait(), kExpectResult);
+        if (kExpectResult == Result::NO_ERROR) {
+            ASSERT_EQ(mOutputBuffer, kOutputBufferExpected);
+        }
+    }
+    {
+        SCOPED_TRACE("compute");
+        WrapperExecution execution(&mCompilation);
+        ASSERT_NO_FATAL_FAILURE(setInputOutput(&execution));
+        ASSERT_EQ(execution.compute(), kExpectResult);
+        if (kExpectResult == Result::NO_ERROR) {
+            ASSERT_EQ(mOutputBuffer, kOutputBufferExpected);
+        }
     }
 }
 
@@ -273,6 +392,12 @@ auto kTestValues = ::testing::Values(std::make_tuple(ErrorStatus::NONE,
                                                      Result::OP_FAILED),
                                      std::make_tuple(ErrorStatus::INVALID_ARGUMENT,
                                                      Result::BAD_DATA));
+
+class ExecutionTest12 : public ExecutionTestTemplate<TestDriver12> {};
+TEST_P(ExecutionTest12, Wait) {
+    TestWait();
+}
+INSTANTIATE_TEST_CASE_P(Flavor, ExecutionTest12, kTestValues);
 
 class ExecutionTest11 : public ExecutionTestTemplate<TestDriver11> {};
 TEST_P(ExecutionTest11, Wait) {

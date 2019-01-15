@@ -32,6 +32,7 @@
 #include "Tracing.h"
 #include "Utils.h"
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -41,11 +42,18 @@
 static_assert(ANEURALNETWORKS_FLOAT32 == 0, "ANEURALNETWORKS_FLOAT32 has changed");
 static_assert(ANEURALNETWORKS_INT32 == 1, "ANEURALNETWORKS_INT32 has changed");
 static_assert(ANEURALNETWORKS_UINT32 == 2, "ANEURALNETWORKS_UINT32 has changed");
-static_assert(ANEURALNETWORKS_TENSOR_FLOAT32 == 3,
-              "ANEURALNETWORKS_TENSOR_FLOAT32 has changed");
+static_assert(ANEURALNETWORKS_TENSOR_FLOAT32 == 3, "ANEURALNETWORKS_TENSOR_FLOAT32 has changed");
 static_assert(ANEURALNETWORKS_TENSOR_INT32 == 4, "ANEURALNETWORKS_TENSOR_INT32 has changed");
 static_assert(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM == 5,
               "ANEURALNETWORKS_TENSOR_QUANT8_ASYMM has changed");
+static_assert(ANEURALNETWORKS_BOOL == 6, "ANEURALNETWORKS_BOOL has changed");
+static_assert(ANEURALNETWORKS_TENSOR_QUANT16_SYMM == 7,
+              "ANEURALNETWORKS_TENSOR_QUANT16_SYMM has changed");
+static_assert(ANEURALNETWORKS_TENSOR_FLOAT16 == 8, "ANEURALNETWORKS_TENSOR_FLOAT16 has changed");
+static_assert(ANEURALNETWORKS_TENSOR_BOOL8 == 9, "ANEURALNETWORKS_TENSOR_BOOL8 has changed");
+static_assert(ANEURALNETWORKS_FLOAT16 == 10, "ANEURALNETWORKS_FLOAT16 has changed");
+static_assert(ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL == 11,
+              "ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL has changed");
 static_assert(ANEURALNETWORKS_OEM_SCALAR == 10000, "ANEURALNETWORKS_OEM_SCALAR has changed");
 static_assert(ANEURALNETWORKS_TENSOR_OEM_BYTE == 10001,
               "ANEURALNETWORKS_TENSOR_OEM_BYTE has changed");
@@ -142,11 +150,23 @@ static_assert(static_cast<int32_t>(OperandType::UINT32) == ANEURALNETWORKS_UINT3
               "UINT32 != ANEURALNETWORKS_UINT32");
 static_assert(static_cast<int32_t>(OperandType::TENSOR_OEM_BYTE) == ANEURALNETWORKS_TENSOR_OEM_BYTE,
               "TENSOR_OEM_BYTE != ANEURALNETWORKS_TENSOR_OEM_BYTE");
+static_assert(static_cast<int32_t>(OperandType::TENSOR_FLOAT16) == ANEURALNETWORKS_TENSOR_FLOAT16,
+              "TENSOR_FLOAT16 != ANEURALNETWORKS_TENSOR_FLOAT16");
 static_assert(static_cast<int32_t>(OperandType::TENSOR_FLOAT32) == ANEURALNETWORKS_TENSOR_FLOAT32,
               "TENSOR_FLOAT32 != ANEURALNETWORKS_TENSOR_FLOAT32");
 static_assert(static_cast<int32_t>(OperandType::TENSOR_QUANT8_ASYMM) ==
                           ANEURALNETWORKS_TENSOR_QUANT8_ASYMM,
               "TENSOR_QUANT8_ASYMM != ANEURALNETWORKS_TENSOR_QUANT8_ASYMM");
+static_assert(static_cast<int32_t>(OperandType::BOOL) == ANEURALNETWORKS_BOOL,
+              "BOOL != ANEURALNETWORKS_BOOL");
+static_assert(static_cast<int32_t>(OperandType::TENSOR_QUANT16_SYMM) ==
+                      ANEURALNETWORKS_TENSOR_QUANT16_SYMM,
+              "TENSOR_QUANT16_SYMM != ANEURALNETWORKS_TENSOR_QUANT16_SYMM");
+static_assert(static_cast<int32_t>(OperandType::TENSOR_BOOL8) == ANEURALNETWORKS_TENSOR_BOOL8,
+              "TENSOR_BOOL8 != ANEURALNETWORKS_TENSOR_BOOL8");
+static_assert(static_cast<int32_t>(OperandType::TENSOR_QUANT8_SYMM_PER_CHANNEL) ==
+                      ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL,
+              "TENSOR_QUANT8_SYMM_PER_CHANNEL != ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL");
 
 static_assert(static_cast<int32_t>(OperationType::ADD) == ANEURALNETWORKS_ADD,
               "OperationType::ADD != ANEURALNETWORKS_ADD");
@@ -247,8 +267,205 @@ static_assert(static_cast<int32_t>(FusedActivationFunc::RELU1) == ANEURALNETWORK
 static_assert(static_cast<int32_t>(FusedActivationFunc::RELU6) == ANEURALNETWORKS_FUSED_RELU6,
               "FusedActivationFunc::RELU6 != ANEURALNETWORKS_FUSED_RELU6");
 
+// Asserts for ANeuralNetworksOperandType memory layout
+static_assert(offsetof(ANeuralNetworksOperandType, type) == 0,
+              "ANeuralNetworksOperandType.type offset != 0");
+static_assert(offsetof(ANeuralNetworksOperandType, dimensionCount) == 4,
+              "ANeuralNetworksOperandType.dimensionCount offset != 4");
+static_assert(offsetof(ANeuralNetworksOperandType, dimensions) == 8,
+              "ANeuralNetworksOperandType.dimensions offset != 8");
+static_assert(offsetof(ANeuralNetworksOperandType, scale) == 8 + sizeof(void*),
+              "ANeuralNetworksOperandType.scale offset != 8 + sizeof(void*)");
+static_assert(offsetof(ANeuralNetworksOperandType, zeroPoint) == 12 + sizeof(void*),
+              "ANeuralNetworksOperandType.zeroPoint offset != 12 + sizeof(void*)");
+static_assert(sizeof(ANeuralNetworksOperandType) == 16 + sizeof(void*),
+              "ANeuralNetworksOperandType size changed");
+static_assert(alignof(ANeuralNetworksOperandType) == alignof(void*),
+              "ANeuralNetworksOperandType alignment changed");
+
+// Asserts for ANeuralNetworksSymmPerChannelQuantParams memory layout
+static_assert(offsetof(ANeuralNetworksSymmPerChannelQuantParams, channelDim) == 0,
+              "ANeuralNetworksSymmPerChannelQuantParams.channelDim offset != 4 + sizeof(void*)");
+static_assert(offsetof(ANeuralNetworksSymmPerChannelQuantParams, scaleCount) == 4,
+              "ANeuralNetworksSymmPerChannelQuantParams.scaleCount offset != 0");
+static_assert(offsetof(ANeuralNetworksSymmPerChannelQuantParams, scales) == 8,
+              "ANeuralNetworksSymmPerChannelQuantParams.scales offset != 4");
+static_assert(sizeof(ANeuralNetworksSymmPerChannelQuantParams) == 8 + sizeof(void*),
+              "ANeuralNetworksSymmPerChannelQuantParams size != 8 + sizeof(void*)");
+static_assert(alignof(ANeuralNetworksSymmPerChannelQuantParams) == alignof(void*),
+              "ANeuralNetworksOperandType alignment changed");
+
 using android::sp;
 using namespace android::nn;
+
+int ANeuralNetworks_getDeviceCount(uint32_t* numDevices) {
+    if (numDevices == nullptr) {
+        LOG(ERROR) << "ANeuralNetworks_getDeviceCount passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    *numDevices = DeviceManager::get()->getDrivers().size();
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworks_getDevice(uint32_t devIndex, ANeuralNetworksDevice** device) {
+    if (device == nullptr) {
+        LOG(ERROR) << "ANeuralNetworks_getDevice passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    const std::vector<std::shared_ptr<Device>>& devices = DeviceManager::get()->getDrivers();
+    if (devIndex >= devices.size()) {
+        LOG(ERROR) << "ANeuralNetworks_getDevice passed an invalid device index";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    *device = reinterpret_cast<ANeuralNetworksDevice*>(devices.at(devIndex).get());
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksDevice_getName(const ANeuralNetworksDevice* device, const char** name) {
+    if (device == nullptr || name == nullptr) {
+        LOG(ERROR) << "ANeuralNetworksDevice_getName passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    const Device* d = reinterpret_cast<const Device*>(device);
+    *name = d->getName();
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksDevice_getVersion(const ANeuralNetworksDevice* device, const char** version) {
+    if (device == nullptr || version == nullptr) {
+        LOG(ERROR) << "ANeuralNetworksDevice_getVersion passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    const Device* d = reinterpret_cast<const Device*>(device);
+    *version = d->getVersionString();
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksDevice_getFeatureLevel(const ANeuralNetworksDevice* device,
+                                          int64_t* featureLevel) {
+    if (device == nullptr || featureLevel == nullptr) {
+        LOG(ERROR) << "ANeuralNetworksDevice_getFeatureLevel passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    Device* d = reinterpret_cast<Device*>(const_cast<ANeuralNetworksDevice*>(device));
+    int64_t dFeatureLevel = d->getFeatureLevel();
+    if (dFeatureLevel < 0) {
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    *featureLevel = dFeatureLevel;
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksModel_getSupportedOperationsForDevices(
+        const ANeuralNetworksModel* model, const ANeuralNetworksDevice* const* devices,
+        uint32_t numDevices, bool* supportedOps) {
+    NNTRACE_RT(NNTRACE_PHASE_COMPILATION, "ANeuralNetworksModel_getSupportedOperationsForDevices");
+    if (model == nullptr || devices == nullptr || supportedOps == nullptr) {
+        LOG(ERROR) << "ANeuralNetworksModel_getSupportedOperationsForDevices passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    if (numDevices == 0) {
+        LOG(ERROR) << "ANeuralNetworksModel_getSupportedOperationsForDevices passed an empty "
+                      "device list";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    const ModelBuilder* m = reinterpret_cast<const ModelBuilder*>(model);
+    if (!m->isFinished() || !m->isValid()) {
+        LOG(ERROR) << "ANeuralNetworksModel_getSupportedOperationsForDevices passed an unfinished "
+                      "or invalid Model";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+
+    Model hidlModel;
+    m->setHidlModel(&hidlModel);
+    const std::vector<uint32_t>& opMap = m->getSortedOperationMapping();
+    // init the output array to false for all the operations.
+    std::fill(supportedOps, supportedOps + opMap.size(), false);
+    for (uint32_t i = 0; i < numDevices; i++) {
+        if (devices[i] == nullptr) {
+            LOG(ERROR) << "ANeuralNetworksModel_getSupportedOperationsForDevices passed a nullptr "
+                          "as a device";
+            return ANEURALNETWORKS_UNEXPECTED_NULL;
+        }
+        for (uint32_t j = i + 1; j < numDevices; j++) {
+            if (devices[i] == devices[j]) {
+                LOG(ERROR) << "ANeuralNetworksModel_getSupportedOperationsForDevices passed "
+                              "duplicate devices";
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+        }
+
+        Device* d = reinterpret_cast<Device*>(const_cast<ANeuralNetworksDevice*>(devices[i]));
+        hidl_vec<bool> supportsByDevice;
+        d->getSupportedOperations(hidlModel, &supportsByDevice);
+        for (uint32_t j = 0; j < supportsByDevice.size(); j++) {
+            uint32_t originalIdx = opMap[j];
+            supportedOps[originalIdx] |= supportsByDevice[j];
+        }
+    }
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksCompilation_createForDevices(ANeuralNetworksModel* model,
+                                                const ANeuralNetworksDevice* const* devices,
+                                                uint32_t numDevices,
+                                                ANeuralNetworksCompilation** compilation) {
+    NNTRACE_RT(NNTRACE_PHASE_COMPILATION, "ANeuralNetworksCompilation_createForDevices");
+    if (model == nullptr || devices == nullptr || compilation == nullptr) {
+        LOG(ERROR) << "ANeuralNetworksCompilation_createForDevices passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+
+    if (numDevices == 0) {
+        LOG(ERROR) << "ANeuralNetworksCompilation_createForDevices passed an empty device list";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+
+    std::vector<std::shared_ptr<Device>> selectedDevices;
+    for (uint32_t i = 0; i < numDevices; i++) {
+        if (devices[i] == nullptr) {
+            LOG(ERROR)
+                    << "ANeuralNetworksCompilation_createForDevices passed a nullptr as a device";
+            return ANEURALNETWORKS_UNEXPECTED_NULL;
+        }
+        for (uint32_t j = i + 1; j < numDevices; j++) {
+            if (devices[i] == devices[j]) {
+                LOG(ERROR)
+                        << "ANeuralNetworksCompilation_createForDevices passed duplicate devices";
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+        }
+        for (auto& device : DeviceManager::get()->getDrivers()) {
+            if (device.get() == reinterpret_cast<const Device*>(devices[i])) {
+                // Find a match
+                selectedDevices.push_back(device);
+                break;
+            }
+        }
+    }
+
+    if (selectedDevices.size() != numDevices) {
+        LOG(ERROR) << "ANeuralNetworksCompilation_createForDevices passed an invalid device set";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    ModelBuilder* m = reinterpret_cast<ModelBuilder*>(model);
+    CompilationBuilder* c = nullptr;
+    int result = m->createCompilation(&c, selectedDevices);
+    *compilation = reinterpret_cast<ANeuralNetworksCompilation*>(c);
+    return result;
+}
+
+int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_compute");
+    if (!execution) {
+        LOG(ERROR) << "ANeuralNetworksExecution_compute passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    // TODO validate the rest
+
+    ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    return r->computeSynchronously();
+}
 
 int ANeuralNetworksMemory_createFromFd(size_t size, int prot, int fd, size_t offset,
                                        ANeuralNetworksMemory** memory) {
@@ -354,6 +571,19 @@ int ANeuralNetworksModel_addOperation(ANeuralNetworksModel* model,
     return m->addOperation(type, inputCount, inputs, outputCount, outputs);
 }
 
+int ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
+        ANeuralNetworksModel* model, int32_t index,
+        const ANeuralNetworksSymmPerChannelQuantParams* channelQuant) {
+    NNTRACE_RT(NNTRACE_PHASE_PREPARATION,
+               "ANeuralNetworksModel_setOperandSymmPerChannelQuantParams");
+    if (!model || !channelQuant) {
+        LOG(ERROR) << "ANeuralNetworksModel_setOperandSymmPerChannelQuantParams passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    ModelBuilder* m = reinterpret_cast<ModelBuilder*>(model);
+    return m->setOperandSymmPerChannelQuantParams(index, *channelQuant);
+}
+
 int ANeuralNetworksModel_identifyInputsAndOutputs(ANeuralNetworksModel* model, uint32_t inputCount,
                                                   const uint32_t* inputs, uint32_t outputCount,
                                                   const uint32_t* outputs) {
@@ -387,7 +617,7 @@ int ANeuralNetworksCompilation_create(ANeuralNetworksModel* model,
 
     ModelBuilder* m = reinterpret_cast<ModelBuilder*>(model);
     CompilationBuilder* c = nullptr;
-    int result = m->createCompilation(&c);
+    int result = m->createCompilation(&c, DeviceManager::get()->getDrivers());
     *compilation = reinterpret_cast<ANeuralNetworksCompilation*>(c);
     return result;
 }
@@ -518,7 +748,7 @@ int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
     std::unique_ptr<sp<ExecutionCallback>> e = std::make_unique<sp<ExecutionCallback>>();
     *event = nullptr;
 
-    int n = r->startCompute(e.get());
+    int n = r->computeAsynchronously(e.get());
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return n;
     }
