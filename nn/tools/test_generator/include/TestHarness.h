@@ -20,6 +20,7 @@
 #ifndef ANDROID_ML_NN_TOOLS_TEST_GENERATOR_TEST_HARNESS_H
 #define ANDROID_ML_NN_TOOLS_TEST_GENERATOR_TEST_HARNESS_H
 
+#include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -32,15 +33,54 @@ namespace test_helper {
 
 constexpr const size_t gMaximumNumberOfErrorMessages = 10;
 
+// TODO: Figure out the build dependency to make including "CpuOperationUtils.h" work.
+inline void convertFloat16ToFloat32(const _Float16* input, std::vector<float>* output) {
+    for (size_t i = 0; i < output->size(); ++i) {
+        (*output)[i] = static_cast<float>(input[i]);
+    }
+}
+
+// This class is a workaround for two issues our code relies on:
+// 1. sizeof(bool) is implementation defined.
+// 2. vector<bool> does not allow direct pointer access via the data() method.
+class bool8 {
+   public:
+    bool8() : mValue() {}
+    /* implicit */ bool8(bool value) : mValue(value) {}
+    inline operator bool() const { return mValue != 0; }
+
+   private:
+    uint8_t mValue;
+};
+
+static_assert(sizeof(bool8) == 1, "size of bool8 must be 8 bits");
+
 typedef std::map<int, std::vector<float>> Float32Operands;
 typedef std::map<int, std::vector<int32_t>> Int32Operands;
 typedef std::map<int, std::vector<uint8_t>> Quant8Operands;
-typedef std::tuple<Float32Operands,  // ANEURALNETWORKS_TENSOR_FLOAT32
-                   Int32Operands,    // ANEURALNETWORKS_TENSOR_INT32
-                   Quant8Operands    // ANEURALNETWORKS_TENSOR_QUANT8_ASYMM
+typedef std::map<int, std::vector<int16_t>> Quant16Operands;
+typedef std::map<int, std::vector<_Float16>> Float16Operands;
+typedef std::map<int, std::vector<bool8>> Bool8Operands;
+typedef std::map<int, std::vector<int8_t>> Quant8ChannelOperands;
+typedef std::tuple<Float32Operands,       // ANEURALNETWORKS_TENSOR_FLOAT32
+                   Int32Operands,         // ANEURALNETWORKS_TENSOR_INT32
+                   Quant8Operands,        // ANEURALNETWORKS_TENSOR_QUANT8_ASYMM
+                   Quant16Operands,       // ANEURALNETWORKS_TENSOR_QUANT16_SYMM
+                   Float16Operands,       // ANEURALNETWORKS_TENSOR_FLOAT16
+                   Bool8Operands,         // ANEURALNETWORKS_TENSOR_BOOL8
+                   Quant8ChannelOperands  // ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL
                    >
         MixedTyped;
 typedef std::pair<MixedTyped, MixedTyped> MixedTypedExampleType;
+
+// Mixed-typed examples
+typedef struct {
+    MixedTypedExampleType operands;
+    // Specifies the RANDOM_MULTINOMIAL distribution tolerance.
+    // If set to greater than zero, the input is compared as log-probabilities
+    // to the output and must be within this tolerance to pass.
+    float expectedMultinomialDistributionTolerance = 0.0;
+} MixedTypedExample;
 
 template <typename T>
 struct MixedTypedIndex {};
@@ -56,6 +96,28 @@ struct MixedTypedIndex<int32_t> {
 template <>
 struct MixedTypedIndex<uint8_t> {
     static constexpr size_t index = 2;
+};
+template <>
+struct MixedTypedIndex<int16_t> {
+    static constexpr size_t index = 3;
+};
+template <>
+struct MixedTypedIndex<_Float16> {
+    static constexpr size_t index = 4;
+};
+template <>
+struct MixedTypedIndex<bool8> {
+    static constexpr size_t index = 5;
+};
+template <>
+struct MixedTypedIndex<int8_t> {
+    static constexpr size_t index = 6;
+};
+
+template <size_t Index>
+struct MixedTypedTypes {
+    typedef typename std::tuple_element<Index, MixedTyped>::type::mapped_type VectorType;
+    typedef typename VectorType::value_type ValueType;
 };
 
 // Go through all index-value pairs of a given input type
@@ -93,6 +155,12 @@ inline void for_all(MixedTyped& idx_and_data,
     for_all_internal<float>(idx_and_data, execute_this);
     for_all_internal<int32_t>(idx_and_data, execute_this);
     for_all_internal<uint8_t>(idx_and_data, execute_this);
+    for_all_internal<int16_t>(idx_and_data, execute_this);
+    for_all_internal<_Float16>(idx_and_data, execute_this);
+    for_all_internal<bool8>(idx_and_data, execute_this);
+    for_all_internal<int8_t>(idx_and_data, execute_this);
+    static_assert(7 == std::tuple_size<MixedTyped>::value,
+                  "Number of types in MixedTyped changed, but for_all function wasn't updated");
 }
 
 // Const variant of internal helper for for_all
@@ -107,12 +175,18 @@ inline void for_all_internal(
 
 // Go through all index-value pairs (const variant)
 // expects a functor that takes (int index, const void *raw data, size_t sz)
-inline void for_all(
-        const MixedTyped& idx_and_data,
-        std::function<void(int, const void*, size_t)> execute_this) {
+inline void for_all(const MixedTyped& idx_and_data,
+                    std::function<void(int, const void*, size_t)> execute_this) {
     for_all_internal<float>(idx_and_data, execute_this);
     for_all_internal<int32_t>(idx_and_data, execute_this);
     for_all_internal<uint8_t>(idx_and_data, execute_this);
+    for_all_internal<int16_t>(idx_and_data, execute_this);
+    for_all_internal<_Float16>(idx_and_data, execute_this);
+    for_all_internal<bool8>(idx_and_data, execute_this);
+    for_all_internal<int8_t>(idx_and_data, execute_this);
+    static_assert(
+            7 == std::tuple_size<MixedTyped>::value,
+            "Number of types in MixedTyped changed, but const for_all function wasn't updated");
 }
 
 // Helper template - resize test output per golden
@@ -130,6 +204,13 @@ inline void resize_accordingly(const MixedTyped& golden, MixedTyped& test) {
     resize_accordingly_<float, 0>(golden, test);
     resize_accordingly_<int32_t, 1>(golden, test);
     resize_accordingly_<uint8_t, 2>(golden, test);
+    resize_accordingly_<int16_t, 3>(golden, test);
+    resize_accordingly_<_Float16, 4>(golden, test);
+    resize_accordingly_<bool8, 5>(golden, test);
+    resize_accordingly_<int8_t, 6>(golden, test);
+    static_assert(7 == std::tuple_size<MixedTyped>::value,
+                  "Number of types in MixedTyped changed, but resize_accordingly function wasn't "
+                  "updated");
 }
 
 template <typename ty, size_t tuple_index>
@@ -148,60 +229,146 @@ inline MixedTyped filter(const MixedTyped& golden,
     filter_internal<float, 0>(golden, &filtered, is_ignored);
     filter_internal<int32_t, 1>(golden, &filtered, is_ignored);
     filter_internal<uint8_t, 2>(golden, &filtered, is_ignored);
+    filter_internal<int16_t, 3>(golden, &filtered, is_ignored);
+    filter_internal<_Float16, 4>(golden, &filtered, is_ignored);
+    filter_internal<bool8, 5>(golden, &filtered, is_ignored);
+    filter_internal<int8_t, 6>(golden, &filtered, is_ignored);
+    static_assert(7 == std::tuple_size<MixedTyped>::value,
+                  "Number of types in MixedTyped changed, but compare function wasn't updated");
     return filtered;
 }
 
 // Compare results
-#define VECTOR_TYPE(x) \
-    typename std::tuple_element<x, MixedTyped>::type::mapped_type
-#define VALUE_TYPE(x) VECTOR_TYPE(x)::value_type
-template <size_t tuple_index>
-void compare_(
-        const MixedTyped& golden, const MixedTyped& test,
-        std::function<void(VALUE_TYPE(tuple_index), VALUE_TYPE(tuple_index))>
-                cmp) {
-    for_each<VALUE_TYPE(tuple_index)>(
-            golden,
-            [&test, &cmp](int index, const VECTOR_TYPE(tuple_index) & m) {
-                const auto& test_operands = std::get<tuple_index>(test);
+// clang-format off
+template <size_t I>
+void compare_(const MixedTyped& golden, const MixedTyped& test,
+              std::function<void(typename MixedTypedTypes<I>::ValueType,
+                                 typename MixedTypedTypes<I>::ValueType)> cmp) {
+    for_each<typename MixedTypedTypes<I>::ValueType>(
+            golden, [&test, &cmp](int index, const typename MixedTypedTypes<I>::VectorType& m) {
+                const auto& test_operands = std::get<I>(test);
                 const auto& test_ty = test_operands.find(index);
                 ASSERT_NE(test_ty, test_operands.end());
                 for (unsigned int i = 0; i < m.size(); i++) {
-                    SCOPED_TRACE(testing::Message()
-                                 << "When comparing element " << i);
+                    SCOPED_TRACE(testing::Message() << "When comparing element " << i);
                     cmp(m[i], test_ty->second[i]);
                 }
             });
 }
-#undef VALUE_TYPE
-#undef VECTOR_TYPE
-inline void compare(const MixedTyped& golden, const MixedTyped& test, float fpRange = 1e-5f) {
+// clang-format on
+
+inline void compare(const MixedTyped& golden, const MixedTyped& test,
+                    float fpAtol = 1e-5f, float fpRtol = 1e-5f) {
     size_t totalNumberOfErrors = 0;
-    compare_<0>(golden, test, [&totalNumberOfErrors, fpRange](float g, float t) {
+    compare_<0>(golden, test, [&totalNumberOfErrors, fpAtol, fpRtol](float expected, float actual) {
+        // Compute the range based on both absolute tolerance and relative tolerance
+        float fpRange = fpAtol + fpRtol * std::abs(expected);
         if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
-            EXPECT_NEAR(g, t, fpRange);
+            EXPECT_NEAR(expected, actual, fpRange);
         }
-        if (std::abs(g - t) > fpRange) {
+        if (std::abs(expected - actual) > fpRange) {
             totalNumberOfErrors++;
         }
     });
-    compare_<1>(golden, test, [&totalNumberOfErrors](int32_t g, int32_t t) {
+    compare_<1>(golden, test, [&totalNumberOfErrors](int32_t expected, int32_t actual) {
         if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
-            EXPECT_EQ(g, t);
+            EXPECT_EQ(expected, actual);
         }
-        if (g != t) {
+        if (expected != actual) {
             totalNumberOfErrors++;
         }
     });
-    compare_<2>(golden, test, [&totalNumberOfErrors](uint8_t g, uint8_t t) {
+    compare_<2>(golden, test, [&totalNumberOfErrors](uint8_t expected, uint8_t actual) {
         if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
-            EXPECT_NEAR(g, t, 1);
+            EXPECT_NEAR(expected, actual, 1);
         }
-        if (std::abs(g - t) > 1) {
+        if (std::abs(expected - actual) > 1) {
             totalNumberOfErrors++;
         }
     });
+    compare_<3>(golden, test, [&totalNumberOfErrors](int16_t expected, int16_t actual) {
+        if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
+            EXPECT_NEAR(expected, actual, 1);
+        }
+        if (std::abs(expected - actual) > 1) {
+            totalNumberOfErrors++;
+        }
+    });
+    compare_<4>(golden, test,
+                [&totalNumberOfErrors, fpAtol, fpRtol](_Float16 expected, _Float16 actual) {
+                    // Compute the range based on both absolute tolerance and relative tolerance
+                    float fpRange = fpAtol + fpRtol * std::abs(static_cast<float>(expected));
+                    if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
+                        EXPECT_NEAR(expected, actual, fpRange);
+                    }
+                    if (std::abs(static_cast<float>(expected - actual)) > fpRange) {
+                        totalNumberOfErrors++;
+                    }
+                });
+    compare_<5>(golden, test, [&totalNumberOfErrors](bool expected, bool actual) {
+        if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
+            EXPECT_EQ(expected, actual);
+        }
+        if (expected != actual) {
+            totalNumberOfErrors++;
+        }
+    });
+    compare_<6>(golden, test, [&totalNumberOfErrors](int8_t expected, int8_t actual) {
+        if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
+            EXPECT_NEAR(expected, actual, 1);
+        }
+        if (std::abs(static_cast<int>(expected) - static_cast<int>(actual)) > 1) {
+            totalNumberOfErrors++;
+        }
+    });
+
+    static_assert(7 == std::tuple_size<MixedTyped>::value,
+                  "Number of types in MixedTyped changed, but compare function wasn't updated");
     EXPECT_EQ(size_t{0}, totalNumberOfErrors);
+}
+
+// Calculates the expected probability from the unnormalized log-probability of
+// each class in the input and compares it to the actual ocurrence of that class
+// in the output.
+inline void expectMultinomialDistributionWithinTolerance(const MixedTyped& test,
+                                                         const MixedTypedExample& example) {
+    // TODO: These should be parameters but aren't currently preserved in the example.
+    const int kBatchSize = 1;
+    const int kNumClasses = 1024;
+    const int kNumSamples = 128;
+
+    std::vector<int32_t> output = std::get<MixedTypedIndex<int32_t>::index>(test).at(0);
+    std::vector<int> class_counts;
+    class_counts.resize(kNumClasses);
+    for (int index : output) {
+        class_counts[index]++;
+    }
+    std::vector<float> input;
+    Float32Operands float32Operands =
+            std::get<MixedTypedIndex<float>::index>(example.operands.first);
+    if (!float32Operands.empty()) {
+        input = std::get<MixedTypedIndex<float>::index>(example.operands.first).at(0);
+    } else {
+        std::vector<_Float16> inputFloat16 =
+                std::get<MixedTypedIndex<_Float16>::index>(example.operands.first).at(0);
+        input.resize(inputFloat16.size());
+        convertFloat16ToFloat32(inputFloat16.data(), &input);
+    }
+    for (int b = 0; b < kBatchSize; ++b) {
+        float probability_sum = 0;
+        const int batch_index = kBatchSize * b;
+        for (int i = 0; i < kNumClasses; ++i) {
+            probability_sum += expf(input[batch_index + i]);
+        }
+        for (int i = 0; i < kNumClasses; ++i) {
+            float probability =
+                    static_cast<float>(class_counts[i]) / static_cast<float>(kNumSamples);
+            float probability_expected = expf(input[batch_index + i]) / probability_sum;
+            EXPECT_THAT(probability,
+                        ::testing::FloatNear(probability_expected,
+                                             example.expectedMultinomialDistributionTolerance));
+        }
+    }
 }
 
 };  // namespace test_helper

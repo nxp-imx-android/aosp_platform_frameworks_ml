@@ -1,3 +1,4 @@
+// clang-format off
 // Generated file (from: l2_normalization_2.mod.py). Do not edit
 void CreateModel(Model *model) {
   OperandType type0(Type::TENSOR_FLOAT32, {1, 1, 1, 6});
@@ -13,7 +14,8 @@ void CreateModel(Model *model) {
   assert(model->isValid());
 }
 
-bool is_ignored(int i) {
+inline bool is_ignored(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+

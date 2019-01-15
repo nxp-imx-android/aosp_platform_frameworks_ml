@@ -25,6 +25,46 @@
 namespace android {
 namespace nn {
 
+namespace {
+
+bool validateOperandTypes(const std::vector<OperandType>& expectedTypes, const char* tag,
+                          uint32_t operandCount,
+                          std::function<OperandType(uint32_t)> getOperandType) {
+    NN_RET_CHECK_EQ(operandCount, expectedTypes.size());
+    for (uint32_t i = 0; i < operandCount; ++i) {
+        OperandType type = getOperandType(i);
+        NN_RET_CHECK(type == expectedTypes[i])
+                << "Invalid " << tag << " tensor type " << toString(type) << " for " << tag << " "
+                << i << ", expected " << toString(expectedTypes[i]);
+    }
+    return true;
+}
+
+}  // namespace
+
+bool validateInputTypes(const IOperationValidationContext* context,
+                        const std::vector<OperandType>& expectedTypes) {
+    return validateOperandTypes(expectedTypes, "input", context->getNumInputs(),
+                                [context](uint32_t index) { return context->getInputType(index); });
+}
+
+bool validateOutputTypes(const IOperationValidationContext* context,
+                         const std::vector<OperandType>& expectedTypes) {
+    return validateOperandTypes(
+            expectedTypes, "output", context->getNumOutputs(),
+            [context](uint32_t index) { return context->getOutputType(index); });
+}
+
+bool validateHalVersion(const IOperationValidationContext* context,
+                        HalVersion minSupportedHalVersion) {
+    if (context->getHalVersion() < minSupportedHalVersion) {
+        NN_RET_CHECK_FAIL() << "The given inputs and outputs are only supported in "
+                            << toString(minSupportedHalVersion) << " and later (validating using "
+                            << toString(context->getHalVersion()) << ")";
+    }
+    return true;
+}
+
 bool SameShape(const Shape& in1, const Shape& in2) {
     if (in1.type != in2.type || in1.dimensions.size() != in2.dimensions.size()) {
         return false;
@@ -53,16 +93,34 @@ uint32_t getNumberOfElements(const Shape& shape) {
     return count;
 }
 
+uint32_t getNumberOfElements(const Shape& shape,
+                             size_t firstAxisInclusive,
+                             size_t lastAxisExclusive) {
+    nnAssert(0 <= firstAxisInclusive);
+    nnAssert(firstAxisInclusive <= lastAxisExclusive);
+    nnAssert(lastAxisExclusive <= shape.dimensions.size());
+    uint32_t count = 1;
+    for (size_t i = firstAxisInclusive; i < lastAxisExclusive; i++) {
+        count *= shape.dimensions[i];
+    }
+    return count;
+}
+
 uint32_t getNumberOfDimensions(const Shape& shape) {
     return shape.dimensions.size();
 }
 
 uint32_t getSizeOfDimension(const Shape& shape, uint32_t dimensionIdx) {
-    if (dimensionIdx >= shape.dimensions.size()) {
-        // TODO, log the error
-        return 0;
-    }
+    nnAssert(0 <= dimensionIdx && dimensionIdx < shape.dimensions.size());
     return shape.dimensions[dimensionIdx];
+}
+
+bool handleNegativeAxis(int32_t numberOfDimensions, int32_t* axis) {
+    NN_CHECK(-numberOfDimensions <= *axis && *axis < numberOfDimensions);
+    if (*axis < 0) {
+        *axis += numberOfDimensions;
+    }
+    return true;
 }
 
 bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
@@ -78,9 +136,9 @@ bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
     NN_OPS_CHECK(double_multiplier > 0.);
     const double q = std::frexp(double_multiplier, right_shift);
     *right_shift *= -1;
-    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1ll << 31)));
-    NN_OPS_CHECK(q_fixed <= (1ll << 31));
-    if (q_fixed == (1ll << 31)) {
+    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1LL << 31)));
+    NN_OPS_CHECK(q_fixed <= (1LL << 31));
+    if (q_fixed == (1LL << 31)) {
         q_fixed /= 2;
         --*right_shift;
     }
@@ -95,9 +153,9 @@ bool QuantizeMultiplierGreaterThanOne(double double_multiplier,
                                       int* left_shift) {
     NN_OPS_CHECK(double_multiplier > 1.);
     const double q = std::frexp(double_multiplier, left_shift);
-    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1ll << 31)));
-    NN_OPS_CHECK(q_fixed <= (1ll << 31));
-    if (q_fixed == (1ll << 31)) {
+    int64_t q_fixed = static_cast<int64_t>(std::round(q * (1LL << 31)));
+    NN_OPS_CHECK(q_fixed <= (1LL << 31));
+    if (q_fixed == (1LL << 31)) {
         q_fixed /= 2;
         ++*left_shift;
     }
@@ -178,12 +236,42 @@ void CalculateActivationRangeFloat(int32_t activation,
 
 int32_t CalculateInputRadius(int input_integer_bits, int input_left_shift) {
     const double max_input_rescaled = 1.0 * ((1 << input_integer_bits) - 1) *
-                                      (1ll << (31 - input_integer_bits)) /
-                                      (1ll << input_left_shift);
+                                      (1LL << (31 - input_integer_bits)) /
+                                      (1LL << input_left_shift);
     // Tighten bound using floor.  Suppose that we could use the exact value.
     // After scaling the difference, the result would be at the maximum.  Thus we
     // must ensure that our value has lower magnitude.
     return static_cast<int32_t>(std::floor(max_input_rescaled));
+}
+
+bool calculateBroadcastedShape(const Shape& in1, const Shape& in2, Shape* out) {
+    uint32_t numberOfDims1 = getNumberOfDimensions(in1);
+    uint32_t numberOfDims2 = getNumberOfDimensions(in2);
+    uint32_t maxDims = std::max(numberOfDims1, numberOfDims2);
+    out->dimensions = std::vector<uint32_t>(maxDims);
+    for (uint32_t i = 1; i <= maxDims; i++) {
+        uint32_t dim1 = 1;
+        if (i <= numberOfDims1) {
+            dim1 = getSizeOfDimension(in1, numberOfDims1 - i);
+        }
+        uint32_t dim2 = 1;
+        if (i <= numberOfDims2) {
+            dim2 = getSizeOfDimension(in2, numberOfDims2 - i);
+        }
+        if (dim1 != dim2 && dim1 != 1 && dim2 != 1) {
+            LOG(ERROR) << "Dimensions mismatch for broadcast:\n"
+                       << "First tensor: dimension " << numberOfDims1 - i << " of size " << dim1
+                       << "\nSecond tensor: dimension " << numberOfDims2 - i << "of size " << dim2;
+            return false;
+        }
+        out->dimensions[maxDims - i] = std::max(dim1, dim2);
+    }
+    return true;
+}
+
+uint8_t requantize(uint8_t value, const Shape& oldShape, const Shape& newShape) {
+    double doubleValue = (value - oldShape.offset) * oldShape.scale;
+    return static_cast<uint8_t>(doubleValue / newShape.scale + newShape.offset);
 }
 
 bool addMulPrepare(const Shape& in1, const Shape& in2, Shape* out) {
@@ -191,29 +279,8 @@ bool addMulPrepare(const Shape& in1, const Shape& in2, Shape* out) {
     NN_OPS_CHECK(in1.type == in2.type);
     if (SameShape(in1, in2)) {
         return SetShape(in1, out);
-    } else {
-        // BroadcastAdd needed
-        uint32_t numberOfDims1 = getNumberOfDimensions(in1);
-        uint32_t numberOfDims2 = getNumberOfDimensions(in2);
-        uint32_t maxDims = std::max(numberOfDims1, numberOfDims2);
-        out->dimensions = std::vector<uint32_t>(maxDims);
-        for (uint32_t i = 1; i <= maxDims; i++) {
-            uint32_t dim1 = 1;
-            if (i <= numberOfDims1) {
-                dim1 = getSizeOfDimension(in1, numberOfDims1 - i);
-            }
-            uint32_t dim2 = 1;
-            if (i <= numberOfDims2) {
-                dim2 = getSizeOfDimension(in2, numberOfDims2 - i);
-            }
-            if (dim1 != dim2 && dim1 != 1 && dim2 != 1) {
-                LOG(ERROR) << "Dimensions mismatch for BroadcastAdd";
-                return false;
-            }
-            out->dimensions[maxDims - i] = std::max(dim1, dim2);
-        }
     }
-    return true;
+    return calculateBroadcastedShape(in1, in2, out);
 }
 
 bool floorPrepare(const Shape& input, Shape* output) {
@@ -222,12 +289,30 @@ bool floorPrepare(const Shape& input, Shape* output) {
 
 bool dequantizePrepare(const Shape& input, Shape* output) {
     if (input.type != OperandType::TENSOR_QUANT8_ASYMM ||
-            output->type != OperandType::TENSOR_FLOAT32) {
+        (output->type != OperandType::TENSOR_FLOAT16 &&
+         output->type != OperandType::TENSOR_FLOAT32)) {
         LOG(ERROR) << "bad input / output operand type.";
         return false;
     }
     if (input.dimensions.size() != output->dimensions.size()) {
         LOG(ERROR) << "input and output tensors don't have the same rank.";
+        return false;
+    }
+    output->dimensions = input.dimensions;
+    return true;
+}
+
+bool quantizePrepare(const Shape& input, Shape* output) {
+    if (input.type != OperandType::TENSOR_FLOAT32) {
+        LOG(ERROR) << "QUANTIZE input must be TENSOR_FLOAT32";
+        return false;
+    }
+    if (output->type != OperandType::TENSOR_QUANT8_ASYMM) {
+        LOG(ERROR) << "QUANTIZE output must be TENSOR_QUANT8_ASYMM";
+        return false;
+    }
+    if (input.dimensions.size() != output->dimensions.size()) {
+        LOG(ERROR) << "QUANTIZE input and output tensors must have the same rank";
         return false;
     }
     output->dimensions = input.dimensions;
@@ -241,7 +326,11 @@ bool convPrepare(const Shape& input,
                  int32_t padding_top, int32_t padding_bottom,
                  int32_t stride_width, int32_t stride_height,
                  Shape* output) {
-    NN_OPS_CHECK(input.type == filter.type);
+    if (filter.type == OperandType::TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+        NN_OPS_CHECK(input.type == OperandType::TENSOR_QUANT8_ASYMM);
+    } else {
+        NN_OPS_CHECK(input.type == filter.type);
+    }
     if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
         NN_OPS_CHECK(bias.type == OperandType::TENSOR_INT32);
     } else {
@@ -271,14 +360,15 @@ bool convPrepare(const Shape& input,
     return true;
 }
 
-bool depthwiseConvPrepare(const Shape& input,
-                          const Shape& filter,
-                          const Shape& bias,
-                          int32_t padding_left, int32_t padding_right,
-                          int32_t padding_top, int32_t padding_bottom,
-                          int32_t stride_width, int32_t stride_height,
-                          Shape* output) {
-    NN_OPS_CHECK(input.type == filter.type);
+bool depthwiseConvPrepare(const Shape& input, const Shape& filter, const Shape& bias,
+                          int32_t padding_left, int32_t padding_right, int32_t padding_top,
+                          int32_t padding_bottom, int32_t stride_width, int32_t stride_height,
+                          int32_t depth_multiplier, Shape* output) {
+    if (filter.type == OperandType::TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+        NN_OPS_CHECK(input.type == OperandType::TENSOR_QUANT8_ASYMM);
+    } else {
+        NN_OPS_CHECK(input.type == filter.type);
+    }
     if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
         NN_OPS_CHECK(bias.type == OperandType::TENSOR_INT32);
     } else {
@@ -291,11 +381,14 @@ bool depthwiseConvPrepare(const Shape& input,
     NN_OPS_CHECK(getSizeOfDimension(filter, 3) == getSizeOfDimension(bias, 0));
 
     uint32_t channels_out = getSizeOfDimension(filter, 3);
+    uint32_t channels_in = getSizeOfDimension(input, 3);
     uint32_t width        = getSizeOfDimension(input, 2);
     uint32_t height       = getSizeOfDimension(input, 1);
     uint32_t filterWidth  = getSizeOfDimension(filter, 2);
     uint32_t filterHeight = getSizeOfDimension(filter, 1);
     uint32_t batches      = getSizeOfDimension(input, 0);
+
+    NN_OPS_CHECK(depth_multiplier * channels_in == channels_out);
 
     uint32_t outWidth = computeOutSize(width, filterWidth, stride_width,
                                        padding_left, padding_right);
@@ -368,31 +461,24 @@ bool fullyConnectedPrepare(const Shape& input,
     return true;
 }
 
-bool concatenationPrepare(const std::vector<Shape>& inputShapes,
-                          int32_t axis,
-                          Shape* output) {
-
+bool concatenationPrepare(const std::vector<Shape>& inputShapes, int32_t axis, Shape* output) {
     int num_inputs = inputShapes.size();
     OperandType input_type = inputShapes[0].type;
     uint32_t num_dimensions = getNumberOfDimensions(inputShapes[0]);
 
-    NN_OPS_CHECK(axis >= 0);
-    NN_OPS_CHECK(axis < (int32_t)num_dimensions);
+    NN_RET_CHECK(axis >= 0);
+    NN_RET_CHECK(axis < (int32_t)num_dimensions);
 
     int sumAxis = getSizeOfDimension(inputShapes[0], axis);
     for (int i = 1; i < num_inputs; ++i) {
-        NN_OPS_CHECK(getNumberOfDimensions(inputShapes[i]) == num_dimensions);
-        NN_OPS_CHECK(inputShapes[i].type == inputShapes[0].type);
-        if (input_type == OperandType::TENSOR_QUANT8_ASYMM) {
-            NN_OPS_CHECK(inputShapes[0].offset == inputShapes[i].offset);
-            NN_OPS_CHECK(inputShapes[0].scale == inputShapes[i].scale);
-        }
+        NN_RET_CHECK(getNumberOfDimensions(inputShapes[i]) == num_dimensions);
+        NN_RET_CHECK(inputShapes[i].type == inputShapes[0].type);
         for (int d = 0; d < (int32_t)num_dimensions; ++d) {
             if (d == axis) {
                 sumAxis += getSizeOfDimension(inputShapes[i], axis);
             } else {
-                NN_OPS_CHECK(getSizeOfDimension(inputShapes[0], d) ==
-                           getSizeOfDimension(inputShapes[i], d));
+                NN_RET_CHECK_EQ(getSizeOfDimension(inputShapes[0], d),
+                                getSizeOfDimension(inputShapes[i], d));
             }
         }
     }
@@ -401,17 +487,10 @@ bool concatenationPrepare(const std::vector<Shape>& inputShapes,
     output->dimensions = inputShapes[0].dimensions;
     output->dimensions[axis] = sumAxis;
 
-    if (input_type == OperandType::TENSOR_QUANT8_ASYMM) {
-        NN_OPS_CHECK(inputShapes[0].offset == output->offset);
-        NN_OPS_CHECK(inputShapes[0].scale == output->scale);
-    }
-
     return true;
 }
 
-
 bool genericNormalizationPrepare(const Shape& input, Shape* output) {
-    NN_OPS_CHECK(getNumberOfDimensions(input) == 4);
     return SetShape(input, output);
 }
 
@@ -723,6 +802,17 @@ bool transposePrepare(const Shape& input,
                       const Shape& permShape,
                       Shape* output) {
     uint32_t numInputDims = getNumberOfDimensions(input);
+
+    // permData can be NO_VALUE representing a regular 2D matrix transpose
+    if (permData == nullptr) {
+        NN_OPS_CHECK(numInputDims == 2);
+        output->type = input.type;
+        output->dimensions = {getSizeOfDimension(input, 1), getSizeOfDimension(input, 0)};
+        output->offset = input.offset;
+        output->scale = input.scale;
+        return true;
+    }
+
     // Transpose op only supports 1D-4D input arrays.
     NN_OPS_CHECK(numInputDims <= 4);
 
@@ -880,5 +970,111 @@ bool stridedSlicePrepare(const Shape& input,
 
     return true;
 }
+
+bool argMinMaxPrepare(const Shape& input, int32_t axis, Shape* output) {
+    NN_CHECK(handleNegativeAxis(input, &axis));
+
+    output->type = OperandType::TENSOR_INT32;
+
+    // Copy the input dimensions, omitting the axis dimension.
+    output->dimensions.clear();
+    output->dimensions.reserve(getNumberOfDimensions(input) - 1);
+    output->dimensions.insert(output->dimensions.end(),
+                              input.dimensions.begin(),
+                              input.dimensions.begin() + axis);
+    output->dimensions.insert(output->dimensions.end(),
+                              input.dimensions.begin() + axis + 1,
+                              input.dimensions.end());
+
+    return true;
+}
+
+bool splitPrepare(const Shape& input, int32_t axis, int32_t numOutputs,
+                  std::vector<Shape>* output) {
+    NN_CHECK(handleNegativeAxis(input, &axis));
+
+    const int32_t sizeOfAxisToSplit = input.dimensions[axis];
+    NN_OPS_CHECK(sizeOfAxisToSplit % numOutputs == 0);
+    const int32_t sliceSize = sizeOfAxisToSplit / numOutputs;
+
+    for (int i = 0; i < numOutputs; ++i) {
+        output->at(i).type = input.type;
+        output->at(i).dimensions = input.dimensions;
+        output->at(i).dimensions[axis] = sliceSize;
+        output->at(i).offset = input.offset;
+        output->at(i).scale = input.scale;
+    }
+    return true;
+}
+
+bool groupedConvPrepare(const Shape& input, const Shape& filter, const Shape& bias,
+                        int32_t padding_left, int32_t padding_right, int32_t padding_top,
+                        int32_t padding_bottom, int32_t stride_width, int32_t stride_height,
+                        int32_t numGroups, Shape* output) {
+    NN_OPS_CHECK(input.type == filter.type);
+    if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
+        NN_OPS_CHECK(bias.type == OperandType::TENSOR_INT32);
+    } else {
+        NN_OPS_CHECK(input.type == bias.type);
+    }
+    NN_OPS_CHECK(getNumberOfDimensions(input) == 4);
+    NN_OPS_CHECK(getNumberOfDimensions(filter) == 4);
+    NN_OPS_CHECK(getNumberOfDimensions(bias) == 1);
+
+    NN_OPS_CHECK(getSizeOfDimension(filter, 0) == getSizeOfDimension(bias, 0));
+
+    NN_OPS_CHECK(getSizeOfDimension(filter, 3) * numGroups == getSizeOfDimension(input, 3));
+    NN_OPS_CHECK(getSizeOfDimension(filter, 0) % numGroups == 0);
+
+    uint32_t channels_out = getSizeOfDimension(filter, 0);
+    uint32_t width = getSizeOfDimension(input, 2);
+    uint32_t height = getSizeOfDimension(input, 1);
+    uint32_t filterWidth = getSizeOfDimension(filter, 2);
+    uint32_t filterHeight = getSizeOfDimension(filter, 1);
+    uint32_t batches = getSizeOfDimension(input, 0);
+
+    uint32_t outWidth =
+            computeOutSize(width, filterWidth, stride_width, padding_left, padding_right);
+    uint32_t outHeight =
+            computeOutSize(height, filterHeight, stride_height, padding_top, padding_bottom);
+
+    output->type = input.type;
+    output->dimensions = {batches, outHeight, outWidth, channels_out};
+    return true;
+}
+
+bool transposeConvPrepare(const Shape& input, const Shape& filter, const Shape& bias,
+                          int32_t padding_left, int32_t padding_right, int32_t padding_top,
+                          int32_t padding_bottom, int32_t stride_width, int32_t stride_height,
+                          Shape* output) {
+    NN_OPS_CHECK(input.type == filter.type);
+    if (input.type == OperandType::TENSOR_QUANT8_ASYMM) {
+        NN_OPS_CHECK(bias.type == OperandType::TENSOR_INT32);
+    } else {
+        NN_OPS_CHECK(input.type == bias.type);
+    }
+    NN_OPS_CHECK(getNumberOfDimensions(input) == 4);
+    NN_OPS_CHECK(getNumberOfDimensions(filter) == 4);
+    NN_OPS_CHECK(getNumberOfDimensions(bias) == 1);
+
+    NN_OPS_CHECK(getSizeOfDimension(filter, 0) == getSizeOfDimension(bias, 0));
+
+    uint32_t channels_out = getSizeOfDimension(filter, 0);
+    uint32_t width = getSizeOfDimension(input, 2);
+    uint32_t height = getSizeOfDimension(input, 1);
+    uint32_t filterWidth = getSizeOfDimension(filter, 2);
+    uint32_t filterHeight = getSizeOfDimension(filter, 1);
+    uint32_t batches = getSizeOfDimension(input, 0);
+
+    uint32_t outWidth = computeOutSizeTransposeConv(width, filterWidth, stride_width, padding_left,
+                                                    padding_right);
+    uint32_t outHeight = computeOutSizeTransposeConv(height, filterHeight, stride_height,
+                                                     padding_top, padding_bottom);
+
+    output->type = input.type;
+    output->dimensions = {batches, outHeight, outWidth, channels_out};
+    return true;
+}
+
 } // namespace nn
 } // namespace android

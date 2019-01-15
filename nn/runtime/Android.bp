@@ -30,6 +30,7 @@ cc_library_headers {
 cc_library {
     name: "libneuralnetworks",
     defaults: ["neuralnetworks_defaults"],
+    use_version_lib: true,
     host_supported: false,
     // b/109953668, disable OpenMP
     // openmp: true,
@@ -43,7 +44,7 @@ cc_library {
         "Memory.cpp",
         "ModelBuilder.cpp",
         "NeuralNetworks.cpp",
-        "VersionedIDevice.cpp",
+        "VersionedInterfaces.cpp",
     ],
 
     target: {
@@ -59,6 +60,7 @@ cc_library {
                 "libutils",
                 "android.hardware.neuralnetworks@1.0",
                 "android.hardware.neuralnetworks@1.1",
+                "android.hardware.neuralnetworks@1.2",
                 "android.hidl.allocator@1.0",
                 "android.hidl.memory@1.0",
             ],

@@ -1,6 +1,10 @@
+// clang-format off
 // Generated file (from: lstm2_state.mod.py). Do not edit
+std::vector<MixedTypedExample>& get_examples() {
+static std::vector<MixedTypedExample> examples = {
 // Begin of an example
 {
+.operands = {
 //Input(s)
 { // See tools/test_generator/include/TestHarness.h:MixedTyped
   // int -> FLOAT32 map
@@ -8,15 +12,36 @@
   // int -> INT32 map
   {},
   // int -> QUANT8_ASYMM map
-  {}
+  {},
+  // int -> QUANT16_SYMM map
+  {},
+  // int -> FLOAT16 map
+  {},
+  // int -> BOOL8 map
+  {},
+  // int -> QUANT8_SYMM_PER_CHANNEL map
+  {},
 },
 //Output(s)
 { // See tools/test_generator/include/TestHarness.h:MixedTyped
   // int -> FLOAT32 map
-  {{1, {-0.423122f, -0.0121822f, 0.24201f, -0.0812458f}}, {2, {-0.978419f, -0.139203f, 0.338163f, -0.0983904f}}, {3, {-0.42312205f, -0.01218222f, 0.24201041f, -0.08124574f}}, {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}},
+  {{0, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}, {1, {-0.423122f, -0.0121822f, 0.24201f, -0.0812458f}}, {2, {-0.978419f, -0.139203f, 0.338163f, -0.0983904f}}, {3, {-0.42312205f, -0.01218222f, 0.24201041f, -0.08124574f}}},
   // int -> INT32 map
   {},
   // int -> QUANT8_ASYMM map
-  {}
+  {},
+  // int -> QUANT16_SYMM map
+  {},
+  // int -> FLOAT16 map
+  {},
+  // int -> BOOL8 map
+  {},
+  // int -> QUANT8_SYMM_PER_CHANNEL map
+  {},
 }
+},
 }, // End of an example
+};
+return examples;
+};
+

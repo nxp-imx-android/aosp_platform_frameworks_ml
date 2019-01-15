@@ -1,7 +1,8 @@
+// clang-format off
 // Generated file (from: embedding_lookup.mod.py). Do not edit
 void CreateModel(Model *model) {
-  OperandType type1(Type::TENSOR_FLOAT32, {3, 2, 4});
   OperandType type0(Type::TENSOR_INT32, {3});
+  OperandType type1(Type::TENSOR_FLOAT32, {3, 2, 4});
   // Phase 1, operands
   auto index = model->addOperand(&type0);
   auto value = model->addOperand(&type1);
@@ -15,7 +16,8 @@ void CreateModel(Model *model) {
   assert(model->isValid());
 }
 
-bool is_ignored(int i) {
+inline bool is_ignored(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
