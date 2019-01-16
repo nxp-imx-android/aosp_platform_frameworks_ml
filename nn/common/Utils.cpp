@@ -1581,19 +1581,22 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                                                  outExpectedTypes);
         }
         case ANEURALNETWORKS_QUANTIZED_16BIT_LSTM: {
-            if (inputCount != 5 || outputCount != 5) {
-                logInvalidInOutNumber(5, 5);
+            if (inputCount != 15 || outputCount != 2) {
+                logInvalidInOutNumber(15, 2);
                 return ANEURALNETWORKS_BAD_DATA;
             }
             NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
             std::vector<OperandType> inExpectedTypes = {
                     OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT8_ASYMM,
+                    OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT8_ASYMM,
+                    OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT8_ASYMM,
+                    OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT8_ASYMM,
                     OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_INT32,
-                    OperandType::TENSOR_QUANT16_SYMM};
-            std::vector<OperandType> outExpectedTypes = {
-                    OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT16_SYMM,
-                    OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_QUANT16_SYMM,
+                    OperandType::TENSOR_INT32,        OperandType::TENSOR_INT32,
+                    OperandType::TENSOR_INT32,        OperandType::TENSOR_QUANT16_SYMM,
                     OperandType::TENSOR_QUANT8_ASYMM};
+            std::vector<OperandType> outExpectedTypes = {OperandType::TENSOR_QUANT16_SYMM,
+                                                         OperandType::TENSOR_QUANT8_ASYMM};
             return validateOperationOperandTypes(operands, inputCount, inputIndexes,
                                                  inExpectedTypes, outputCount, outputIndexes,
                                                  outExpectedTypes);
