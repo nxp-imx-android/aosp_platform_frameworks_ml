@@ -203,6 +203,7 @@ const uint32_t kSizeOfDataType[]{
         1,  // ANEURALNETWORKS_TENSOR_BOOL8
         2,  // ANEURALNETWORKS_FLOAT16
         1,  // ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL
+        2,  // ANEURALNETWORKS_TENSOR_QUANT16_ASYMM
 };
 
 static_assert(COUNT(kSizeOfDataType) == kNumberOfDataTypes, "kSizeOfDataType is incorrect");
@@ -220,6 +221,7 @@ const bool kScalarDataType[]{
         false,  // ANEURALNETWORKS_TENSOR_BOOL8
         true,   // ANEURALNETWORKS_FLOAT16
         false,  // ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL
+        false,  // ANEURALNETWORKS_TENSOR_QUANT16_ASYMM
 };
 
 static_assert(COUNT(kScalarDataType) == kNumberOfDataTypes, "kScalarDataType is incorrect");
@@ -247,6 +249,10 @@ uint32_t sizeOfData(OperandType type, const std::vector<uint32_t>& dimensions) {
 
     if (tableLookup(kScalarDataType, kScalarDataTypeOEM, n) == true) {
         return size;
+    }
+
+    if (dimensions.empty()) {
+        return 0;
     }
 
     for (auto d : dimensions) {
@@ -349,6 +355,16 @@ int validateOperandType(const ANeuralNetworksOperandType& type, const char* tag,
     }
     if (type.type == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM) {
         if (type.zeroPoint < 0 || type.zeroPoint > 255) {
+            LOG(ERROR) << tag << " OperandType invalid zeroPoint " << type.zeroPoint;
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+        if (type.scale <= 0.f) {
+            LOG(ERROR) << tag << " OperandType invalid scale " << type.scale;
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+    }
+    if (type.type == ANEURALNETWORKS_TENSOR_QUANT16_ASYMM) {
+        if (type.zeroPoint < 0 || type.zeroPoint > 65535) {
             LOG(ERROR) << tag << " OperandType invalid zeroPoint " << type.zeroPoint;
             return ANEURALNETWORKS_BAD_DATA;
         }
@@ -2419,6 +2435,9 @@ ErrorStatus convertResultCodeToErrorStatus(int resultCode) {
         case ANEURALNETWORKS_UNEXPECTED_NULL:
             return ErrorStatus::INVALID_ARGUMENT;
 
+        case ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE:
+            return ErrorStatus::OUTPUT_INSUFFICIENT_SIZE;
+
         default:
             LOG(ERROR) << "Unknown result code " << resultCode
                        << " mapped to ErrorStatus::GENERAL_FAILURE";
@@ -2440,13 +2459,15 @@ int convertErrorStatusToResultCode(ErrorStatus status) {
         case ErrorStatus::INVALID_ARGUMENT:
             return ANEURALNETWORKS_BAD_DATA;
 
+        case ErrorStatus::OUTPUT_INSUFFICIENT_SIZE:
+            return ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE;
+
         default:
             LOG(ERROR) << "Unknown ErrorStatus " << toString(status)
                        << " mapped to ANEURALNETWORKS_OP_FAILED";
             return ANEURALNETWORKS_OP_FAILED;
         case ErrorStatus::DEVICE_UNAVAILABLE:
         case ErrorStatus::GENERAL_FAILURE:
-        case ErrorStatus::OUTPUT_INSUFFICIENT_SIZE:
             return ANEURALNETWORKS_OP_FAILED;
     }
 }

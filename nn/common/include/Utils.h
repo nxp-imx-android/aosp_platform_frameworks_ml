@@ -28,7 +28,7 @@ namespace android {
 namespace nn {
 
 // The number of data types (OperandCode) defined in NeuralNetworks.h.
-const int kNumberOfDataTypes = 12;
+const int kNumberOfDataTypes = 13;
 
 // The number of operation types (OperationCode) defined in NeuralNetworks.h.
 const int kNumberOfOperationTypes = 98;
@@ -88,7 +88,8 @@ void initVLogMask();
     } while (0)
 
 // Returns the amount of space needed to store a value of the specified
-// dimensions and type.
+// dimensions and type. For a tensor with at least one
+// unspecified dimension, returns zero.
 uint32_t sizeOfData(OperandType type, const std::vector<uint32_t>& dimensions);
 
 // Returns the amount of space needed to store a value of the dimensions and

@@ -70,7 +70,9 @@ def Quantize(v, ty):
         v = int(v) if np.isscalar(v) else v.astype(int)
     if ty.type == "TENSOR_QUANT8_ASYMM":
         v = np.minimum(np.maximum(v, 0), 255)
-    if ty.type == "TENSOR_QUANT8_SYMM_PER_CHANNEL":
+    elif ty.type == "TENSOR_QUANT16_ASYMM":
+        v = np.minimum(np.maximum(v, 0), 65535)
+    elif ty.type == "TENSOR_QUANT8_SYMM_PER_CHANNEL":
         v = np.minimum(np.maximum(v, -127), 127)
     elif ty.type == "UINT32":
         v = np.maximum(v, 0)
@@ -153,6 +155,7 @@ class Type(NamedVariable):
         "TENSOR_FLOAT32": "float",
         "TENSOR_QUANT8_ASYMM": "uint8_t",
         "BOOL": "bool8",
+        "TENSOR_QUANT16_ASYMM": "uint16_t",
         "TENSOR_QUANT16_SYMM": "int16_t",
         "TENSOR_BOOL8": "bool8",
         "TENSOR_QUANT8_SYMM_PER_CHANNEL": "int8_t",
@@ -227,7 +230,7 @@ class Type(NamedVariable):
         cppTypeString = self.GetCppTypeString()
         if cppTypeString in ["uint8_t", "int8_t", "bool8"]:
             return 1
-        elif cppTypeString in ["int16_t", "_Float16"]:
+        elif cppTypeString in ["int16_t", "uint16_t", "_Float16"]:
             return 2
         else:
             return 4
@@ -247,6 +250,9 @@ class Type(NamedVariable):
             return self.GetDimensionsString()
         else:
             return GetJointStr([self.GetDimensionsString(), self.scale, self.zeroPoint])
+
+    def ToUnspecifiedDim(self):
+        return Type.GetType(self.type, [0] * len(self.dimensions), self.scale, self.zeroPoint)
 
 # To track implicitly convertible parameter types
 class ImplicitParameter():
@@ -296,6 +302,7 @@ class Operand(NamedVariable):
         else:
             self.type = Type.GetType(*opType, extraParams=extraParams)
         self.SetValue(value)
+        self.dimensions = self.type.dimensions
         self.lifetime = "TEMPORARY_VARIABLE"
         self.ins = []
         self.outs = []
@@ -321,6 +328,10 @@ class Operand(NamedVariable):
             return "{%s}"%(GetJointStr(self.value, method=lambda v: "true" if v else "false"))
         else:
             return "{%s}"%(GetJointStr(self.value, method=lambda x: str(int(x))))
+
+    def ToUnspecifiedDim(self):
+        self.dimensions = self.type.dimensions
+        self.type = self.type.ToUnspecifiedDim()
 
 # Base class of user-defined input/output operand
 class InOut(Operand):
@@ -355,7 +366,8 @@ class IgnoredOutput(Output):
         Output.__init__(self, name, opType, backward, skipRenaming=skipRenaming)
         self.lifetime = "MODEL_OUTPUT"
     def Feed(self, value):
-        self.value = [0 for x in range(self.type.GetNumberOfElements())]
+        numElements = reduce(lambda x,y: x*y, self.dimensions, 1)
+        self.value = [0 for x in range(numElements)]
         return self
 
 # An explicitly declared parameter
@@ -464,19 +476,15 @@ class Model:
 
     def __init__(self, name=None):
         self.name = name
-        self.createFunctionName = GlobalVariable("CreateModel", self.name)
-        self.createTestFunctionName = GlobalVariable("createTestModel", self.name)
-        self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name)
         self.operations = []
         self.operands = []
         self.isRelaxed = False
         self.compiled = False
         self.dumped = False
+        self.hasDynamicOutputShape = False
         Model.models.append(self)
 
     def WithSuffix(self, *args):
-        if all(n is None or n == "" for n in args):
-            return self
         self.createFunctionName = GlobalVariable("CreateModel", self.name, *args)
         self.createTestFunctionName = GlobalVariable("createTestModel", self.name, *args)
         self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name, *args)
@@ -509,6 +517,10 @@ class Model:
 
     def RelaxedExecution(self, isRelaxed):
         self.isRelaxed = isRelaxed
+        return self
+
+    def TestDynamicOutputShape(self, hasDynamicOutputShape):
+        self.hasDynamicOutputShape = hasDynamicOutputShape
         return self
 
     def GetTypes(self):
@@ -583,12 +595,21 @@ class Model:
         for op in operations:
             self.TopologicalSortHelper(op, deps, visited)
 
+    def SetOutputUnspecified(self):
+        for op in self.operands:
+            op.dimensions = op.type.dimensions
+        if self.hasDynamicOutputShape:
+            for op in self.GetOutputs():
+                op.ToUnspecifiedDim()
+        return self
+
     def Compile(self):
         if self.compiled:
             return self
         self.SetInputAndOutputIndex()
         self.SetOperandInsAndOuts()
         self.TopologicalSort()
+        self.SetOutputUnspecified()
         self.compiled = True
         return self
 
@@ -693,10 +714,6 @@ class DefaultVariation(ModelVariation):
 
     def __init__(self, name=None):
         ModelVariation.__init__(self, name=name)
-
-    # For faster execution
-    def ApplyTo(self, model, feedDicts):
-        return model, feedDicts
 
 # Convert operand data type
 class DataTypeConverter(ModelVariation, ImplicitVariation):
@@ -930,6 +947,18 @@ class ActivationConverter(ModelVariation, ImplicitVariation):
                 v = np.minimum(v, high)
             return op.SetValueFromNumpy(v)
 
+class DynamicOutputShapeConverter(ModelVariation):
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    def SetToDefaultName(self):
+        self.name = "dynamic_output_shape"
+        return self
+
+    def TransformModel(self, model):
+        model.TestDynamicOutputShape(True)
+        return model
+
 # An example is always attached to a model, and could have multiple variations
 class Example:
     examples = []
@@ -949,7 +978,10 @@ class Example:
                 ))
             else:
                 assert False
-        self.variations = []
+        if Configuration.test_dynamic_output_shape:
+            self.variations = [[DefaultVariation(), DynamicOutputShapeConverter()]]
+        else:
+            self.variations = []
         Example.examples.append(self)
 
     # Main entrance of test generator
@@ -1085,6 +1117,7 @@ class Example:
         for variationList in itertools.product(*self.variations):
             # Apply variations
             modelOrigin, feedDictsOrigin = self.model, self.feedDicts
+            self.model, self.feedDicts = copy.deepcopy((self.model, self.feedDicts))
             for variation in variationList:
                 self.model, self.feedDicts = variation.ApplyTo(self.model, self.feedDicts)
             # Concat names for test and examples
@@ -1224,6 +1257,7 @@ class FileNames:
 class Configuration:
     use_shm_for_weights = False
     force_regenerate = False
+    test_dynamic_output_shape = True
 
     @staticmethod
     def useSHM():

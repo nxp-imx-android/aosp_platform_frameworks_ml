@@ -48,6 +48,12 @@ Return<void> SampleDriver::getVersionString(getVersionString_cb cb) {
     return Void();
 }
 
+Return<void> SampleDriver::getType(getType_cb cb) {
+    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INITIALIZATION, "SampleDriver::getType");
+    cb(ErrorStatus::NONE, V1_2::DeviceType::CPU);
+    return Void();
+}
+
 Return<void> SampleDriver::getSupportedOperations(const V1_0::Model& model,
                                                   getSupportedOperations_cb cb) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION,
@@ -181,9 +187,9 @@ void asyncExecute(const Request& request, const Model& model,
     CpuExecutor executor;
     int n = executor.run(model, request, poolInfos, requestPoolInfos);
     VLOG(DRIVER) << "executor.run returned " << n;
-    ErrorStatus executionStatus =
-            n == ANEURALNETWORKS_NO_ERROR ? ErrorStatus::NONE : ErrorStatus::GENERAL_FAILURE;
-    Return<void> returned = notify(callback, executionStatus, {});
+    ErrorStatus executionStatus = convertResultCodeToErrorStatus(n);
+    hidl_vec<OutputShape> outputShapes = executor.getOutputShapes();
+    Return<void> returned = notify(callback, executionStatus, outputShapes);
     if (!returned.isOk()) {
         LOG(ERROR) << " hidl callback failed to return properly: " << returned.description();
     }
@@ -246,7 +252,9 @@ Return<void> SamplePreparedModel::executeSynchronously(const Request& request,
     CpuExecutor executor;
     int n = executor.run(mModel, request, mPoolInfos, requestPoolInfos);
     VLOG(DRIVER) << "executor.run returned " << n;
-    cb(n == ANEURALNETWORKS_NO_ERROR ? ErrorStatus::NONE : ErrorStatus::GENERAL_FAILURE, {});
+    ErrorStatus executionStatus = convertResultCodeToErrorStatus(n);
+    hidl_vec<OutputShape> outputShapes = executor.getOutputShapes();
+    cb(executionStatus, outputShapes);
     return Void();
 }
 
