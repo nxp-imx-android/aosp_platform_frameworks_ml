@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace android {
@@ -329,6 +330,11 @@ class Compilation {
                 mCompilation, static_cast<int32_t>(preference)));
     }
 
+    Result setCaching(const std::string& cacheDir, const std::vector<uint8_t>& token) {
+        return static_cast<Result>(ANeuralNetworksCompilation_setCaching(
+                mCompilation, cacheDir.c_str(), token.data()));
+    }
+
     Result finish() { return static_cast<Result>(ANeuralNetworksCompilation_finish(mCompilation)); }
 
     ANeuralNetworksCompilation* getHandle() const { return mCompilation; }
@@ -421,6 +427,20 @@ class Execution {
     // compute() to instead use the asynchronous API and then wait for
     // computation to complete.
     static void setComputeUsesSynchronousAPI(bool val) { mComputeUsesSychronousAPI = val; }
+
+    Result getOutputOperandDimensions(uint32_t index, std::vector<uint32_t>* dimensions) {
+        uint32_t rank = 0;
+        Result result = static_cast<Result>(
+                ANeuralNetworksExecution_getOutputOperandRank(mExecution, index, &rank));
+        dimensions->resize(rank);
+        if ((result != Result::NO_ERROR && result != Result::OUTPUT_INSUFFICIENT_SIZE) ||
+            rank == 0) {
+            return result;
+        }
+        result = static_cast<Result>(ANeuralNetworksExecution_getOutputOperandDimensions(
+                mExecution, index, dimensions->data()));
+        return result;
+    }
 
    private:
     ANeuralNetworksExecution* mExecution = nullptr;

@@ -1272,7 +1272,7 @@ typedef enum {
      *      Until API level 29 this scalar must be of type {@link
      *      ANEURALNETWORKS_FLOAT32}. Since API level 29, if all the input
      *      tensors have type {@link ANEURALNETWORKS_TENSOR_FLOAT32}, this
-     *      scalar must be of the type {@link ANEURALNETOWORKS_FLOAT32},
+     *      scalar must be of the type {@link ANEURALNETWORKS_FLOAT32},
      *      otherwise if all the input tensors have the type {@link
      *      ANEURALNETWORKS_TENSOR_FLOAT16}, this scalar must be of type {@link
      *      ANEURALNETWORKS_FLOAT16}.
@@ -1282,7 +1282,7 @@ typedef enum {
      *      Until API level 29 this scalar must be of type {@link
      *      ANEURALNETWORKS_FLOAT32}. Since API level 29, if all the input
      *      tensors have type {@link ANEURALNETWORKS_TENSOR_FLOAT32}, this
-     *      scalar must be of the type {@link ANEURALNETOWORKS_FLOAT32},
+     *      scalar must be of the type {@link ANEURALNETWORKS_FLOAT32},
      *      otherwise if all the input tensors have the type {@link
      *      ANEURALNETWORKS_TENSOR_FLOAT16}, this scalar must be of type {@link
      *      ANEURALNETWORKS_FLOAT16}.
@@ -2284,6 +2284,123 @@ typedef enum {
      */
     ANEURALNETWORKS_AXIS_ALIGNED_BBOX_TRANSFORM = 41,
     ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_LSTM = 42,
+    /**
+     * A recurrent neural network layer that applies a basic RNN cell to a
+     * sequence of inputs in forward and backward directions.
+     *
+     * This Op unrolls the input along the sequence dimension, and implements
+     * the following operation for each element in the sequence s =
+     * 1...sequence_length:
+     *   fw_outputs[s] = fw_state = activation(inputs[s] * fw_input_weights’ +
+     *          fw_state * fw_recurrent_weights’ + fw_bias)
+     *
+     * And for each element in sequence t = sequence_length : 1
+     *   bw_outputs[t] = bw_state = activation(inputs[t] * bw_input_weights’ +
+     *          bw_state * bw_recurrent_weights’ + bw_bias)
+     *
+     * Where:
+     * * “{fw,bw}_input_weights” is a weight matrix that multiplies the inputs;
+     * * “{fw,bw}_recurrent_weights” is a weight matrix that multiplies the
+     *    current “state” which itself is the output from the previous time step
+     *    computation;
+     * * “{fw,bw}_bias” is a bias vector (added to each output vector in the
+     *    batch);
+     * * “activation” is the function passed as the “fused_activation_function”
+     *   argument (if not “NONE”).
+     *
+     * The op also supports an auxiliary input. Regular cell feeds one input
+     * into the two RNN cells in the following way:
+     *
+     *       INPUT  (INPUT_REVERSED)
+     *         |         |
+     *    ---------------------
+     *    | FW_RNN     BW_RNN |
+     *    ---------------------
+     *         |         |
+     *      FW_OUT     BW_OUT
+     *
+     * An op with an auxiliary input takes two inputs and feeds them into the
+     * RNN cells in the following way:
+     *
+     *       AUX_INPUT   (AUX_INPUT_REVERSED)
+     *           |             |
+     *     INPUT | (INPUT_R'D.)|
+     *       |   |       |     |
+     *    -----------------------
+     *    |  \  /        \    / |
+     *    | FW_RNN       BW_RNN |
+     *    -----------------------
+     *         |           |
+     *      FW_OUT      BW_OUT
+     *
+     * While stacking this op on top of itself, this allows to connect both
+     * forward and backward outputs from previous cell to the next cell's
+     * inputs.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * The input tensors must all be the same type.
+     *
+     * Inputs:
+     * * 0: input.
+     *      A 3-D tensor. The shape is defined by the input 6 (timeMajor). If
+     *      it is set to true, then the input has a shape [maxTime, batchSize,
+     *      inputSize], otherwise the input has a shape [batchSize, maxTime,
+     *      inputSize].
+     * * 1: fwWeights.
+     *      A 2-D tensor of shape [fwNumUnits, inputSize].
+     * * 2: fwRecurrentWeights.
+     *      A 2-D tensor of shape [fwNumUnits, fwNumUnits].
+     * * 3: fwBias.
+     *      A 1-D tensor of shape [fwNumUnits].
+     * * 4: fwHiddenState.
+     *      A 2-D tensor of shape [batchSize, fwNumUnits]. Specifies a hidden
+     *      state input for the first time step of the computation.
+     * * 5: bwWeights.
+     *      A 2-D tensor of shape [bwNumUnits, inputSize].
+     * * 6: bwRecurrentWeights.
+     *      A 2-D tensor of shape [bwNumUnits, bwNumUnits].
+     * * 7: bwBias.
+     *      A 1-D tensor of shape [bwNumUnits].
+     * * 8: bwHiddenState
+     *      A 2-D tensor of shape [batchSize, bwNumUnits]. Specifies a hidden
+     *      state input for the first time step of the computation.
+     * * 9: auxInput.
+     *      A 3-D tensor. The shape is the same as of the input 0.
+     * * 10:fwAuxWeights.
+     *      A 2-D tensor of shape [fwNumUnits, inputSize].
+     * * 11:bwAuxWeights.
+     *      A 2-D tensor of shape [bwNumUnits, inputSize].
+     * * 12:fusedActivationFunction.
+     *      A {@link FuseCode} value indicating the activation function. If
+     *      “NONE” is specified then it results in a linear activation.
+     * * 13:timeMajor
+     *      An {@link ANEURALNETWORKS_BOOL} scalar specifying the shape format
+     *      of input and output tensors.
+     * * 14:mergeOutputs
+     *      An {@link ANEURALNETWORKS_BOOL} scalar specifying if the outputs
+     *      from forward and backward cells are separate (if set to false) or
+     *      concatenated (if set to true).
+     * Outputs:
+     * * 0: fwOutput.
+     *      A 3-D tensor. The first two dimensions of the shape are defined by
+     *      the input 6 (timeMajor) and the third dimension is defined by the
+     *      input 14 (mergeOutputs). If timeMajor is set to true, then the first
+     *      two dimensions are [maxTime, batchSize], otherwise they are set to
+     *      [batchSize, maxTime]. If mergeOutputs is set to true, then the third
+     *      dimension is equal to (fwNumUnits + bwNumUnits), otherwise it is set
+     *      to fwNumUnits.
+     * * 1: bwOutput.
+     *      A 3-D tensor. If the input 14 (mergeOutputs) is set to true, then
+     *      this tensor is not produced. The shape is defined by the input 6
+     *      (timeMajor). If it is set to true, then the shape is set to
+     *      [maxTime, batchSize, bwNumUnits], otherwise the shape is set to
+     *      [batchSize, maxTime, bwNumUnits].
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_RNN = 43,
 
     /**
@@ -2449,16 +2566,16 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
      * Inputs:
-     * * 0: A 1-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     * * 0: A 1-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32},
      *      containing lookupIds.
-     * * 1: A 2-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     * * 1: A 2-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32},
      *      containing indices of the lookupIds in sparse lookup tensor.
-     * * 2: A 1-D tensor of type {@link ANEURAL_NETWORKS_TENSOR_INT32},
+     * * 2: A 1-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32},
      *      containing shape of dense tensor corresponding to the input sparse
      *      tensor.
      * * 3: A 1-D tensor of the same type as input5 containing weights for
      *      aggregation.
-     * * 4: An {@link ANEURAL_NETWORKS_INT32} scalar, representing aggregation
+     * * 4: An {@link ANEURALNETWORKS_INT32} scalar, representing aggregation
      *      mode for an operation.
      *      * 0 corresponds to SUM
      *      * 1 corresponds to MEAN
@@ -2556,7 +2673,82 @@ typedef enum {
      */
     ANEURALNETWORKS_GATHER = 51,
 
+    /**
+     * Generate aixs-aligned bounding box proposals.
+     *
+     * Bounding box proposals are generated by applying transformation on a set
+     * of predefined anchors with the bounding box deltas from bounding box
+     * regression. A final step of hard NMS is applied to limit the number of
+     * returned boxes.
+     *
+     * Axis-aligned bounding boxes are represented by its upper-left corner
+     * coordinate (x1,y1) and lower-right corner coordinate (x2,y2). A valid
+     * bounding box should satisfy x1 <= x2 and y1 <= y2.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     *
+     * Inputs:
+     * * 0: A 4-D Tensor specifying the score of each anchor at each
+     *      location. With "NHWC" data layout, the tensor shape is
+     *      [batches, height, width, num_anchors]. With "NCHW" data layout,
+     *      the tensor shape is [batches, num_anchors, height, width].
+     * * 1: A 4-D Tensor specifying the bounding box deltas. With "NHWC" data
+     *      layout, the tensor shape is [batches, height, width, num_anchors * 4].
+     *      With "NCHW" data layout, the tensor shape is
+     *      [batches, num_anchors * 4, height, width]. The box deltas are encoded
+     *      in the order of [dx, dy, dw, dh], where dx and dy is the linear-scale
+     *      relative correction factor for the center position of the bounding box
+     *      with respect to the width and height, dw and dh is the log-scale
+     *      relative correction factor for the width and height. The last
+     *      dimensions is the channel dimension.
+     * * 2: A 2-D Tensor of shape [num_anchors, 4], specifying the shape of each
+     *      predefined anchor, with format [x1, y1, x2, y2]. For input0 of type
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, this tensor should be of
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT16_SYMM}, with scale of 0.125.
+     * * 3: A 2-D Tensor of shape [batches, 2], specifying the size of
+     *      each image in the batch, with format [image_height, image_width].
+     * * 4: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the ratio
+     *      from the height of original image to the height of feature map.
+     * * 5: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the ratio
+     *      from the width of original image to the width of feature map.
+     * * 6: An {@link ANEURALNETWORKS_INT32} scalar, specifying the maximum
+     *      number of boxes before going into the hard NMS algorithm. Boxes
+     *      with the lowest scores are discarded to meet the limit. Set to
+     *      a non-positive value for unlimited number.
+     * * 7: An {@link ANEURALNETWORKS_INT32} scalar, specifying the maximum
+     *      number of boxes returning from the hard NMS algorithm. Boxes
+     *      with the lowest scores are discarded to meet the limit. Set to
+     *      a non-positive value for unlimited number.
+     * * 8: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the IoU
+     *      threshold for hard NMS.
+     * * 9: An {@link ANEURALNETWORKS_FLOAT32} scalar, min_size. Boxes with
+     *      height or width lower than the absolute threshold are filtered out.
+     * * 10: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
+     *       NCHW data layout for input0 and input1. Set to false for NHWC.
+     *
+     * Outputs:
+     * * 0: A tensor of the same {@link OperandCode} as input0, of shape
+     *      [num_output_rois], specifying the score of each output box.
+     *      The boxes are grouped by batches, but the sequential order in
+     *      each batch is not guaranteed. For type of
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the scale and zero
+     *      point must be the same as input0.
+     * * 1: A tensor of the same {@link OperandCode} as input1, of shape
+     *      [num_output_rois, 4], specifying the coordinates of each output
+     *      bounding box for each class, with format [x1, y1, x2, y2].
+     *      The sequential order of the boxes corresponds with output0.
+     *      For type of {@link ANEURALNETWORKS_TENSOR_QUANT16_ASYMM}, the
+     *      scale must be 0.125 and the zero point must be 0.
+     * * 2: A 1-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor, of shape
+     *      [batches], specifying the number of output boxes for each image.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_GENERATE_PROPOSALS = 52,
+
     /**
      * For input tensors x and y, computes x > y elementwise.
      *
@@ -3652,7 +3844,137 @@ typedef enum {
     ANEURALNETWORKS_TRANSPOSE_CONV_2D = 84,
 
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_LSTM = 85,
+    /**
+     * A recurrent neural network layer that applies a basic RNN cell to a
+     * sequence of inputs.
+     *
+     * This layer unrolls the input along the sequence dimension, and implements
+     * the following operation
+     * for each element in the sequence s = 1...sequence_length:
+     *   outputs[s] = state = activation(inputs[s] * input_weights’ + state *
+     *   recurrent_weights’ + bias)
+     *
+     * Where:
+     * * “input_weights” is a weight matrix that multiplies the inputs;
+     * * “recurrent_weights” is a weight matrix that multiplies the current
+     *    “state” which itself is the output from the previous time step
+     *    computation;
+     * * “bias” is a bias vector (added to each output vector in the batch);
+     * * “activation” is the function passed as the “fused_activation_function”
+     *   argument (if not “NONE”).
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * The input tensors must all be the same type.
+     *
+     * Inputs:
+     * * 0: input.
+     *      A 3-D tensor. The shape is defined by the input 6 (timeMajor). If
+     *      it is set to 1, then the input has a shape [maxTime, batchSize,
+     *      inputSize], otherwise the input has a shape [batchSize, maxTime,
+     *      inputSize].
+     * * 1: weights.
+     *      A 2-D tensor of shape [numUnits, inputSize].
+     * * 2: recurrent_weights.
+     *      A 2-D tensor of shape [numUnits, numUnits].
+     * * 3: bias.
+     *      A 1-D tensor of shape [numUnits].
+     * * 4: hidden state
+     *      A 2-D tensor of shape [batchSize, numUnits]. Specifies a hidden
+     *      state input for the first time step of the computation.
+     * * 5: fusedActivationFunction.
+     *      A {@link FuseCode} value indicating the activation function. If
+     *      “NONE” is specified then it results in a linear activation.
+     * * 6: timeMajor
+     *      An {@link ANEURALNETWORKS_INT32} scalar specifying the shape format
+     *      of input and output tensors. Must be set to either 0 or 1.
+     * Outputs:
+     * * 0: output.
+     *      A 3-D tensor. The shape is defined by the input 6 (timeMajor). If
+     *      it is set to 1, then the output has a shape [maxTime, batchSize,
+     *      numUnits], otherwise the output has a shape [batchSize, maxTime,
+     *      numUnits].
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_RNN = 86,
+
+    /**
+     * Apply postprocessing steps to bounding box detections.
+     *
+     * Bounding box detections are generated by applying transformation on a set
+     * of predefined anchors with the bounding box deltas from bounding box
+     * regression. A final step of hard NMS is applied to limit the number of
+     * returned boxes.
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Inputs:
+     * * 0: A 3-D Tensor of shape [batches, num_anchors, num_classes], specifying
+     *      the score of each anchor with each class. Class 0 for each
+     *      [batches, num_anchors, 0] is background and will be ignored.
+     * * 1: A 3-D Tensor of shape [batches, num_anchors, length_box_encoding], with
+     *      the first four values in length_box_encoding specifying the bounding
+     *      box deltas. The box deltas are encoded in the order of [dy, dx, dh, dw],
+     *      where dy and dx is the linear-scale relative correction factor for the
+     *      center position of the bounding box with respect to the width and height,
+     *      dh and dw is the log-scale relative correction factor for the width and
+     *      height. All the entries in length_box_encoding beyond the first four
+     *      values are ignored in this operation.
+     * * 2: A 2-D Tensor of shape [num_anchors, 4], specifying the shape of each
+     *      predefined anchor, with format [ctr_y, ctr_x, h, w], where ctr_y and
+     *      ctr_x are the center position of the box, and h and w are the height
+     *      and the width.
+     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the scaling
+     *      factor for dy in bounding box deltas.
+     * * 4: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the scaling
+     *      factor for dx in bounding box deltas.
+     * * 5: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the scaling
+     *      factor for dh in bounding box deltas.
+     * * 6: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the scaling
+     *      factor for dw in bounding box deltas.
+     * * 7: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to use regular
+     *      multi-class NMS algorithm that do NMS separately for each class,
+     *      set to false for a faster algorithm that only do one single NMS
+     *      using the highest class score..
+     * * 8: An {@link ANEURALNETWORKS_INT32} scalar, max_num_detections, specifying
+     *      the maximum number of boxes for the output. Boxes with the lowest
+     *      scores are discarded to meet the limit.
+     * * 9: An {@link ANEURALNETWORKS_INT32} scalar, specifying the maximum
+     *      number of classes per detection.
+     * * 10: An {@link ANEURALNETWORKS_INT32} scalar, only used when input7 is
+     *       set to true, specifying the maximum number of detections when
+     *       applying NMS algorithm for each single class.
+     * * 11: An {@link ANEURALNETWORKS_FLOAT32} scalar, score_threshold. Boxes
+     *       with scores lower than the threshold are filtered before sending
+     *       to the NMS algorithm.
+     * * 12: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the IoU
+     *       threshold for hard NMS.
+     * * 13: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to include
+     *       background class in the list of label map for the output, set
+     *       to false to not include the background. When the background
+     *       class is included, it has label 0 and the output classes start
+     *       at 1 in the label map, otherwise, the output classes start at 0.
+     *
+     * Outputs:
+     * * 0: A 2-D tensor of the same {@link OperandCode} as input0, with shape
+     *      [batches, max_num_detections], specifying the score of each output
+     *      detections.
+     * * 1: A 3-D tensor of shape [batches, max_num_detections, 4], specifying the
+     *      coordinates of each output bounding box, with format
+     *      [y1, x1, y2, x2].
+     * * 2: A 2-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor, of shape
+     *      [batches, max_num_detections], specifying the class label for each
+     *      output detection.
+     * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the number of
+     *      valid output detections.
+     *
+     * Available since API level 29.
+     */
     ANEURALNETWORKS_DETECTION_POSTPROCESS = 87,
 
     /**
@@ -4123,6 +4445,14 @@ typedef enum {
 enum { ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES = 128 };
 
 /**
+ * For {@link ANeuralNetworksCompilation_setCaching}, specify the size
+ * of the cache token expecting from the application. The size is in bytes.
+ *
+ * Available since API level 29.
+ */
+enum { ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN = 32 };
+
+/**
  * ANeuralNetworksMemory is an opaque type that represents memory.
  *
  * This type is used to represent shared memory, memory mapped files,
@@ -4189,7 +4519,8 @@ typedef struct ANeuralNetworksModel ANeuralNetworksModel;
  *        {@link ANeuralNetworksCompilation_setPreference}).</li>
  *    <li>Complete the compilation with {@link ANeuralNetworksCompilation_finish}.</li>
  *    <li>Use the compilation as many times as needed
- *        with {@link ANeuralNetworksExecution_create}.</li>
+ *        with {@link ANeuralNetworksExecution_create} and
+ *        {@link ANeuralNetworksBurst_create}.</li>
  *    <li>Destroy the compilation with {@link ANeuralNetworksCompilation_free}
  *        once all executions using the compilation have completed.</li></ul></p>
  *
@@ -4225,12 +4556,13 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  *    <li>Associate output buffers or memory regions to the model outputs with
  *        {@link ANeuralNetworksExecution_setOutput} or
  *        {@link ANeuralNetworksExecution_setOutputFromMemory}.</li>
- *    <li>Either
- *        <li>Apply the model asynchronously with {@link
- * ANeuralNetworksExecution_startCompute}.</li> <li>Wait for the execution to complete with {@link
- *            ANeuralNetworksEvent_wait}.</li></li>
- *    <li>Or
- *        <li>Apply the model synchronously with {@link ANeuralNetworksExecution_compute}.</li></li>
+ *    <li>Apply the model with one of the following:</li><ul>
+ *        <li>Asynchronously with {@link ANeuralNetworksExecution_startCompute},
+ *            waiting for the execution to complete with
+ *            {@link ANeuralNetworksEvent_wait}.</li>
+ *        <li>Synchronously with {@link ANeuralNetworksExecution_compute}.</li>
+ *        <li>Synchronously as part of an execution burst with
+ *            {@link ANeuralNetworksExecution_burstCompute}.</li></ul>
  *    <li>Destroy the execution with
  *        {@link ANeuralNetworksExecution_free}.</li></ul></p>
  *
@@ -4283,6 +4615,39 @@ typedef struct ANeuralNetworksSymmPerChannelQuantParams {
     /** The array of scaling values for each channel. Each value must be greater than zero. */
     const float* scales;
 } ANeuralNetworksSymmPerChannelQuantParams;
+
+/**
+ * ANeuralNetworksBurst is an opaque type that can be used to reduce the latency
+ * of a rapid sequence of executions. It will likely cause overhead if only used
+ * for a single execution.
+ *
+ * ANeuralNetworksBurst serves as a context object for any number of inferences
+ * using {@link ANeuralNetworksExecution} objects. An ANeuralNetworksBurst
+ * object and the {@link ANeuralNetworksExecution} objects used with it must all
+ * have been created from the same {@link ANeuralNetworksCompilation} object.
+ *
+ * This object is also used as a hint to drivers, providing insight to the
+ * lifetime of a rapid sequence of executions. For example, a driver may choose
+ * to increase the clock frequency of its accelerator for the lifetime of a
+ * burst object.
+ *
+ * <p>To use:<ul>
+ *    <li>Create a new burst object by calling the
+ *        {@link ANeuralNetworksBurst_create} function.</li>
+ *    <li>For each execution:</li><ul>
+ *        <li>Create {@link ANeuralNetworksExecution} and configure its
+ *            properties (see {@link ANeuralNetworksExecution} for details).</li>
+ *        <li>Apply the model synchronously with
+ *            {@link ANeuralNetworksExecution_burstCompute}, reusing the same
+ *            {@link ANeuralNetworksBurst} with the new
+ *            {@link ANeuralNetworksExecution}.</li>
+ *        <li>Use and free the {@link ANeuralNetworksExecution}.</li></ul>
+ *    <li>Destroy the burst with
+ *        {@link ANeuralNetworksBurst_free}.</li></ul></p>
+ *
+ * Available since API level 29.
+ */
+typedef struct ANeuralNetworksBurst ANeuralNetworksBurst;
 #endif  //  __ANDROID_API__ >= __ANDROID_API_Q__
 
 /**
@@ -4519,6 +4884,33 @@ int ANeuralNetworksCompilation_createForDevices(ANeuralNetworksModel* model,
                                                 ANeuralNetworksCompilation** compilation);
 
 /**
+ * Sets the compilation caching signature and the cache directory.
+ *
+ * Provides optional caching information to the runtime for faster repeated
+ * compilation.
+ *
+ * See {@link ANeuralNetworksCompilation} for information on multithreaded usage.
+ *
+ * @param compilation The compilation to be modified.
+ * @param cacheDir The cache directory to store and retrieve caching data. It is
+ *                 recommended to use the code_cache provided by the Android runtime.
+ *                 If not using the code_cache, the user should choose a directory
+ *                 local to the application, and is responsible to manage and clean
+ *                 the cache entries.
+ * @param token The token provided by the user to specify a model, must be of length
+ *              ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN. The user should ensure that
+ *              the token is unique to a model within the application. The NNAPI
+ *              runtime will not detected token collisions. If there is a collision,
+ *              the compilation outcome may be incorrect without notifying with error.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful.
+ *
+ * Available since API level 29.
+ */
+int ANeuralNetworksCompilation_setCaching(ANeuralNetworksCompilation* compilation,
+                                          const char* cacheDir, const uint8_t* token);
+
+/**
  * Schedule synchronous evaluation of the execution.
  *
  * <p>Schedules synchronous evaluation of the execution. Returns once the
@@ -4537,6 +4929,106 @@ int ANeuralNetworksCompilation_createForDevices(ANeuralNetworksModel* model,
  * @return ANEURALNETWORKS_NO_ERROR if the execution completed normally.
  */
 int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution);
+
+/**
+ * Get the dimensional information of the specified output operand of the model of the
+ * {@link ANeuralNetworksExecution}.
+ *
+ * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute},
+ * {@link ANeuralNetworksEvent_wait} must be called prior to this function to recuperate
+ * the resources used by the execution.
+ *
+ * @param execution The execution to be queried.
+ * @param index The index of the output argument we are querying. It is
+ *              an index into the lists passed to
+ *              {@link ANeuralNetworksModel_identifyInputsAndOutputs}. It is not
+ *              the index associated with {@link ANeuralNetworksModel_addOperand}.
+ * @param rank The rank of the output operand.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful, ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE
+ *         if the target output is provided an insufficient buffer at execution time,
+ *         ANEURALNETWORKS_BAD_DATA if the index is invalid.
+ *
+ * Available since API level 29.
+ */
+int ANeuralNetworksExecution_getOutputOperandRank(ANeuralNetworksExecution* execution,
+                                                  int32_t index, uint32_t* rank);
+
+/**
+ * Get the dimensional information of the specified output operand of the model of the
+ * {@link ANeuralNetworksExecution}. The target output operand cannot be a scalar.
+ *
+ * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute},
+ * {@link ANeuralNetworksEvent_wait} must be called prior to this function to recuperate
+ * the resources used by the execution.
+ *
+ * @param execution The execution to be queried.
+ * @param index The index of the output argument we are querying. It is an index into the lists
+ *              passed to {@link ANeuralNetworksModel_identifyInputsAndOutputs}. It is not
+ *              the index associated with {@link ANeuralNetworksModel_addOperand}.
+ * @param dimensions The dimension array to be filled. The size of the array must be exactly as
+ *                   large as the rank of the output operand to be queried in the model.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful, ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE
+ *         if the target output is provided an insufficient buffer at execution time,
+ *         ANEURALNETWORKS_BAD_DATA if the index is invalid or if the target is a scalar.
+ *
+ * Available since API level 29.
+ */
+int ANeuralNetworksExecution_getOutputOperandDimensions(ANeuralNetworksExecution* execution,
+                                                        int32_t index, uint32_t* dimensions);
+
+/**
+ * Create a {@link ANeuralNetworksBurst} to apply the given compilation.
+ * This only creates the burst object. Computation is only performed once
+ * {@link ANeuralNetworksExecution_burstCompute} is invoked with a valid
+ * {@link ANeuralNetworksExecution} and {@link ANeuralNetworksBurst}.
+ *
+ * <p>The provided compilation must outlive the burst object.</p>
+ *
+ * Available since API level 29.
+ *
+ * @param compilation The {@link ANeuralNetworksCompilation} to be evaluated.
+ * @param burst The newly created object or NULL if unsuccessful.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful, ANEURALNETWORKS_BAD_DATA
+ *         if the compilation is invalid.
+ */
+int ANeuralNetworksBurst_create(ANeuralNetworksCompilation* compilation,
+                                ANeuralNetworksBurst** burst) __INTRODUCED_IN(29);
+
+/**
+ * Destroys the burst object.
+ *
+ * Available since API level 29.
+ *
+ * @param burst The burst object to be destroyed. Passing NULL is acceptable and
+ *              results in no operation.
+ */
+void ANeuralNetworksBurst_free(ANeuralNetworksBurst* burst) __INTRODUCED_IN(29);
+
+/**
+ * Schedule synchronous evaluation of the execution on a burst object.
+ *
+ * <p>Schedules synchronous evaluation of the execution. Returns once the
+ * execution has completed and the outputs are ready to be consumed.</p>
+ *
+ * <p>There must be at most one {@link ANeuralNetworksExecution} processing at
+ * any given time for any given burst object. Any
+ * {@link ANeuralNetworksExecution} launched before the previous has finished
+ * will result in ANEURALNETWORKS_BAD_STATE.</p>
+ *
+ * Available since API level 29.
+ *
+ * @param burst The burst object to execute on.
+ * @param execution The execution to be scheduled and executed. The execution
+ *                  must be created from the same {@link
+ *                  ANeuralNetworksCompilation} as the burst object.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if the execution completed normally.
+ */
+int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
+                                          ANeuralNetworksBurst* burst) __INTRODUCED_IN(29);
 
 #endif  // __ANDROID_API__ >= __ANDROID_API_Q__
 

@@ -309,6 +309,10 @@ static_assert(sizeof(ANeuralNetworksSymmPerChannelQuantParams) == 8 + sizeof(voi
 static_assert(alignof(ANeuralNetworksSymmPerChannelQuantParams) == alignof(void*),
               "ANeuralNetworksOperandType alignment changed");
 
+// Asserts for compilation caching
+static_assert(ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN == 32,
+              "ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN has changed");
+
 using android::sp;
 using namespace android::nn;
 
@@ -495,6 +499,37 @@ int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution) {
     return r->computeSynchronously();
 }
 
+int ANeuralNetworksBurst_create(ANeuralNetworksCompilation* compilation,
+                                ANeuralNetworksBurst** burst) {
+    NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksBurst_create");
+    if (!compilation || !burst) {
+        LOG(ERROR) << "ANeuralNetworksBurst_create passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+
+    // TODO in subsequent CL
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+void ANeuralNetworksBurst_free(ANeuralNetworksBurst* burst) {
+    NNTRACE_RT(NNTRACE_PHASE_TERMINATION, "ANeuralNetworksBurst_free");
+    // No validation.  Free of nullptr is valid.
+    (void)burst;
+    // TODO in subsequent CL
+}
+
+int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
+                                          ANeuralNetworksBurst* burst) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_burstCompute");
+    if (!execution || !burst) {
+        LOG(ERROR) << "ANeuralNetworksExecution_burstCompute passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+
+    // TODO in subsequent CL
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
 int ANeuralNetworksMemory_createFromFd(size_t size, int prot, int fd, size_t offset,
                                        ANeuralNetworksMemory** memory) {
     NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksMemory_createFromFd");
@@ -668,6 +703,17 @@ int ANeuralNetworksCompilation_setPreference(ANeuralNetworksCompilation* compila
     return c->setPreference(preference);
 }
 
+int ANeuralNetworksCompilation_setCaching(ANeuralNetworksCompilation* compilation,
+                                          const char* cacheDir, const uint8_t* token) {
+    NNTRACE_RT(NNTRACE_PHASE_COMPILATION, "ANeuralNetworksCompilation_setCaching");
+    if (!compilation || !cacheDir || !token) {
+        LOG(ERROR) << "ANeuralNetworksCompilation_setCaching passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    CompilationBuilder* c = reinterpret_cast<CompilationBuilder*>(compilation);
+    return c->setCaching(cacheDir, token);
+}
+
 int ANeuralNetworksCompilation_finish(ANeuralNetworksCompilation* compilation) {
     NNTRACE_RT(NNTRACE_PHASE_COMPILATION, "ANeuralNetworksCompilation_finish");
     if (!compilation) {
@@ -699,6 +745,28 @@ void ANeuralNetworksExecution_free(ANeuralNetworksExecution* execution) {
     // No validation.  Free of nullptr is valid.
     ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
     delete r;
+}
+
+int ANeuralNetworksExecution_getOutputOperandRank(ANeuralNetworksExecution* execution,
+                                                  int32_t index, uint32_t* rank) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_getOutputOperandRank");
+    if (!execution || !rank) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandRank passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    return r->getOutputOperandRank(index, rank);
+}
+
+int ANeuralNetworksExecution_getOutputOperandDimensions(ANeuralNetworksExecution* execution,
+                                                        int32_t index, uint32_t* dimensions) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_getOutputOperandDimensions");
+    if (!execution || !dimensions) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandDimensions passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    return r->getOutputOperandDimensions(index, dimensions);
 }
 
 int ANeuralNetworksExecution_setInput(ANeuralNetworksExecution* execution, int32_t index,

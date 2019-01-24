@@ -32,7 +32,7 @@ LIBNEURALNETWORKS {
     ANeuralNetworksModel_free;
     ANeuralNetworksModel_finish;
     ANeuralNetworksModel_addOperand;
-    ANeuralNetworksModel_setOperandSymmPerChannelQuantParams;
+    ANeuralNetworksModel_setOperandSymmPerChannelQuantParams; # introduced=Q
     ANeuralNetworksModel_setOperandValue;
     ANeuralNetworksModel_setOperandValueFromMemory;
     ANeuralNetworksModel_addOperation;
@@ -42,8 +42,12 @@ LIBNEURALNETWORKS {
     ANeuralNetworksCompilation_create;
     ANeuralNetworksCompilation_createForDevices; # introduced=Q
     ANeuralNetworksCompilation_free;
+    ANeuralNetworksCompilation_setCaching; # introduced=Q
     ANeuralNetworksCompilation_setPreference;
     ANeuralNetworksCompilation_finish;
+    ANeuralNetworksBurst_create; # introduced=Q
+    ANeuralNetworksBurst_free; # introduced=Q
+    ANeuralNetworksExecution_burstCompute; # introduced=Q
     ANeuralNetworksExecution_compute; # introduced=Q
     ANeuralNetworksExecution_create;
     ANeuralNetworksExecution_free;
@@ -52,6 +56,8 @@ LIBNEURALNETWORKS {
     ANeuralNetworksExecution_setOutput;
     ANeuralNetworksExecution_setOutputFromMemory;
     ANeuralNetworksExecution_startCompute;
+    ANeuralNetworksExecution_getOutputOperandDimensions; # introduced=Q
+    ANeuralNetworksExecution_getOutputOperandRank; # introduced=Q
     ANeuralNetworksEvent_wait;
     ANeuralNetworksEvent_free;
   local:

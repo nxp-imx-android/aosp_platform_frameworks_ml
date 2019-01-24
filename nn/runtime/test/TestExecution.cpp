@@ -47,6 +47,9 @@ using WrapperModel = nn::test_wrapper::Model;
 using WrapperOperandType = nn::test_wrapper::OperandType;
 using WrapperType = nn::test_wrapper::Type;
 
+template <typename T>
+using MQDescriptorSync = ::android::hardware::MQDescriptorSync<T>;
+
 namespace {
 
 // Wraps an V1_2::IPreparedModel to allow dummying up the execution status.
@@ -92,6 +95,20 @@ class TestPreparedModel12 : public V1_2::IPreparedModel {
                     });
         } else {
             cb(mErrorStatus, {});
+            return Void();
+        }
+    }
+
+    Return<void> configureExecutionBurst(
+            const sp<V1_2::IBurstCallback>& callback,
+            const MQDescriptorSync<V1_2::FmqRequestDatum>& requestChannel,
+            const MQDescriptorSync<V1_2::FmqResultDatum>& resultChannel,
+            configureExecutionBurst_cb cb) override {
+        if (mErrorStatus == ErrorStatus::NONE) {
+            return mPreparedModelV1_2->configureExecutionBurst(callback, requestChannel,
+                                                               resultChannel, cb);
+        } else {
+            cb(ErrorStatus::DEVICE_UNAVAILABLE, nullptr);
             return Void();
         }
     }
@@ -345,7 +362,7 @@ protected:
     float mOutputBuffer;
     const float kOutputBufferExpected = 3;
 
-private:
+   private:
     static WrapperModel makeModel() {
         static const WrapperOperandType tensorType(WrapperType::TENSOR_FLOAT32, { 1 });
 
@@ -374,6 +391,7 @@ template<class DriverClass> void ExecutionTestTemplate<DriverClass>::TestWait() 
         if (kExpectResult == Result::NO_ERROR) {
             ASSERT_EQ(mOutputBuffer, kOutputBufferExpected);
         }
+        std::vector<uint32_t> dimensions;
     }
     {
         SCOPED_TRACE("compute");
