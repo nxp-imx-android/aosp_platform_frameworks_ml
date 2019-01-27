@@ -28,7 +28,6 @@ cc_defaults {
         "operations/ChannelShuffle.cpp",
         "operations/Comparisons.cpp",
         "operations/Elementwise.cpp",
-        "operations/EmbeddingLookupSparse.cpp",
         "operations/Gather.cpp",
         "operations/GenerateProposals.cpp",
         "operations/HeatmapMaxKeypoint.cpp",
@@ -42,7 +41,7 @@ cc_defaults {
         "operations/RoiAlign.cpp",
         "operations/RoiPooling.cpp",
         "operations/Select.cpp",
-        "operations/SparseToDense.cpp",
+        "operations/UnidirectionalSequenceLSTM.cpp",
         "operations/UnidirectionalSequenceRNN.cpp",
     ],
 }
@@ -55,6 +54,8 @@ cc_library_static {
     export_include_dirs: ["include"],
     srcs: [
         "Utils.cpp",
+        "ExecutionBurstController.cpp",
+        "ExecutionBurstServer.cpp",
     ],
     header_libs: [
         "libneuralnetworks_headers",
@@ -65,11 +66,16 @@ cc_library_static {
     shared_libs: [
         "libhidltransport",
         "libhidlmemory",
+        "libnativewindow",
+        "libfmq",
         "android.hardware.neuralnetworks@1.0",
         "android.hardware.neuralnetworks@1.1",
         "android.hardware.neuralnetworks@1.2",
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
+    ],
+    whole_static_libs: [
+        "libarect",
     ],
     cflags: [
         "-Werror",
@@ -96,6 +102,8 @@ cc_library_static {
     ],
     srcs: [
         "CpuExecutor.cpp",
+        "ExecutionBurstController.cpp",
+        "ExecutionBurstServer.cpp",
         "GraphDump.cpp",
         "IndexedShapeWrapper.cpp",
         "OperationsUtils.cpp",
@@ -133,9 +141,12 @@ cc_library_static {
     ],
     shared_libs: [
         "libbase",
+        "libcutils",
         "libhidlbase",
         "libhidltransport",
         "libhidlmemory",
+        "libnativewindow",
+        "libfmq",
         "libtextclassifier_hash",
         "liblog",
         "libutils",
@@ -154,6 +165,7 @@ cc_library_static {
         "tensorflow_headers",
     ],
     whole_static_libs: [
+        "libarect",
         "libtflite_kernel_utils",
         "philox_random",
     ],
@@ -177,6 +189,7 @@ cc_test {
     name: "NeuralNetworksTest_operations",
     shared_libs: [
         "libhidlmemory",
+        "libnativewindow",
         "libneuralnetworks",
         "android.hardware.neuralnetworks@1.0",
         "android.hardware.neuralnetworks@1.1",
@@ -210,6 +223,7 @@ cc_test {
     name: "NeuralNetworksTest_utils",
     shared_libs: [
         "libhidlmemory",
+        "libnativewindow",
         "libneuralnetworks",
         "android.hardware.neuralnetworks@1.0",
         "android.hardware.neuralnetworks@1.1",

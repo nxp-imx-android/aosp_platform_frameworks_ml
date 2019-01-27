@@ -37,6 +37,7 @@ using CompilationBuilder = nn::CompilationBuilder;
 using Device = nn::Device;
 using DeviceManager = nn::DeviceManager;
 using HidlModel = hardware::neuralnetworks::V1_2::Model;
+using HidlToken = hardware::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
 using PreparedModelCallback = hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 using Result = nn::test_wrapper::Result;
 using SampleDriver = nn::sample_driver::SampleDriver;
@@ -51,6 +52,8 @@ template <typename T>
 using MQDescriptorSync = ::android::hardware::MQDescriptorSync<T>;
 
 namespace {
+
+const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 // Wraps an V1_2::IPreparedModel to allow dummying up the execution status.
 class TestPreparedModel12 : public V1_2::IPreparedModel {
@@ -75,26 +78,27 @@ class TestPreparedModel12 : public V1_2::IPreparedModel {
         }
     }
 
-    Return<ErrorStatus> execute_1_2(const Request& request,
+    Return<ErrorStatus> execute_1_2(const Request& request, MeasureTiming measure,
                                     const sp<V1_2::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
-            return mPreparedModelV1_2->execute_1_2(request, callback);
+            return mPreparedModelV1_2->execute_1_2(request, measure, callback);
         } else {
-            callback->notify_1_2(mErrorStatus, {});
+            callback->notify_1_2(mErrorStatus, {}, kBadTiming);
             return ErrorStatus::NONE;
         }
     }
 
-    Return<void> executeSynchronously(const Request& request, executeSynchronously_cb cb) override {
+    Return<void> executeSynchronously(const Request& request, MeasureTiming measure,
+                                      executeSynchronously_cb cb) override {
         CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
             return mPreparedModelV1_2->executeSynchronously(
-                    request, [&cb](ErrorStatus error, const hidl_vec<OutputShape>& outputShapes) {
-                        cb(error, outputShapes);
-                    });
+                    request, measure,
+                    [&cb](ErrorStatus error, const hidl_vec<OutputShape>& outputShapes,
+                          const Timing& timing) { cb(error, outputShapes, timing); });
         } else {
-            cb(mErrorStatus, {});
+            cb(mErrorStatus, {}, kBadTiming);
             return Void();
         }
     }
@@ -108,9 +112,14 @@ class TestPreparedModel12 : public V1_2::IPreparedModel {
             return mPreparedModelV1_2->configureExecutionBurst(callback, requestChannel,
                                                                resultChannel, cb);
         } else {
-            cb(ErrorStatus::DEVICE_UNAVAILABLE, nullptr);
+            cb(mErrorStatus, nullptr);
             return Void();
         }
+    }
+
+    Return<ErrorStatus> saveToCache(const hidl_handle&, const hidl_handle&,
+                                    const HidlToken&) override {
+        return ErrorStatus::GENERAL_FAILURE;
     }
 
    private:
@@ -406,7 +415,7 @@ template<class DriverClass> void ExecutionTestTemplate<DriverClass>::TestWait() 
 
 auto kTestValues = ::testing::Values(
         std::make_tuple(ErrorStatus::NONE, Result::NO_ERROR),
-        std::make_tuple(ErrorStatus::DEVICE_UNAVAILABLE, Result::OP_FAILED),
+        std::make_tuple(ErrorStatus::DEVICE_UNAVAILABLE, Result::UNAVAILABLE_DEVICE),
         std::make_tuple(ErrorStatus::GENERAL_FAILURE, Result::OP_FAILED),
         std::make_tuple(ErrorStatus::OUTPUT_INSUFFICIENT_SIZE, Result::OUTPUT_INSUFFICIENT_SIZE),
         std::make_tuple(ErrorStatus::INVALID_ARGUMENT, Result::BAD_DATA));

@@ -32,6 +32,8 @@
 #include "Tracing.h"
 #include "Utils.h"
 
+#include "vndk/hardware_buffer.h"
+
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -133,6 +135,8 @@ static_assert(ANEURALNETWORKS_BAD_STATE == 6, "ANEURALNETWORKS_BAD_STATE has cha
 static_assert(ANEURALNETWORKS_UNMAPPABLE == 7, "ANEURALNETWORKS_UNMAPPABLE has changed");
 static_assert(ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE == 8,
               "ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE has changed");
+static_assert(ANEURALNETWORKS_UNAVAILABLE_DEVICE == 9,
+              "ANEURALNETWORKS_UNAVAILABLE_DEVICE has changed");
 
 static_assert(ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES == 128,
               "ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES has changed");
@@ -143,6 +147,11 @@ static_assert(ANEURALNETWORKS_DEVICE_CPU == 2, "ANEURALNETWORKS_DEVICE_CPU has c
 static_assert(ANEURALNETWORKS_DEVICE_GPU == 3, "ANEURALNETWORKS_DEVICE_GPU has changed");
 static_assert(ANEURALNETWORKS_DEVICE_ACCELERATOR == 4,
               "ANEURALNETWORKS_DEVICE_ACCELERATOR has changed");
+
+static_assert(ANEURALNETWORKS_DURATION_ON_HARDWARE == 0,
+              "ANEURALNETWORKS_DURATION_ON_HARDWARE has changed");
+static_assert(ANEURALNETWORKS_DURATION_IN_DRIVER == 1,
+              "ANEURALNETWORKS_DURATION_IN_DRIVER has changed");
 
 // Make sure that the constants are compatible with the values defined in
 // hardware/interfaces/neuralnetworks/1.0/types.hal.
@@ -312,6 +321,9 @@ static_assert(alignof(ANeuralNetworksSymmPerChannelQuantParams) == alignof(void*
 // Asserts for compilation caching
 static_assert(ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN == 32,
               "ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN has changed");
+static_assert(static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN) ==
+                      ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN,
+              "Constant::BYTE_SIZE_OF_CACHE_TOKEN != ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN");
 
 using android::sp;
 using namespace android::nn;
@@ -499,6 +511,36 @@ int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution) {
     return r->computeSynchronously();
 }
 
+int ANeuralNetworksExecution_setMeasureTiming(ANeuralNetworksExecution* execution, bool measure) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_setMeasureTiming");
+    if (!execution) {
+        LOG(ERROR) << "ANeuralNetworksExecution_setMeasureTiming passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    return r->setMeasureTiming(measure);
+}
+
+int ANeuralNetworksExecution_getDuration(const ANeuralNetworksExecution* execution,
+                                         int32_t durationCode, uint64_t* duration) {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_getDuration");
+    if (!execution || !duration) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getDuration passed a nullptr";
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    switch (durationCode) {
+        case ANEURALNETWORKS_DURATION_ON_HARDWARE:
+        case ANEURALNETWORKS_DURATION_IN_DRIVER:
+            break;
+        default:
+            LOG(ERROR) << "ANeuralNetworksExecution_getDuration passed a bad durationCode "
+                       << durationCode;
+            return ANEURALNETWORKS_BAD_DATA;
+    }
+    const ExecutionBuilder* r = reinterpret_cast<const ExecutionBuilder*>(execution);
+    return r->getDuration(durationCode, duration);
+}
+
 int ANeuralNetworksBurst_create(ANeuralNetworksCompilation* compilation,
                                 ANeuralNetworksBurst** burst) {
     NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksBurst_create");
@@ -539,6 +581,22 @@ int ANeuralNetworksMemory_createFromFd(size_t size, int prot, int fd, size_t off
         return ANEURALNETWORKS_OUT_OF_MEMORY;
     }
     int n = m->set(size, prot, fd, offset);
+    if (n != ANEURALNETWORKS_NO_ERROR) {
+        return n;
+    }
+    *memory = reinterpret_cast<ANeuralNetworksMemory*>(m.release());
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ANeuralNetworksMemory_createFromAHardwareBuffer(const AHardwareBuffer* ahwb,
+                                                    ANeuralNetworksMemory** memory) {
+    NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksMemory_createFromAHardwareBuffer");
+    *memory = nullptr;
+    std::unique_ptr<MemoryAHWB> m = std::make_unique<MemoryAHWB>();
+    if (m == nullptr) {
+        return ANEURALNETWORKS_OUT_OF_MEMORY;
+    }
+    int n = m->set(ahwb);
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return n;
     }
