@@ -1,11 +1,11 @@
 // clang-format off
-// Generated file (from: unidirectional_sequence_lstm_batch_major_norm_peephole_projection.mod.py). Do not edit
+// Generated file (from: unidirectional_sequence_lstm_cifg_peephole.mod.py). Do not edit
 // Create the model
 Model createTestModel() {
     const std::vector<Operand> operands = {
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 3, 5},
+            .dimensions = {3, 1, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -14,7 +14,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -23,7 +23,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -32,7 +32,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -41,7 +41,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -50,7 +50,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -59,7 +59,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -68,7 +68,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -77,16 +77,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
-            .numberOfConsumers = 1,
-            .scale = 0.0f,
-            .zeroPoint = 0,
-            .lifetime = OperandLifeTime::MODEL_INPUT,
-            .location = {.poolIndex = 0, .offset = 0, .length = 0},
-        },
-        {
-            .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -149,7 +140,16 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {3, 4},
+            .dimensions = {4},
+            .numberOfConsumers = 1,
+            .scale = 0.0f,
+            .zeroPoint = 0,
+            .lifetime = OperandLifeTime::MODEL_INPUT,
+            .location = {.poolIndex = 0, .offset = 0, .length = 0},
+        },
+        {
+            .type = OperandType::TENSOR_FLOAT32,
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -167,7 +167,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 3},
+            .dimensions = {1, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -176,7 +176,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 4},
+            .dimensions = {1, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -257,7 +257,7 @@ Model createTestModel() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 3, 3},
+            .dimensions = {3, 1, 4},
             .numberOfConsumers = 0,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -277,7 +277,7 @@ Model createTestModel() {
     const std::vector<uint32_t> inputIndexes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 27};
     const std::vector<uint32_t> outputIndexes = {28};
     std::vector<uint8_t> operandValues = {
-      4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
     };
     const std::vector<hidl_memory> pools = {};
 
@@ -301,7 +301,7 @@ Model createTestModel_dynamic_output_shape() {
     const std::vector<Operand> operands = {
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 3, 5},
+            .dimensions = {3, 1, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -310,7 +310,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -319,7 +319,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -328,7 +328,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -337,7 +337,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 5},
+            .dimensions = {4, 2},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -346,7 +346,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -355,7 +355,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -364,7 +364,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -373,16 +373,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4, 3},
-            .numberOfConsumers = 1,
-            .scale = 0.0f,
-            .zeroPoint = 0,
-            .lifetime = OperandLifeTime::MODEL_INPUT,
-            .location = {.poolIndex = 0, .offset = 0, .length = 0},
-        },
-        {
-            .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {4},
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -445,7 +436,16 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {3, 4},
+            .dimensions = {4},
+            .numberOfConsumers = 1,
+            .scale = 0.0f,
+            .zeroPoint = 0,
+            .lifetime = OperandLifeTime::MODEL_INPUT,
+            .location = {.poolIndex = 0, .offset = 0, .length = 0},
+        },
+        {
+            .type = OperandType::TENSOR_FLOAT32,
+            .dimensions = {4, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -463,7 +463,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 3},
+            .dimensions = {1, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -472,7 +472,7 @@ Model createTestModel_dynamic_output_shape() {
         },
         {
             .type = OperandType::TENSOR_FLOAT32,
-            .dimensions = {2, 4},
+            .dimensions = {1, 4},
             .numberOfConsumers = 1,
             .scale = 0.0f,
             .zeroPoint = 0,
@@ -573,7 +573,7 @@ Model createTestModel_dynamic_output_shape() {
     const std::vector<uint32_t> inputIndexes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 27};
     const std::vector<uint32_t> outputIndexes = {28};
     std::vector<uint8_t> operandValues = {
-      4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
     };
     const std::vector<hidl_memory> pools = {};
 

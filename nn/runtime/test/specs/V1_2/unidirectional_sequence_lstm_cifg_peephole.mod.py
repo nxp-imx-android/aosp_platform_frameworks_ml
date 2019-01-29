@@ -15,19 +15,19 @@
 #
 
 # Unidirectional Sequence LSTM Test:
-# FLOAT32, Batch Major, 3 Time Step, Layer Normalization, No Cifg, Peephole, Projection, and No Clipping.
+# 3 Time Step, No Layer Normalization, Cifg, Peephole, No Projection, and No Clipping.
 import copy
 
 model = Model()
 
 max_time = 3
-n_batch = 2
-n_input = 5
+n_batch = 1
+n_input = 2
 # n_cell and n_output have the same size when there is no projection.
 n_cell = 4
-n_output = 3
+n_output = 4
 
-input = Input("input", "TENSOR_FLOAT32", "{%d, %d, %d}" % (n_batch, max_time, n_input))
+input = Input("input", "TENSOR_FLOAT32", "{%d, %d, %d}" % (max_time, n_batch, n_input))
 
 input_to_input_weights = Input("input_to_input_weights", "TENSOR_FLOAT32",
                                "{%d, %d}" % (n_cell, n_input))
@@ -76,7 +76,7 @@ cell_state_in = Input("cell_state_in", "TENSOR_FLOAT32",
 activation_param = Int32Scalar("activation_param", 4)  # Tanh
 cell_clip_param = Float32Scalar("cell_clip_param", 0.)
 proj_clip_param = Float32Scalar("proj_clip_param", 0.)
-time_major_param = BoolScalar("time_major_param", False)
+time_major_param = BoolScalar("time_major_param", True)
 
 input_layer_norm_weights = Input("input_layer_norm_weights", "TENSOR_FLOAT32",
                                  "{%d}" % n_cell)
@@ -87,7 +87,7 @@ cell_layer_norm_weights = Input("cell_layer_norm_weights", "TENSOR_FLOAT32",
 output_layer_norm_weights = Input("output_layer_norm_weights", "TENSOR_FLOAT32",
                                   "{%d}" % n_cell)
 
-output = Output("output", "TENSOR_FLOAT32", "{%d, %d, %d}" % (n_batch, max_time, n_output))
+output = Output("output", "TENSOR_FLOAT32", "{%d, %d, %d}" % (max_time, n_batch, n_output))
 
 model = model.Operation(
     "UNIDIRECTIONAL_SEQUENCE_LSTM", input, input_to_input_weights, input_to_forget_weights,
@@ -102,57 +102,59 @@ model = model.Operation(
 
 # Example 1. Input in operand 0,
 input0 = {
-    input_to_input_weights: [
-        0.5, 0.6, 0.7, -0.8, -0.9, 0.1, 0.2, 0.3, -0.4, 0.5, -0.8, 0.7, -0.6,
-        0.5, -0.4, -0.5, -0.4, -0.3, -0.2, -0.1
-    ],
+    input_to_input_weights: [],
     input_to_forget_weights: [
-        -0.6, -0.1, 0.3, 0.2, 0.9, -0.5, -0.2, -0.4, 0.3, -0.8, -0.4, 0.3, -0.5,
-        -0.4, -0.6, 0.3, -0.4, -0.6, -0.5, -0.5
+        -0.55291498, -0.42866567, 0.13056988, -0.3633365,
+        -0.22755712, 0.28253698, 0.24407166,  0.33826375
     ],
     input_to_cell_weights: [
-        -0.4, -0.3, -0.2, -0.1, -0.5, 0.5, -0.2, -0.3, -0.2, -0.6, 0.6, -0.1,
-        -0.4, -0.3, -0.7, 0.7, -0.9, -0.5, 0.8, 0.6
+        -0.49770179, -0.27711356, -0.09624726, 0.05100781,
+        0.04717243,  0.48944736, -0.38535351, -0.17212132
     ],
     input_to_output_weights: [
-        -0.8, -0.4, -0.2, -0.9, -0.1, -0.7, 0.3, -0.3, -0.8, -0.2, 0.6, -0.2,
-        0.4, -0.7, -0.3, -0.5, 0.1, 0.5, -0.6, -0.4
+        0.10725588,  -0.02335852, -0.55932593, -0.09426838,
+        -0.44257352, 0.54939759, 0.01533556,  0.42751634
     ],
-    input_gate_bias: [0.03, 0.15, 0.22, 0.38],
-    forget_gate_bias: [0.1, -0.3, -0.2, 0.1],
-    cell_gate_bias: [-0.05, 0.72, 0.25, 0.08],
-    output_gate_bias: [0.05, -0.01, 0.2, 0.1],
-    recurrent_to_input_weights: [
-        -0.2, -0.3, 0.4, 0.1, -0.5, 0.9, -0.2, -0.3, -0.7, 0.05, -0.2, -0.6
-    ],
+    input_gate_bias: [],
+    forget_gate_bias: [1., 1., 1., 1.],
+    cell_gate_bias: [0., 0., 0., 0.],
+    output_gate_bias: [0., 0., 0., 0.],
+    recurrent_to_input_weights: [],
     recurrent_to_cell_weights: [
-        -0.3, 0.2, 0.1, -0.3, 0.8, -0.08, -0.2, 0.3, 0.8, -0.6, -0.1, 0.2
+        0.54066205,  -0.32668582, -0.43562764, -0.56094903,
+        0.42957711,  0.01841056,  -0.32764608, -0.33027974,
+        -0.10826075, 0.20675004,  0.19069612,  -0.03026325,
+        -0.54532051, 0.33003211,  0.44901288,  0.21193194
     ],
     recurrent_to_forget_weights: [
-        -0.5, -0.3, -0.5, -0.2, 0.6, 0.4, 0.9, 0.3, -0.1, 0.2, 0.5, 0.2
+        -0.13832897, -0.0515101,  -0.2359007, -0.16661474,
+        -0.14340827, 0.36986142,  0.23414481, 0.55899,
+        0.10798943,  -0.41174671, 0.17751795, -0.34484994,
+        -0.35874045, -0.11352962, 0.27268326, 0.54058349
     ],
     recurrent_to_output_weights: [
-        0.3, -0.1, 0.1, -0.2, -0.5, -0.7, -0.2, -0.6, -0.1, -0.4, -0.7, -0.2
+        0.41613156, 0.42610586,  -0.16495961, -0.5663873,
+        0.30579174, -0.05115908, -0.33941799, 0.23364776,
+        0.11178309, 0.09481031,  -0.26424935, 0.46261835,
+        0.50248802, 0.26114327,  -0.43736315, 0.33149987
     ],
-    cell_to_input_weights: [0.05, 0.1, 0.25, 0.15],
-    cell_to_forget_weights: [-0.02, -0.15, -0.25, -0.03],
-    cell_to_output_weights: [0.1, -0.1, -0.5, 0.05],
-    projection_weights: [
-        -0.1, 0.2, 0.01, -0.2, 0.1, 0.5, 0.3, 0.08, 0.07, 0.2, -0.4, 0.2
-    ],
+    cell_to_input_weights: [],
+    cell_to_forget_weights: [0.47485286, -0.51955009, -0.24458408, 0.31544167],
+    cell_to_output_weights: [-0.17135078, 0.82760304, 0.85573703, -0.77109635],
+    projection_weights: [],
     projection_bias: [],
-    input_layer_norm_weights: [0.1, 0.2, 0.3, 0.5],
-    forget_layer_norm_weights: [0.2, 0.2, 0.4, 0.3],
-    cell_layer_norm_weights: [0.7, 0.2, 0.3, 0.8],
-    output_layer_norm_weights: [0.6, 0.2, 0.2, 0.5]
+    input_layer_norm_weights: [],
+    forget_layer_norm_weights: [],
+    cell_layer_norm_weights: [],
+    output_layer_norm_weights: []
 }
 
-test_input = [0.7, 0.8, 0.1, 0.2, 0.3, 0.8, 0.1, 0.2, 0.4, 0.5, 0.2, 0.7, 0.7, 0.1, 0.7,
-              0.3, 0.2, 0.9, 0.8, 0.1, 0.1, 0.5, 0.2, 0.4, 0.2, 0.6, 0.9, 0.2, 0.5, 0.7]
+test_input = [2., 3., 3., 4., 1., 1.]
 
 golden_output = [
-        0.024407668039203, 0.128027379512787, -0.001709178090096, 0.013764165341854, 0.140751048922539, 0.039583537727594, -0.004592306911945, 0.155278354883194, 0.083737745881081,
-        -0.006924282759428, 0.084874063730240, 0.063444979488850, -0.004039138555527, 0.139963015913963, 0.072681039571762, 0.007527053356171, 0.161902531981468, 0.056137066334486,
+    -0.36444446, -0.00352185, 0.12886585, -0.05163646,
+    -0.42312205, -0.01218222, 0.24201041, -0.08124574,
+    -0.358325, -0.04621704, 0.21641694, -0.06471302
 ]
 
 output0 = {
