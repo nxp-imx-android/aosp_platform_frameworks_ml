@@ -18,7 +18,9 @@
 
 #include "CompilationBuilder.h"
 
+#include "BurstBuilder.h"
 #include "ExecutionBuilder.h"
+#include "ExecutionBurstController.h"
 #include "ExecutionPlan.h"
 #include "Manager.h"
 #include "ModelBuilder.h"
@@ -61,7 +63,11 @@ int CompilationBuilder::finish() {
                     return n;
                 }
                 if (mModel->hasOEMOperation()) {
-                    LOG(ERROR) << "Because of OEM op cannot fall back to CPU";
+                    LOG(ERROR) << "Cannot fall back to CPU because of an OEM operation";
+                    return n;
+                }
+                if (mModel->hasExtensionOperation()) {
+                    LOG(ERROR) << "Cannot fall back to CPU because of an extension operation";
                     return n;
                 }
                 break;
@@ -130,6 +136,22 @@ int CompilationBuilder::createExecution(ExecutionBuilder **execution) {
     }
     *execution = new (std::nothrow) ExecutionBuilder(this);
     return (*execution ? ANEURALNETWORKS_NO_ERROR : ANEURALNETWORKS_OUT_OF_MEMORY);
+}
+
+int CompilationBuilder::createBurst(BurstBuilder** burst) {
+    if (!mFinished) {
+        LOG(ERROR) << "ANeuralNetworksBurst_create passed an unfinished compilation";
+        *burst = nullptr;
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (!mPlan.isValid()) {
+        LOG(ERROR) << "ANeuralNetworksBurst_create passed an invalid compilation";
+        *burst = nullptr;
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    std::vector<std::unique_ptr<ExecutionBurstController>> burstControllers = mPlan.makeBursts();
+    *burst = new (std::nothrow) BurstBuilder(this, std::move(burstControllers));
+    return (*burst ? ANEURALNETWORKS_NO_ERROR : ANEURALNETWORKS_OUT_OF_MEMORY);
 }
 
 }  // namespace nn

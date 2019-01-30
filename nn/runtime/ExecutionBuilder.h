@@ -34,8 +34,11 @@ using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCa
 namespace android {
 namespace nn {
 
+class BurstBuilder;
 class CompilationBuilder;
 class ExecutionPlan;
+class ExecutionBurstController;
+class ExecutionStep;
 class Memory;
 class ModelBuilder;
 class StepExecutor;
@@ -62,7 +65,8 @@ struct ModelArgumentInfo {
                        uint32_t length);
     int setFromMemory(const Operand& operand, const ANeuralNetworksOperandType* type,
                       uint32_t poolIndex, uint32_t offset, uint32_t length);
-    int setFromTemporaryMemory(const Operand& operand, uint32_t poolIndex, uint32_t offset);
+    int setFromTemporaryMemory(const Operand& operand, uint32_t poolIndex, uint32_t offset,
+                               uint32_t length);
     int updateDimensionInfo(const Operand& operand, const ANeuralNetworksOperandType* newType);
 };
 
@@ -89,6 +93,10 @@ public:
         return compute(synchronizationCallback);
     }
     int computeSynchronously() { return compute(nullptr); }
+    int burstCompute(BurstBuilder* burst) { return compute(nullptr, burst); }
+
+    // Initialize output dimensional information from ModelArgumentInfo.
+    void initializeOutputShapes(std::vector<OutputShape>* outputShapes) const;
 
     int getOutputOperandDimensions(uint32_t index, uint32_t* dimensions);
     int getOutputOperandRank(uint32_t index, uint32_t* rank);
@@ -97,14 +105,26 @@ public:
     bool measureTiming() const { return mMeasureTiming; }
     void reportTiming(Timing timing) { mTiming = timing; }
 
+    const CompilationBuilder* getCompilation() const { return mCompilation; }
     const ModelBuilder* getModel() const { return mModel; }
 
-    ErrorStatus finish(ErrorStatus error);
+    ErrorStatus finish(ErrorStatus error, const std::vector<OutputShape>& outputShapes);
 
    private:
     // If a callback is provided, then this is asynchronous. If a callback is
     // not provided (i.e., is nullptr), then this is synchronous.
-    int compute(sp<ExecutionCallback>* synchronizationCallback);
+    //
+    // If burst is provided, then the burst path will be used. If a burst is not
+    // provided (i.e., is nullptr), then a synchronous execution will occur.
+    //
+    // Providing both synchronizationCallbak and burstBuilder is an error.
+    int compute(sp<ExecutionCallback>* synchronizationCallback,
+                BurstBuilder* burstBuilder = nullptr);
+
+    const CompilationBuilder* mCompilation;
+
+    // Update output dimensional information from OutputShape to ModelArgumentInfo.
+    bool updateOutputShapes(const std::vector<OutputShape>& outputShapes);
 
     const ModelBuilder* mModel;
     const ExecutionPlan* mPlan;
@@ -161,6 +181,9 @@ class StepExecutor {
     // is executing the entire model from the ExecutionBuilder).
     void mapInputsAndOutputsTrivially();
 
+    // Update output shapes returned from ExecutionCallback to ExecutionBuilder.
+    bool updateOutputShapes(const std::vector<OutputShape>& from, std::vector<OutputShape>* to);
+
     // Map inputs and outputs from ExecutionBuilder to StepExecutor,
     // one at a time.  Note that these are input/output indexes, not
     // operand indexes.
@@ -189,7 +212,8 @@ class StepExecutor {
     }
 
     // Executes using the (driver, preparedModel) specified at construction time.
-    int startCompute(sp<ExecutionCallback>* synchronizationCallback);
+    int startCompute(sp<ExecutionCallback>* synchronizationCallback,
+                     ExecutionBurstController* burstController = nullptr);
 
     // Executes using the CPU, regardless of the (driver,
     // preparedModel) specified at construction time.
@@ -197,9 +221,15 @@ class StepExecutor {
 
     bool isCpu() const;
 
+    // ExecutionStep has the index mapping between ExecutionBuilder and StepExecutor.
+    void setExecutionStep(const std::shared_ptr<const ExecutionStep>& step) {
+        mExecutionStep = step;
+    }
+
    private:
     int allocatePointerArgumentsToPool(std::vector<ModelArgumentInfo>* args, Memory* memory);
-    int startComputeOnDevice(sp<ExecutionCallback>* synchronizationCallback);
+    int startComputeOnDevice(sp<ExecutionCallback>* synchronizationCallback,
+                             ExecutionBurstController* burstController = nullptr);
 
     void mapInputOrOutput(const ModelArgumentInfo& builderInputOrOutput,
                           ModelArgumentInfo* executorInputOrOutput);
@@ -210,6 +240,9 @@ class StepExecutor {
 
     // describes the full (possibly multiple-"step") execution
     ExecutionBuilder* mExecutionBuilder;
+
+    // describes the single execution step
+    std::shared_ptr<const ExecutionStep> mExecutionStep = nullptr;
 
     // model to be executed on the executor, in both original and
     // compiled forms; and device on which to execute it

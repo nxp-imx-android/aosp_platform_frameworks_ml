@@ -20,7 +20,13 @@
 #include <android/sharedmem.h>
 #include <gtest/gtest.h>
 #include <sys/mman.h>
+#include <future>
 #include <string>
+
+#ifndef NNTEST_ONLY_PUBLIC_API
+#include "NeuralNetworksExtensions.h"
+const char* kTestExtensionName = "vendor.test.validation_test_extension";
+#endif
 
 // This file tests all the validations done by the Neural Networks API.
 
@@ -41,18 +47,39 @@ class ValidationTestModel : public ValidationTest {
         ValidationTest::TearDown();
     }
 
-    void createModel() {
-        uint32_t dimensions[]{1};
-        ANeuralNetworksOperandType tensorType{.type = ANEURALNETWORKS_TENSOR_FLOAT32,
-                                              .dimensionCount = 1,
-                                              .dimensions = dimensions};
-        ANeuralNetworksOperandType scalarType{
-                .type = ANEURALNETWORKS_INT32, .dimensionCount = 0, .dimensions = nullptr};
+    uint32_t addScalarOperand(int32_t type = ANEURALNETWORKS_INT32) {
+        ANeuralNetworksOperandType operandType = {
+                .type = type, .dimensionCount = 0, .dimensions = nullptr};
+        EXPECT_EQ(ANeuralNetworksModel_addOperand(mModel, &operandType), ANEURALNETWORKS_NO_ERROR);
+        return mNumOperands++;
+    }
 
-        ASSERT_EQ(ANeuralNetworksModel_addOperand(mModel, &tensorType), ANEURALNETWORKS_NO_ERROR);
-        ASSERT_EQ(ANeuralNetworksModel_addOperand(mModel, &tensorType), ANEURALNETWORKS_NO_ERROR);
-        ASSERT_EQ(ANeuralNetworksModel_addOperand(mModel, &scalarType), ANEURALNETWORKS_NO_ERROR);
-        ASSERT_EQ(ANeuralNetworksModel_addOperand(mModel, &tensorType), ANEURALNETWORKS_NO_ERROR);
+#ifndef NNTEST_ONLY_PUBLIC_API
+    int32_t getExtensionOperandType(uint16_t typeWithinExtension) {
+        int32_t result;
+        EXPECT_EQ(ANeuralNetworksModel_getExtensionOperandType(mModel, kTestExtensionName,
+                                                               typeWithinExtension, &result),
+                  ANEURALNETWORKS_NO_ERROR);
+        return result;
+    }
+#endif
+
+    uint32_t addTensorOperand(int32_t type = ANEURALNETWORKS_TENSOR_FLOAT32) {
+        uint32_t dimensions[] = {2};
+        ANeuralNetworksOperandType operandType = {
+                .type = type,
+                .dimensionCount = sizeof(dimensions) / sizeof(dimensions[0]),
+                .dimensions = dimensions,
+        };
+        EXPECT_EQ(ANeuralNetworksModel_addOperand(mModel, &operandType), ANEURALNETWORKS_NO_ERROR);
+        return mNumOperands++;
+    }
+
+    void createModel() {
+        addTensorOperand();
+        addTensorOperand();
+        addScalarOperand();
+        addTensorOperand();
         uint32_t inList[3]{0, 1, 2};
         uint32_t outList[1]{3};
         ASSERT_EQ(ANeuralNetworksModel_addOperation(mModel, ANEURALNETWORKS_ADD, 3, inList, 1,
@@ -64,6 +91,7 @@ class ValidationTestModel : public ValidationTest {
         mNumOperations = 1;
     }
 
+    uint32_t mNumOperands = 0;
     uint32_t mNumOperations = 0;
     ANeuralNetworksModel* mModel = nullptr;
 };
@@ -125,6 +153,20 @@ class ValidationTestExecution : public ValidationTestCompilation {
     ANeuralNetworksExecution* mExecution = nullptr;
 };
 
+class ValidationTestBurst : public ValidationTestExecution {
+   protected:
+    virtual void SetUp() {
+        ValidationTestExecution::SetUp();
+
+        ASSERT_EQ(ANeuralNetworksBurst_create(mCompilation, &mBurst), ANEURALNETWORKS_NO_ERROR);
+    }
+    virtual void TearDown() {
+        ANeuralNetworksBurst_free(mBurst);
+        ValidationTestExecution::TearDown();
+    }
+    ANeuralNetworksBurst* mBurst = nullptr;
+};
+
 TEST_F(ValidationTest, CreateModel) {
     EXPECT_EQ(ANeuralNetworksModel_create(nullptr), ANEURALNETWORKS_UNEXPECTED_NULL);
 }
@@ -158,10 +200,10 @@ TEST_F(ValidationTestModel, AddOperand) {
     EXPECT_EQ(ANeuralNetworksModel_addOperand(mModel, &quant8TypeInvalidZeroPoint),
               ANEURALNETWORKS_BAD_DATA);
 
-    uint32_t dim = 2;
+    const uint32_t dim = 2;
     ANeuralNetworksOperandType invalidScalarType{
             .type = ANEURALNETWORKS_INT32,
-            // scalar types can only 0 dimensions.
+            // a scalar type must have 0 dimensions.
             .dimensionCount = 1,
             .dimensions = &dim,
     };
@@ -174,32 +216,79 @@ TEST_F(ValidationTestModel, AddOperand) {
 }
 
 TEST_F(ValidationTestModel, SetOperandSymmPerChannelQuantParams) {
-    uint32_t dim = 2;
+    const int32_t operandIndex = addTensorOperand(ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL);
 
-    ANeuralNetworksOperandType quant8SymmPerChannel{
-            .type = ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL,
-            .dimensionCount = 1,
-            .dimensions = &dim,
-            .scale = 0.0f,
-            .zeroPoint = 0,
-    };
-    EXPECT_EQ(ANeuralNetworksModel_addOperand(mModel, &quant8SymmPerChannel),
-              ANEURALNETWORKS_NO_ERROR);
-
-    float scale = 1.0f;
-    ANeuralNetworksSymmPerChannelQuantParams channelQuant{
+    float scales[2] = {1.0, 2.0};
+    ANeuralNetworksSymmPerChannelQuantParams channelQuant = {
             .channelDim = 0,
-            .scaleCount = 1,
-            .scales = &scale,
+            .scaleCount = 2,
+            .scales = scales,
     };
 
-    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(nullptr, 0, &channelQuant),
+    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(nullptr, operandIndex,
+                                                                       &channelQuant),
               ANEURALNETWORKS_UNEXPECTED_NULL);
-    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, 0, nullptr),
-              ANEURALNETWORKS_UNEXPECTED_NULL);
-    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, 100, &channelQuant),
+    EXPECT_EQ(
+            ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, operandIndex, nullptr),
+            ANEURALNETWORKS_UNEXPECTED_NULL);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, operandIndex + 1,
+                                                                       &channelQuant),
+              ANEURALNETWORKS_BAD_DATA);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, operandIndex,
+                                                                       &channelQuant),
+              ANEURALNETWORKS_NO_ERROR);
+}
+
+#ifndef NNTEST_ONLY_PUBLIC_API
+TEST_F(ValidationTestModel, SetOperandSymmPerChannelQuantParams_ExtensionOperand) {
+    const int32_t operandIndex = addTensorOperand(
+            getExtensionOperandType(ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL));
+
+    float scales[2] = {1.0, 2.0};
+    ANeuralNetworksSymmPerChannelQuantParams channelQuant = {
+            .channelDim = 0,
+            .scaleCount = 2,
+            .scales = scales,
+    };
+
+    EXPECT_EQ(ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(mModel, operandIndex,
+                                                                       &channelQuant),
               ANEURALNETWORKS_BAD_DATA);
 }
+
+TEST_F(ValidationTestModel, SetOperandExtensionData) {
+    const int32_t operandIndex = addTensorOperand(getExtensionOperandType(0));
+    const int32_t data = 42;
+    const size_t dataLength = sizeof(data);
+    EXPECT_EQ(
+            ANeuralNetworksModel_setOperandExtensionData(nullptr, operandIndex, &data, dataLength),
+            ANEURALNETWORKS_UNEXPECTED_NULL);
+    EXPECT_EQ(
+            ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex, nullptr, dataLength),
+            ANEURALNETWORKS_UNEXPECTED_NULL);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex, &data, 0),
+              ANEURALNETWORKS_BAD_DATA);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex + 1, &data,
+                                                           dataLength),
+              ANEURALNETWORKS_BAD_DATA);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex, &data, dataLength),
+              ANEURALNETWORKS_NO_ERROR);
+}
+
+TEST_F(ValidationTestModel, SetOperandExtensionData_Empty) {
+    const int32_t operandIndex = addTensorOperand(getExtensionOperandType(0));
+    EXPECT_EQ(ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex, nullptr, 0),
+              ANEURALNETWORKS_NO_ERROR);
+}
+
+TEST_F(ValidationTestModel, SetOperandExtensionData_NonExtensionOperand) {
+    const int32_t operandIndex = addTensorOperand();
+    const int32_t data = 42;
+    const size_t dataLength = sizeof(data);
+    EXPECT_EQ(ANeuralNetworksModel_setOperandExtensionData(mModel, operandIndex, &data, dataLength),
+              ANEURALNETWORKS_BAD_DATA);
+}
+#endif
 
 TEST_F(ValidationTestModel, SetOptionalOperand) {
     ANeuralNetworksOperandType floatType{
@@ -835,18 +924,18 @@ TEST_F(ValidationTestExecution, GetOutputOperandRankAndDimensions) {
     ANeuralNetworksExecution* execution;
     EXPECT_EQ(ANeuralNetworksExecution_create(mCompilation, &execution), ANEURALNETWORKS_NO_ERROR);
 
-    float input0 = 1.0f, input1 = 2.0f, output0;
+    float input0[] = {1.0f, 1.0f}, input1[] = {2.0f, 2.0f}, output0[2];
     int32_t input2 = 0;
-    EXPECT_EQ(ANeuralNetworksExecution_setInput(execution, 0, nullptr, &input0, sizeof(float)),
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(execution, 0, nullptr, &input0, sizeof(input0)),
               ANEURALNETWORKS_NO_ERROR);
-    EXPECT_EQ(ANeuralNetworksExecution_setInput(execution, 1, nullptr, &input1, sizeof(float)),
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(execution, 1, nullptr, &input1, sizeof(input1)),
               ANEURALNETWORKS_NO_ERROR);
     EXPECT_EQ(ANeuralNetworksExecution_setInput(execution, 2, nullptr, &input2, sizeof(int32_t)),
               ANEURALNETWORKS_NO_ERROR);
-    EXPECT_EQ(ANeuralNetworksExecution_setOutput(execution, 0, nullptr, &output0, sizeof(float)),
+    EXPECT_EQ(ANeuralNetworksExecution_setOutput(execution, 0, nullptr, &output0, sizeof(output0)),
               ANEURALNETWORKS_NO_ERROR);
 
-    uint32_t rank, dims[4], expectedRank = 1, expectedDims = 1;
+    uint32_t rank, dims[4], expectedRank = 1, expectedDims = 2;
     // This should fail, since the execution has not yet started to compute.
     EXPECT_EQ(ANeuralNetworksExecution_getOutputOperandRank(execution, 0, &rank),
               ANEURALNETWORKS_BAD_STATE);
@@ -883,6 +972,73 @@ TEST_F(ValidationTestExecution, GetOutputOperandRankAndDimensions) {
               ANEURALNETWORKS_NO_ERROR);
     EXPECT_EQ(rank, expectedRank);
     EXPECT_EQ(dims[0], expectedDims);
+}
+
+TEST_F(ValidationTestBurst, BurstComputeNull) {
+    EXPECT_EQ(ANeuralNetworksExecution_burstCompute(mExecution, nullptr),
+              ANEURALNETWORKS_UNEXPECTED_NULL);
+    EXPECT_EQ(ANeuralNetworksExecution_burstCompute(nullptr, mBurst),
+              ANEURALNETWORKS_UNEXPECTED_NULL);
+}
+
+TEST_F(ValidationTestBurst, BurstComputeDifferentCompilations) {
+    ANeuralNetworksCompilation* secondCompilation;
+    ASSERT_EQ(ANeuralNetworksCompilation_create(mModel, &secondCompilation),
+              ANEURALNETWORKS_NO_ERROR);
+    ASSERT_EQ(ANeuralNetworksCompilation_finish(secondCompilation), ANEURALNETWORKS_NO_ERROR);
+
+    ANeuralNetworksBurst* burst;
+    EXPECT_EQ(ANeuralNetworksBurst_create(secondCompilation, &burst), ANEURALNETWORKS_NO_ERROR);
+
+    EXPECT_EQ(ANeuralNetworksExecution_burstCompute(mExecution, burst), ANEURALNETWORKS_BAD_DATA);
+
+    ANeuralNetworksBurst_free(burst);
+    ANeuralNetworksCompilation_free(secondCompilation);
+}
+
+TEST_F(ValidationTestBurst, BurstComputeConcurrent) {
+    ANeuralNetworksExecution* secondExecution;
+    EXPECT_EQ(ANeuralNetworksExecution_create(mCompilation, &secondExecution),
+              ANEURALNETWORKS_NO_ERROR);
+
+    // set inputs of first execution
+    float inputA0[] = {1.0f, 1.0f}, inputA1[] = {2.0f, 2.0f}, outputA0[2];
+    int32_t inputA2 = 0;
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(mExecution, 0, nullptr, &inputA0, sizeof(inputA0)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(mExecution, 1, nullptr, &inputA1, sizeof(inputA1)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(mExecution, 2, nullptr, &inputA2, sizeof(int32_t)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(
+            ANeuralNetworksExecution_setOutput(mExecution, 0, nullptr, &outputA0, sizeof(outputA0)),
+            ANEURALNETWORKS_NO_ERROR);
+
+    // set inputs of second execution
+    float inputB0[] = {1.0f, 1.0f}, inputB1[] = {2.0f, 2.0f}, outputB0[2];
+    int32_t inputB2 = 0;
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(secondExecution, 0, nullptr, &inputB0,
+                                                sizeof(inputB0)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(secondExecution, 1, nullptr, &inputB1,
+                                                sizeof(inputB1)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksExecution_setInput(secondExecution, 2, nullptr, &inputB2,
+                                                sizeof(int32_t)),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksExecution_setOutput(secondExecution, 0, nullptr, &outputB0,
+                                                 sizeof(outputB0)),
+              ANEURALNETWORKS_NO_ERROR);
+
+    // execute on the same burst concurrently
+    auto first = std::async(std::launch::async, [this] {
+        const int result = ANeuralNetworksExecution_burstCompute(mExecution, mBurst);
+        EXPECT_TRUE(result == ANEURALNETWORKS_BAD_STATE || result == ANEURALNETWORKS_NO_ERROR);
+    });
+    auto second = std::async(std::launch::async, [this, secondExecution] {
+        const int result = ANeuralNetworksExecution_burstCompute(secondExecution, mBurst);
+        EXPECT_TRUE(result == ANEURALNETWORKS_BAD_STATE || result == ANEURALNETWORKS_NO_ERROR);
+    });
 }
 
 TEST(ValidationTestIntrospection, GetNumDevices) {
@@ -1144,7 +1300,7 @@ TEST_F(ValidationTestCompilationForDevices, ExecutionTiming) {
     // - Validate that we cannot setMeasureTiming if the execution has started
     // - Validate that we cannot getDuration until the execution has finished
 
-    float in0 = 0.0f, in1 = 1.0f, out0 = 0.0f;
+    float in0[] = {0.0f, 0.0f}, in1[] = {1.0f, 1.0f}, out0[2];
     int in2 = 0;
     ASSERT_EQ(ANeuralNetworksExecution_setInput(execution, 0, nullptr, &in0, sizeof(in0)),
               ANEURALNETWORKS_NO_ERROR);
@@ -1195,5 +1351,28 @@ TEST_F(ValidationTestCompilationForDevices, ExecutionTiming) {
         }
     }
 }
+
+#ifndef NNTEST_ONLY_PUBLIC_API
+TEST(ValidationTestDevice, GetExtensionSupport) {
+    bool result;
+    EXPECT_EQ(ANeuralNetworksDevice_getExtensionSupport(nullptr, kTestExtensionName, &result),
+              ANEURALNETWORKS_UNEXPECTED_NULL);
+
+    uint32_t numDevices = 0;
+    EXPECT_EQ(ANeuralNetworks_getDeviceCount(&numDevices), ANEURALNETWORKS_NO_ERROR);
+
+    for (uint32_t i = 0; i < numDevices; i++) {
+        SCOPED_TRACE(i);
+        ANeuralNetworksDevice* device;
+        EXPECT_EQ(ANeuralNetworks_getDevice(i, &device), ANEURALNETWORKS_NO_ERROR);
+        EXPECT_EQ(ANeuralNetworksDevice_getExtensionSupport(device, kTestExtensionName, nullptr),
+                  ANEURALNETWORKS_UNEXPECTED_NULL);
+        EXPECT_EQ(ANeuralNetworksDevice_getExtensionSupport(device, nullptr, &result),
+                  ANEURALNETWORKS_UNEXPECTED_NULL);
+        EXPECT_EQ(ANeuralNetworksDevice_getExtensionSupport(device, kTestExtensionName, &result),
+                  ANEURALNETWORKS_NO_ERROR);
+    }
+}
+#endif
 
 }  // namespace

@@ -24,6 +24,7 @@ cc_defaults {
         "libandroid",
         "libbase",
         "libcutils",
+        "libfmq",
         "libhidlbase",
         "libhidltransport",
         "libhidlmemory",
@@ -58,6 +59,7 @@ cc_defaults {
         "TestOperandExtraParams.cpp",
         "TestTrivialModel.cpp",
         "TestUnknownDimensions.cpp",
+        "TestUnspecifiedDimensions.cpp",
         "TestValidateOperations.cpp",
         "TestValidation.cpp",
         "TestWrapper.cpp",
@@ -99,6 +101,7 @@ cc_defaults {
         "TestPartitioning.cpp",
         "TestPartitioningRandom.cpp",
         "TestIntrospectionControl.cpp",
+        "TestExtensions.cpp",
     ],
     static_libs: [
         "libgmock",
@@ -107,7 +110,6 @@ cc_defaults {
         "libSampleDriver",
     ],
     shared_libs: [
-        "libfmq",
         "libcutils",
     ],
     header_libs: [

@@ -17,6 +17,7 @@
 #include "VersionedInterfaces.h"
 
 #include "Callbacks.h"
+#include "ExecutionBurstController.h"
 #include "Tracing.h"
 #include "Utils.h"
 
@@ -80,6 +81,15 @@ VersionedIPreparedModel::executeSynchronously(const Request& request, MeasureTim
     }
 }
 
+std::unique_ptr<ExecutionBurstController> VersionedIPreparedModel::configureExecutionBurst(
+        bool blocking) const {
+    if (mPreparedModelV1_2 != nullptr) {
+        return createExecutionBurstController(mPreparedModelV1_2, blocking);
+    } else {
+        return nullptr;
+    }
+}
+
 bool VersionedIPreparedModel::operator==(nullptr_t) const {
     return mPreparedModelV1_0 == nullptr;
 }
@@ -124,6 +134,27 @@ std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() {
     }
 
     return result;
+}
+
+std::pair<ErrorStatus, hidl_vec<Extension>> VersionedIDevice::getSupportedExtensions() {
+    NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_COMPILATION, "getSupportedExtensions");
+    if (mDeviceV1_2 != nullptr) {
+        std::pair<ErrorStatus, hidl_vec<Extension>> result;
+        Return<void> ret = mDeviceV1_2->getSupportedExtensions(
+                [&result](ErrorStatus error, const hidl_vec<Extension>& extensions) {
+                    result = std::make_pair(error, extensions);
+                });
+        if (!ret.isOk()) {
+            LOG(ERROR) << "getSupportedExtensions failure: " << ret.description();
+            return {ErrorStatus::GENERAL_FAILURE, {}};
+        }
+        return result;
+    } else if (mDeviceV1_0 != nullptr) {
+        return {ErrorStatus::NONE, {/* No extensions. */}};
+    } else {
+        LOG(ERROR) << "Device not available!";
+        return {ErrorStatus::DEVICE_UNAVAILABLE, {}};
+    }
 }
 
 std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(

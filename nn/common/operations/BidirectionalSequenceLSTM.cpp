@@ -151,8 +151,8 @@ bool BidirectionalSequenceLSTM::Prepare(const Operation& operation,
     // Inferring batch size, number of outputs and number of cells from the
     // input tensors.
     NN_CHECK(NumDimensions(input_) == 3);
-    const uint32_t max_time = SizeOfDimension(input_, 0);
-    const uint32_t n_batch = SizeOfDimension(input_, 1);
+    const uint32_t max_time = SizeOfDimension(input_, params_.time_major ? 0 : 1);
+    const uint32_t n_batch = SizeOfDimension(input_, params_.time_major ? 1 : 0);
     const uint32_t n_input = SizeOfDimension(input_, 2);
 
     const uint32_t n_fw_cell = SizeOfDimension(fw_input_to_output_weights_, 0);
@@ -279,7 +279,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetBuffer<const float>(fw_cell_to_input_weights_),
                     GetBuffer<const float>(fw_cell_to_forget_weights_),
                     GetBuffer<const float>(fw_cell_to_output_weights_),
-                    GetOptionalBuffer<const float>(aux_input_), aux_input_->shape(),
+                    GetOptionalBuffer<const float>(aux_input_),
                     GetOptionalBuffer<const float>(fw_aux_input_to_input_weights_),
                     GetOptionalBuffer<const float>(fw_aux_input_to_forget_weights_),
                     GetOptionalBuffer<const float>(fw_aux_input_to_cell_weights_),
@@ -297,7 +297,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     /*cell_layer_norm_weights=*/nullptr,
                     /*output_layer_norm_weights=*/nullptr, GetBuffer<float>(fw_activation_state_),
                     GetBuffer<float>(fw_cell_state_), GetBuffer<float>(fw_output_),
-                    fw_scratch_buffer.data(), kForwardSequence, params_.time_major);
+                    fw_scratch_buffer.data(), params_.time_major, kForwardSequence);
 
             std::vector<float> bw_scratch_buffer(getNumberOfElements(bw_scratch_shape_));
             const bool kBackwardSequence = false;
@@ -316,7 +316,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetBuffer<const float>(bw_cell_to_input_weights_),
                     GetBuffer<const float>(bw_cell_to_forget_weights_),
                     GetBuffer<const float>(bw_cell_to_output_weights_),
-                    GetOptionalBuffer<const float>(aux_input_), aux_input_->shape(),
+                    GetOptionalBuffer<const float>(aux_input_),
                     GetOptionalBuffer<const float>(bw_aux_input_to_input_weights_),
                     GetOptionalBuffer<const float>(bw_aux_input_to_forget_weights_),
                     GetOptionalBuffer<const float>(bw_aux_input_to_cell_weights_),
@@ -336,37 +336,37 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetBuffer<float>(bw_cell_state_),
                     params_.merge_outputs ? GetBuffer<float>(fw_output_) + n_fw_output
                                           : GetBuffer<float>(bw_output_),
-                    bw_scratch_buffer.data(), kBackwardSequence, params_.time_major);
+                    bw_scratch_buffer.data(), params_.time_major, kBackwardSequence);
         } break;
         case OperandType::TENSOR_FLOAT16: {
             std::vector<_Float16> fw_scratch_buffer(getNumberOfElements(fw_scratch_shape_));
             const bool kForwardSequence = true;
             LSTMCell::LSTMEvalFloat16(
                     params_, GetBuffer<const _Float16>(input_), input_->shape(),
-                    GetBuffer<const _Float16>(fw_input_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(fw_input_to_input_weights_),
                     GetBuffer<const _Float16>(fw_input_to_forget_weights_),
                     GetBuffer<const _Float16>(fw_input_to_cell_weights_),
                     GetBuffer<const _Float16>(fw_input_to_output_weights_),
                     fw_input_to_output_weights_->shape(),
-                    GetBuffer<const _Float16>(fw_recurrent_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(fw_recurrent_to_input_weights_),
                     GetBuffer<const _Float16>(fw_recurrent_to_forget_weights_),
                     GetBuffer<const _Float16>(fw_recurrent_to_cell_weights_),
                     GetBuffer<const _Float16>(fw_recurrent_to_output_weights_),
                     fw_recurrent_to_output_weights_->shape(),
-                    GetBuffer<const _Float16>(fw_cell_to_input_weights_),
-                    GetBuffer<const _Float16>(fw_cell_to_forget_weights_),
-                    GetBuffer<const _Float16>(fw_cell_to_output_weights_),
-                    GetOptionalBuffer<const _Float16>(aux_input_), aux_input_->shape(),
+                    GetOptionalBuffer<const _Float16>(fw_cell_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(fw_cell_to_forget_weights_),
+                    GetOptionalBuffer<const _Float16>(fw_cell_to_output_weights_),
+                    GetOptionalBuffer<const _Float16>(aux_input_),
                     GetOptionalBuffer<const _Float16>(fw_aux_input_to_input_weights_),
                     GetOptionalBuffer<const _Float16>(fw_aux_input_to_forget_weights_),
                     GetOptionalBuffer<const _Float16>(fw_aux_input_to_cell_weights_),
                     GetOptionalBuffer<const _Float16>(fw_aux_input_to_output_weights_),
-                    GetBuffer<const _Float16>(fw_input_gate_bias_),
+                    GetOptionalBuffer<const _Float16>(fw_input_gate_bias_),
                     GetBuffer<const _Float16>(fw_forget_gate_bias_),
                     GetBuffer<const _Float16>(fw_cell_bias_),
                     GetBuffer<const _Float16>(fw_output_gate_bias_),
-                    GetBuffer<const _Float16>(fw_projection_weights_),
-                    GetBuffer<const _Float16>(fw_projection_bias_),
+                    GetOptionalBuffer<const _Float16>(fw_projection_weights_),
+                    GetOptionalBuffer<const _Float16>(fw_projection_bias_),
                     GetBuffer<const _Float16>(fw_activation_state_),
                     GetBuffer<const _Float16>(fw_cell_state_),
                     /*input_layer_norm_weights=*/nullptr,
@@ -374,37 +374,37 @@ bool BidirectionalSequenceLSTM::Eval() {
                     /*cell_layer_norm_weights=*/nullptr,
                     /*output_layer_norm_weights=*/nullptr,
                     GetBuffer<_Float16>(fw_activation_state_), GetBuffer<_Float16>(fw_cell_state_),
-                    GetBuffer<_Float16>(fw_output_), fw_scratch_buffer.data(), kForwardSequence,
-                    params_.time_major);
+                    GetBuffer<_Float16>(fw_output_), fw_scratch_buffer.data(), params_.time_major,
+                    kForwardSequence);
 
             std::vector<_Float16> bw_scratch_buffer(getNumberOfElements(bw_scratch_shape_));
             const bool kBackwardSequence = false;
             LSTMCell::LSTMEvalFloat16(
                     params_, GetBuffer<const _Float16>(input_), input_->shape(),
-                    GetBuffer<const _Float16>(bw_input_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(bw_input_to_input_weights_),
                     GetBuffer<const _Float16>(bw_input_to_forget_weights_),
                     GetBuffer<const _Float16>(bw_input_to_cell_weights_),
                     GetBuffer<const _Float16>(bw_input_to_output_weights_),
                     bw_input_to_output_weights_->shape(),
-                    GetBuffer<const _Float16>(bw_recurrent_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(bw_recurrent_to_input_weights_),
                     GetBuffer<const _Float16>(bw_recurrent_to_forget_weights_),
                     GetBuffer<const _Float16>(bw_recurrent_to_cell_weights_),
                     GetBuffer<const _Float16>(bw_recurrent_to_output_weights_),
                     bw_recurrent_to_output_weights_->shape(),
-                    GetBuffer<const _Float16>(bw_cell_to_input_weights_),
-                    GetBuffer<const _Float16>(bw_cell_to_forget_weights_),
-                    GetBuffer<const _Float16>(bw_cell_to_output_weights_),
-                    GetOptionalBuffer<const _Float16>(aux_input_), aux_input_->shape(),
+                    GetOptionalBuffer<const _Float16>(bw_cell_to_input_weights_),
+                    GetOptionalBuffer<const _Float16>(bw_cell_to_forget_weights_),
+                    GetOptionalBuffer<const _Float16>(bw_cell_to_output_weights_),
+                    GetOptionalBuffer<const _Float16>(aux_input_),
                     GetOptionalBuffer<const _Float16>(bw_aux_input_to_input_weights_),
                     GetOptionalBuffer<const _Float16>(bw_aux_input_to_forget_weights_),
                     GetOptionalBuffer<const _Float16>(bw_aux_input_to_cell_weights_),
                     GetOptionalBuffer<const _Float16>(bw_aux_input_to_output_weights_),
-                    GetBuffer<const _Float16>(bw_input_gate_bias_),
+                    GetOptionalBuffer<const _Float16>(bw_input_gate_bias_),
                     GetBuffer<const _Float16>(bw_forget_gate_bias_),
                     GetBuffer<const _Float16>(bw_cell_bias_),
                     GetBuffer<const _Float16>(bw_output_gate_bias_),
-                    GetBuffer<const _Float16>(bw_projection_weights_),
-                    GetBuffer<const _Float16>(bw_projection_bias_),
+                    GetOptionalBuffer<const _Float16>(bw_projection_weights_),
+                    GetOptionalBuffer<const _Float16>(bw_projection_bias_),
                     GetBuffer<const _Float16>(bw_activation_state_),
                     GetBuffer<const _Float16>(bw_cell_state_),
                     /*input_layer_norm_weights=*/nullptr,
@@ -414,7 +414,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetBuffer<_Float16>(bw_activation_state_), GetBuffer<_Float16>(bw_cell_state_),
                     params_.merge_outputs ? GetBuffer<_Float16>(fw_output_) + n_fw_output
                                           : GetBuffer<_Float16>(bw_output_),
-                    bw_scratch_buffer.data(), kBackwardSequence, params_.time_major);
+                    bw_scratch_buffer.data(), params_.time_major, kBackwardSequence);
         } break;
         default: {
             LOG(ERROR) << "Unsupported data type: " << static_cast<int>(input_->type);

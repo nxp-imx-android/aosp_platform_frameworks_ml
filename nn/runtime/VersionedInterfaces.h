@@ -27,6 +27,8 @@
 namespace android {
 namespace nn {
 
+class ExecutionBurstController;
+
 /**
  * Each class (VersionedIDevice, VersionedIPreparedModel) wraps a HIDL interface
  * of any version to abstract away version differences. It allows the remainder
@@ -70,6 +72,23 @@ class VersionedIDevice {
      * @return capabilities Capabilities of the driver.
      */
     std::pair<ErrorStatus, Capabilities> getCapabilities();
+
+    /**
+     * Gets information about extensions supported by the driver implementation.
+     *
+     * Extensions of category ExtensionCategory::BASE must not appear
+     * in the list.
+     *
+     * All extension operations and operands must be fully supported for the
+     * extension to appear in the list of supported extensions.
+     *
+     * @return status Error status of the call, must be:
+     *     - NONE if successful
+     *     - DEVICE_UNAVAILABLE if driver is offline or busy
+     *     - GENERAL_FAILURE if there is an unspecified error
+     * @return extensions A list of supported extensions.
+     */
+    std::pair<ErrorStatus, hidl_vec<Extension>> getSupportedExtensions();
 
     /**
      * Gets the supported operations in a model.
@@ -364,7 +383,13 @@ class VersionedIPreparedModel {
      *                      The index into "outputShapes" corresponds with the index
      *                      of the output operand in the Request outputs vector.
      *                      outputShapes nust be empty unless the status is either
-     *                      NONE or OUTPUT_INSUFFICIENT_SIZE.
+     *                      NONE or OUTPUT_INSUFFICIENT_SIZE. outputShaps may be
+     *                      empty if the status is NONE and all model output operands
+     *                      are fully-specified at execution time. outputShapes must
+     *                      have the same number of elements as the number of model
+     *                      output operands if the status is OUTPUT_INSUFFICIENT_SIZE,
+     *                      or if the status is NONE and the model has at least one
+     *                      output operand that is not fully-specified.
      * @return Timing Duration of execution. Unless measure is YES and status is
      *                NONE, all times must be reported as UINT64_MAX. A driver may
      *                choose to report any time as UINT64_MAX, indicating that
@@ -372,6 +397,16 @@ class VersionedIPreparedModel {
      */
     std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronously(
             const Request& request, MeasureTiming measure);
+
+    /**
+     * Creates a burst controller on a prepared model.
+     *
+     * @param blocking 'true' if the FMQ should block until data is available.
+     * @return ExecutionBurstController Execution burst controller object.
+     *                                  nullptr is returned if the burst cannot
+     *                                  be configured for any reason.
+     */
+    std::unique_ptr<ExecutionBurstController> configureExecutionBurst(bool blocking) const;
 
     /**
      * Returns whether this handle to an IPreparedModel object is valid or not.

@@ -350,8 +350,7 @@ bool LSTMCell::LSTMEvalFloat32(
         const float* recurrent_to_output_weights_buffer,
         const Shape& recurrent_to_output_weights_shape, const float* cell_to_input_weights_buffer,
         const float* cell_to_forget_weights_buffer, const float* cell_to_output_weights_buffer,
-        const float* aux_input_buffer, const Shape& aux_input_shape,
-        const float* aux_input_to_input_weights_buffer,
+        const float* aux_input_buffer, const float* aux_input_to_input_weights_buffer,
         const float* aux_input_to_forget_weights_buffer,
         const float* aux_input_to_cell_weights_buffer,
         const float* aux_input_to_output_weights_buffer, const float* input_gate_bias_buffer,
@@ -362,7 +361,7 @@ bool LSTMCell::LSTMEvalFloat32(
         const float* forget_layer_norm_weights_buffer, const float* cell_layer_norm_weights_buffer,
         const float* output_layer_norm_weights_buffer, float* output_state_out_buffer,
         float* cell_state_out_buffer, float* output_buffer, float* scratch_buffer_buffer,
-        bool forwardSequence, bool timeMajor) {
+        bool timeMajor, bool forwardSequence) {
     NNTRACE_COMP("LSTMCell::LSTMEvalFloat32");
 
     const uint32_t inputRank = getNumberOfDimensions(input_shape);
@@ -415,15 +414,15 @@ bool LSTMCell::LSTMEvalFloat32(
                  recurrent_to_cell_weights_buffer, recurrent_to_output_weights_buffer,
                  recurrent_to_output_weights_shape, cell_to_input_weights_buffer,
                  cell_to_forget_weights_buffer, cell_to_output_weights_buffer, aux_input_buffer,
-                 aux_input_shape, aux_input_to_input_weights_buffer,
-                 aux_input_to_forget_weights_buffer, aux_input_to_cell_weights_buffer,
-                 aux_input_to_output_weights_buffer, input_gate_bias_buffer,
-                 forget_gate_bias_buffer, cell_bias_buffer, output_gate_bias_buffer,
-                 projection_weights_buffer, projection_bias_buffer, output_state_in_buffer,
-                 cell_state_in_buffer, input_layer_norm_weights_buffer,
-                 forget_layer_norm_weights_buffer, cell_layer_norm_weights_buffer,
-                 output_layer_norm_weights_buffer, output_state_out_buffer, cell_state_out_buffer,
-                 outputCurrentTimeStep, scratch_buffer_buffer);
+                 aux_input_to_input_weights_buffer, aux_input_to_forget_weights_buffer,
+                 aux_input_to_cell_weights_buffer, aux_input_to_output_weights_buffer,
+                 input_gate_bias_buffer, forget_gate_bias_buffer, cell_bias_buffer,
+                 output_gate_bias_buffer, projection_weights_buffer, projection_bias_buffer,
+                 outputStateInCurrentTimeStep.data(), cellStateInCurrentTimeStep.data(),
+                 input_layer_norm_weights_buffer, forget_layer_norm_weights_buffer,
+                 cell_layer_norm_weights_buffer, output_layer_norm_weights_buffer,
+                 output_state_out_buffer, cell_state_out_buffer, outputCurrentTimeStep,
+                 scratch_buffer_buffer);
         inputCurrentTimeStep += batchInputDelta;
         outputCurrentTimeStep += batchOutputDelta;
         outputStateInCurrentTimeStep.assign(output_state_out_buffer,
@@ -454,7 +453,7 @@ bool LSTMCell::LSTMEvalFloat16(
         const Shape& recurrent_to_output_weights_shape,
         const _Float16* cell_to_input_weights_buffer, const _Float16* cell_to_forget_weights_buffer,
         const _Float16* cell_to_output_weights_buffer, const _Float16* aux_input_buffer,
-        const Shape& aux_input_shape, const _Float16* aux_input_to_input_weights_buffer,
+        const _Float16* aux_input_to_input_weights_buffer,
         const _Float16* aux_input_to_forget_weights_buffer,
         const _Float16* aux_input_to_cell_weights_buffer,
         const _Float16* aux_input_to_output_weights_buffer, const _Float16* input_gate_bias_buffer,
@@ -466,7 +465,7 @@ bool LSTMCell::LSTMEvalFloat16(
         const _Float16* cell_layer_norm_weights_buffer,
         const _Float16* output_layer_norm_weights_buffer, _Float16* output_state_out_buffer,
         _Float16* cell_state_out_buffer, _Float16* output_buffer, _Float16* scratch_buffer_buffer,
-        bool forwardSequence, bool timeMajor) {
+        bool timeMajor, bool forwardSequence) {
     NNTRACE_COMP("LSTMCell::LSTMEvalFloat16");
 
     const uint32_t inputRank = getNumberOfDimensions(input_shape);
@@ -526,20 +525,29 @@ bool LSTMCell::LSTMEvalFloat16(
     }
 
     std::vector<float> aux_input_float32(maxTime * batchInputSize);
-    convertFloat16ToFloat32(aux_input_buffer, &aux_input_float32);
+    if (aux_input_buffer != nullptr) {
+        convertFloat16ToFloat32(aux_input_buffer, &aux_input_float32);
+    }
     std::vector<float> aux_input_to_input_weights_float32(numCells * inputSize);
     if (aux_input_to_input_weights_buffer != nullptr) {
         convertFloat16ToFloat32(aux_input_to_input_weights_buffer,
                                 &aux_input_to_input_weights_float32);
     }
     std::vector<float> aux_input_to_forget_weights_float32(numCells * inputSize);
-    convertFloat16ToFloat32(aux_input_to_forget_weights_buffer,
-                            &aux_input_to_forget_weights_float32);
+    if (aux_input_to_forget_weights_buffer != nullptr) {
+        convertFloat16ToFloat32(aux_input_to_forget_weights_buffer,
+                                &aux_input_to_forget_weights_float32);
+    }
     std::vector<float> aux_input_to_cell_weights_float32(numCells * inputSize);
-    convertFloat16ToFloat32(aux_input_to_cell_weights_buffer, &aux_input_to_cell_weights_float32);
+    if (aux_input_to_cell_weights_buffer != nullptr) {
+        convertFloat16ToFloat32(aux_input_to_cell_weights_buffer,
+                                &aux_input_to_cell_weights_float32);
+    }
     std::vector<float> aux_input_to_output_weights_float32(numCells * inputSize);
-    convertFloat16ToFloat32(aux_input_to_output_weights_buffer,
-                            &aux_input_to_output_weights_float32);
+    if (aux_input_to_output_weights_buffer != nullptr) {
+        convertFloat16ToFloat32(aux_input_to_output_weights_buffer,
+                                &aux_input_to_output_weights_float32);
+    }
 
     std::vector<float> input_gate_bias_float32(numCells);
     if (input_gate_bias_buffer != nullptr) {
@@ -628,7 +636,8 @@ bool LSTMCell::LSTMEvalFloat16(
                  recurrent_to_cell_weights_float32.data(),
                  recurrent_to_output_weights_float32.data(), recurrent_to_output_weights_shape,
                  cell_to_input_weights_float32.data(), cell_to_forget_weights_float32.data(),
-                 cell_to_output_weights_float32.data(), aux_input_float32.data(), aux_input_shape,
+                 cell_to_output_weights_float32.data(),
+                 aux_input_buffer != nullptr ? aux_input_float32.data() : nullptr,
                  aux_input_to_input_weights_float32.data(),
                  aux_input_to_forget_weights_float32.data(),
                  aux_input_to_cell_weights_float32.data(),
@@ -670,8 +679,7 @@ bool LSTMCell::LSTMStep(
         const float* recurrent_to_output_weights_buffer,
         const Shape& recurrent_to_output_weights_shape, const float* cell_to_input_weights_buffer,
         const float* cell_to_forget_weights_buffer, const float* cell_to_output_weights_buffer,
-        const float* aux_input_buffer, const Shape& aux_input_shape,
-        const float* aux_input_to_input_weights_buffer,
+        const float* aux_input_buffer, const float* aux_input_to_input_weights_buffer,
         const float* aux_input_to_forget_weights_buffer,
         const float* aux_input_to_cell_weights_buffer,
         const float* aux_input_to_output_weights_buffer, const float* input_gate_bias_buffer,
@@ -908,7 +916,7 @@ bool LSTMCell::Eval() {
                             GetBuffer<const float>(cell_to_input_weights_),
                             GetBuffer<const float>(cell_to_forget_weights_),
                             GetBuffer<const float>(cell_to_output_weights_),
-                            /*aux_input_buffer=*/nullptr, input_->shape(),
+                            /*aux_input_buffer=*/nullptr,
                             /*aux_input_to_input_weights_buffer=*/nullptr,
                             /*aux_input_to_forget_weights_buffer=*/nullptr,
                             /*aux_input_to_cell_weights_buffer=*/nullptr,
@@ -943,7 +951,7 @@ bool LSTMCell::Eval() {
                             GetOptionalBuffer<const _Float16>(cell_to_input_weights_),
                             GetOptionalBuffer<const _Float16>(cell_to_forget_weights_),
                             GetOptionalBuffer<const _Float16>(cell_to_output_weights_),
-                            /*aux_input_buffer=*/nullptr, input_->shape(),
+                            /*aux_input_buffer=*/nullptr,
                             /*aux_input_to_input_weights_buffer=*/nullptr,
                             /*aux_input_to_forget_weights_buffer=*/nullptr,
                             /*aux_input_to_cell_weights_buffer=*/nullptr,

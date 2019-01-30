@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# Bidirectional Sequence LSTM Test:
+# FLOAT32, No Layer Normalization, No Cifg, No Peephole, No Projection, and No Clipping.
+
 n_batch = 1
 n_input = 2
 n_cell = 4
