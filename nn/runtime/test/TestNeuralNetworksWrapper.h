@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace android {
@@ -43,6 +44,7 @@ enum class Type {
     TENSOR_BOOL8 = ANEURALNETWORKS_TENSOR_BOOL8,
     FLOAT16 = ANEURALNETWORKS_FLOAT16,
     TENSOR_QUANT8_SYMM_PER_CHANNEL = ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL,
+    TENSOR_QUANT16_ASYMM = ANEURALNETWORKS_TENSOR_QUANT16_ASYMM,
 };
 
 enum class ExecutePreference {
@@ -60,6 +62,8 @@ enum class Result {
     OP_FAILED = ANEURALNETWORKS_OP_FAILED,
     UNMAPPABLE = ANEURALNETWORKS_UNMAPPABLE,
     BAD_STATE = ANEURALNETWORKS_BAD_STATE,
+    OUTPUT_INSUFFICIENT_SIZE = ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE,
+    UNAVAILABLE_DEVICE = ANEURALNETWORKS_UNAVAILABLE_DEVICE,
 };
 
 struct SymmPerChannelQuantParams {
@@ -110,6 +114,10 @@ class Memory {
    public:
     Memory(size_t size, int protect, int fd, size_t offset) {
         mValid = ANeuralNetworksMemory_createFromFd(size, protect, fd, offset, &mMemory) ==
+                 ANEURALNETWORKS_NO_ERROR;
+    }
+    Memory(AHardwareBuffer* buffer) {
+        mValid = ANeuralNetworksMemory_createFromAHardwareBuffer(buffer, &mMemory) ==
                  ANEURALNETWORKS_NO_ERROR;
     }
 
@@ -327,6 +335,14 @@ class Compilation {
                 mCompilation, static_cast<int32_t>(preference)));
     }
 
+    Result setCaching(const std::string& cacheDir, const std::vector<uint8_t>& token) {
+        if (token.size() != ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN) {
+            return Result::BAD_DATA;
+        }
+        return static_cast<Result>(ANeuralNetworksCompilation_setCaching(
+                mCompilation, cacheDir.c_str(), token.data()));
+    }
+
     Result finish() { return static_cast<Result>(ANeuralNetworksCompilation_finish(mCompilation)); }
 
     ANeuralNetworksCompilation* getHandle() const { return mCompilation; }
@@ -337,7 +353,7 @@ class Compilation {
 
 class Execution {
    public:
-    Execution(const Compilation* compilation) {
+    Execution(const Compilation* compilation) : mCompilation(compilation->getHandle()) {
         int result = ANeuralNetworksExecution_create(compilation->getHandle(), &mExecution);
         if (result != 0) {
             // TODO Handle the error
@@ -359,6 +375,8 @@ class Execution {
     Execution& operator=(Execution&& other) {
         if (this != &other) {
             ANeuralNetworksExecution_free(mExecution);
+            mCompilation = other.mCompilation;
+            other.mCompilation = nullptr;
             mExecution = other.mExecution;
             other.mExecution = nullptr;
         }
@@ -397,6 +415,18 @@ class Execution {
     }
 
     Result compute() {
+        if (mComputeUsesBurstAPI) {
+            ANeuralNetworksBurst* burst = nullptr;
+            Result result = static_cast<Result>(ANeuralNetworksBurst_create(mCompilation, &burst));
+            if (result != Result::NO_ERROR) {
+                ANeuralNetworksBurst_free(burst);
+                return result;
+            }
+            result = static_cast<Result>(ANeuralNetworksExecution_burstCompute(mExecution, burst));
+            ANeuralNetworksBurst_free(burst);
+            return result;
+        }
+
         if (!mComputeUsesSychronousAPI) {
             ANeuralNetworksEvent* event = nullptr;
             Result result =
@@ -420,8 +450,28 @@ class Execution {
     // computation to complete.
     static void setComputeUsesSynchronousAPI(bool val) { mComputeUsesSychronousAPI = val; }
 
+    static void setComputeUsesBurstAPI(bool val) { mComputeUsesBurstAPI = val; }
+
+    Result getOutputOperandDimensions(uint32_t index, std::vector<uint32_t>* dimensions) {
+        uint32_t rank = 0;
+        Result result = static_cast<Result>(
+                ANeuralNetworksExecution_getOutputOperandRank(mExecution, index, &rank));
+        dimensions->resize(rank);
+        if ((result != Result::NO_ERROR && result != Result::OUTPUT_INSUFFICIENT_SIZE) ||
+            rank == 0) {
+            return result;
+        }
+        result = static_cast<Result>(ANeuralNetworksExecution_getOutputOperandDimensions(
+                mExecution, index, dimensions->data()));
+        return result;
+    }
+
    private:
+    ANeuralNetworksCompilation* mCompilation = nullptr;
     ANeuralNetworksExecution* mExecution = nullptr;
+
+    // Initialized to false in TestNeuralNetworksWrapper.cpp.
+    static bool mComputeUsesBurstAPI;
 
     // Initialized to true in TestNeuralNetworksWrapper.cpp.
     static bool mComputeUsesSychronousAPI;
