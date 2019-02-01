@@ -36,6 +36,7 @@ cc_library {
     // openmp: true,
 
     srcs: [
+        "BurstBuilder.cpp",
         "Callbacks.cpp",
         "CompilationBuilder.cpp",
         "ExecutionBuilder.cpp",
@@ -57,6 +58,7 @@ cc_library {
                 "libhidltransport",
                 "libhidlmemory",
                 "liblog",
+                "libnativewindow",
                 "libutils",
                 "android.hardware.neuralnetworks@1.0",
                 "android.hardware.neuralnetworks@1.1",
@@ -76,6 +78,7 @@ cc_library {
     ],
 
     shared_libs: [
+        "libfmq",
         "libtextclassifier_hash"
     ],
 

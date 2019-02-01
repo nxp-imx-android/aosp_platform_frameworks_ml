@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "Operations.h"
 #include "CpuOperationUtils.h"
+#include "Operations.h"
 
-#include "tensorflow/contrib/lite/kernels/internal/optimized/depthwiseconv_float.h"
-#include "tensorflow/contrib/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
+#include "tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
+#include "tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
 
 #include "Tracing.h"
 
@@ -29,8 +29,9 @@ bool depthwiseConvFloat16(const _Float16* inputData, const Shape& inputShape,
                           const _Float16* filterData, const Shape& filterShape,
                           const _Float16* biasData, const Shape& biasShape, int32_t paddingLeft,
                           int32_t paddingRight, int32_t paddingTop, int32_t paddingBottom,
-                          int32_t strideWidth, int32_t strideHeight, int32_t depthMultiplier,
-                          int32_t activation, _Float16* outputData, const Shape& outputShape) {
+                          int32_t strideWidth, int32_t strideHeight, int32_t dilationWidthFactor,
+                          int32_t dilationHeightFactor, int32_t depthMultiplier, int32_t activation,
+                          _Float16* outputData, const Shape& outputShape) {
     NNTRACE_TRANS("depthwiseConvFloat16");
     std::vector<float> inputDataFloat32(getNumberOfElements(inputShape));
     convertFloat16ToFloat32(inputData, &inputDataFloat32);
@@ -42,7 +43,8 @@ bool depthwiseConvFloat16(const _Float16* inputData, const Shape& inputShape,
     std::vector<float> outputDataFloat32(getNumberOfElements(outputShape));
     depthwiseConvFloat32(inputDataFloat32.data(), inputShape, filterDataFloat32.data(), filterShape,
                          biasDataFloat32.data(), biasShape, paddingLeft, paddingRight, paddingTop,
-                         paddingBottom, strideWidth, strideHeight, depthMultiplier, activation,
+                         paddingBottom, strideWidth, strideHeight, dilationWidthFactor,
+                         dilationHeightFactor, depthMultiplier, activation,
                          outputDataFloat32.data(), outputShape);
 
     convertFloat32ToFloat16(outputDataFloat32, outputData);
@@ -64,6 +66,7 @@ bool depthwiseConvFloat32(const float* inputData, const Shape& inputShape, const
                           const Shape& filterShape, const float* biasData, const Shape& biasShape,
                           int32_t paddingLeft, int32_t paddingRight, int32_t paddingTop,
                           int32_t paddingBottom, int32_t strideWidth, int32_t strideHeight,
+                          int32_t dilationWidthFactor, int32_t dilationHeightFactor,
                           int32_t depthMultiplier, int32_t activation, float* outputData,
                           const Shape& outputShape) {
     NNTRACE_TRANS("depthwiseConvFloat32");
@@ -73,12 +76,21 @@ bool depthwiseConvFloat32(const float* inputData, const Shape& inputShape, const
     float output_activation_min, output_activation_max;
     CalculateActivationRangeFloat(activation, &output_activation_min, &output_activation_max);
 
+    tflite::DepthwiseParams params{
+            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight)},
+            .stride_width = static_cast<int16>(strideWidth),
+            .stride_height = static_cast<int16>(strideHeight),
+            .depth_multiplier = static_cast<int16>(depthMultiplier),
+            .float_activation_min = output_activation_min,
+            .float_activation_max = output_activation_max,
+            .dilation_width_factor = static_cast<int16>(dilationWidthFactor),
+            .dilation_height_factor = static_cast<int16>(dilationHeightFactor),
+    };
     NNTRACE_COMP_SWITCH("optimized_ops::DepthwiseConv");
-    tflite::optimized_ops::DepthwiseConv(
-            inputData, convertShapeToDims(inputShape), filterData, convertShapeToDims(filterShape),
-            biasData, convertShapeToDims(biasShape), strideWidth, strideHeight, paddingWidth,
-            paddingHeight, depthMultiplier, output_activation_min, output_activation_max,
-            outputData, convertShapeToDims(outputShape));
+    tflite::optimized_ops::DepthwiseConv(params, convertShapeToTflshape(inputShape), inputData,
+                                         convertShapeToTflshape(filterShape), filterData,
+                                         convertShapeToTflshape(biasShape), biasData,
+                                         convertShapeToTflshape(outputShape), outputData);
 
     return true;
 }
@@ -87,8 +99,9 @@ bool depthwiseConvQuant8(const uint8_t* inputData, const Shape& inputShape,
                          const uint8_t* filterData, const Shape& filterShape,
                          const int32_t* biasData, const Shape& biasShape, int32_t paddingLeft,
                          int32_t paddingRight, int32_t paddingTop, int32_t paddingBottom,
-                         int32_t strideWidth, int32_t strideHeight, int32_t depthMultiplier,
-                         int32_t activation, uint8_t* outputData, const Shape& outputShape) {
+                         int32_t strideWidth, int32_t strideHeight, int32_t dilationWidthFactor,
+                         int32_t dilationHeightFactor, int32_t depthMultiplier, int32_t activation,
+                         uint8_t* outputData, const Shape& outputShape) {
     NNTRACE_TRANS("depthwiseConvQuant8");
 
     ANDROID_NN_DEPTHWISE_CONV_PARAMETERS
@@ -99,29 +112,34 @@ bool depthwiseConvQuant8(const uint8_t* inputData, const Shape& inputShape,
     int32_t output_activation_min = 0;
     int32_t output_activation_max = 0;
 
-
-    if (!GetQuantizedConvolutionMultipler(inputShape, filterShape, biasShape,
-                                          outputShape, &real_multiplier) ||
-            !QuantizeMultiplierSmallerThanOne(real_multiplier, &output_multiplier,
-                                              &output_shift)) {
+    if (!GetQuantizedConvolutionMultipler(inputShape, filterShape, biasShape, outputShape,
+                                          &real_multiplier) ||
+        !QuantizeMultiplierSmallerThanOne(real_multiplier, &output_multiplier, &output_shift)) {
         return false;
     }
-    CalculateActivationRangeUint8(activation, outputShape,
-                                  &output_activation_min,
+    CalculateActivationRangeUint8(activation, outputShape, &output_activation_min,
                                   &output_activation_max);
 
-    uint32_t inputOffset = -inputShape.offset;
-    uint32_t filterOffset = -filterShape.offset;
-    uint32_t outputOffset = outputShape.offset;
-
+    tflite::DepthwiseParams params{
+            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight)},
+            .stride_width = static_cast<int16>(strideWidth),
+            .stride_height = static_cast<int16>(strideHeight),
+            .depth_multiplier = static_cast<int16>(depthMultiplier),
+            .quantized_activation_min = output_activation_min,
+            .quantized_activation_max = output_activation_max,
+            .dilation_width_factor = static_cast<int16>(dilationWidthFactor),
+            .dilation_height_factor = static_cast<int16>(dilationHeightFactor),
+            .input_offset = -inputShape.offset,
+            .weights_offset = -filterShape.offset,
+            .output_offset = outputShape.offset,
+            .output_shift = -output_shift,
+            .output_multiplier = output_multiplier,
+    };
     NNTRACE_COMP_SWITCH("optimized_ops::DepthwiseConv");
-    tflite::optimized_ops::DepthwiseConv(
-            inputData, convertShapeToDims(inputShape), inputOffset, filterData,
-            convertShapeToDims(filterShape), filterOffset, biasData, convertShapeToDims(biasShape),
-            strideWidth, strideHeight, paddingWidth, paddingHeight, depthMultiplier, outputOffset,
-            output_multiplier, output_shift, output_activation_min, output_activation_max,
-            outputData, convertShapeToDims(outputShape));
-
+    tflite::optimized_ops::DepthwiseConv(params, convertShapeToTflshape(inputShape), inputData,
+                                         convertShapeToTflshape(filterShape), filterData,
+                                         convertShapeToTflshape(biasShape), biasData,
+                                         convertShapeToTflshape(outputShape), outputData);
     return true;
 }
 
@@ -131,6 +149,8 @@ bool depthwiseConvQuant8PerChannel(const uint8_t* inputData, const Shape& inputS
                                    const Shape& biasShape, int32_t paddingLeft,
                                    int32_t paddingRight, int32_t paddingTop, int32_t paddingBottom,
                                    int32_t strideWidth, int32_t strideHeight,
+                                   int32_t dilationWidthFactor, int32_t dilationHeightFactor,
+
                                    int32_t depthMultiplier, int32_t activation, uint8_t* outputData,
                                    const Shape& outputShape) {
     NNTRACE_TRANS("depthwiseConvQuant8");
@@ -188,8 +208,10 @@ bool depthwiseConvQuant8PerChannel(const uint8_t* inputData, const Shape& inputS
                         int32_t sum = 0.0f;
                         for (uint32_t i = 0; i < filterHeight; i++) {
                             for (uint32_t j = 0; j < filterWidth; j++) {
-                                int32_t hInput = hInputOrigin + static_cast<int32_t>(i);
-                                int32_t wInput = wInputOrigin + static_cast<int32_t>(j);
+                                int32_t hInput = hInputOrigin +
+                                                 dilationHeightFactor * static_cast<int32_t>(i);
+                                int32_t wInput = wInputOrigin +
+                                                 dilationWidthFactor * static_cast<int32_t>(j);
 
                                 if (hInput >= 0 && hInput < static_cast<int32_t>(inputHeight) &&
                                     wInput >= 0 && wInput < static_cast<int32_t>(inputWidth)) {
