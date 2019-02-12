@@ -146,6 +146,11 @@ bool setInfoAndAllocateIfNeeded(RunTimeOperandInfo* info, const Shape& shape, in
                 return false;
             }
         }
+        if (info->extraParams != shape.extraParams) {
+            LOG(ERROR) << "Invalid extraParams for model output";
+            *result = ANEURALNETWORKS_OP_FAILED;
+            return false;
+        }
     }
 
     std::vector<uint32_t> combined;
@@ -158,19 +163,27 @@ bool setInfoAndAllocateIfNeeded(RunTimeOperandInfo* info, const Shape& shape, in
     info->type = shape.type;
     info->scale = shape.scale;
     info->zeroPoint = shape.offset;
+    info->extraParams = shape.extraParams;
 
     // Allocate the buffer only if the combined dimension is fully specified
-    uint32_t length = sizeOfData(info->type, info->dimensions);
-    if (info->lifetime == OperandLifeTime::TEMPORARY_VARIABLE && length > 0 &&
-        info->buffer == nullptr) {
-        info->buffer = new uint8_t[length];
-        if (info->buffer == nullptr) {
-            *result = ANEURALNETWORKS_OUT_OF_MEMORY;
+    if (info->lifetime == OperandLifeTime::TEMPORARY_VARIABLE && info->buffer == nullptr) {
+        if (isExtensionOperandType(info->type)) {
+            LOG(ERROR) << "Cannot allocate a temporary variable of an extension type";
+            *result = ANEURALNETWORKS_OP_FAILED;
             return false;
         }
-        info->length = length;
+        uint32_t length = sizeOfData(info->type, info->dimensions);
+        if (length > 0) {
+            info->buffer = new uint8_t[length];
+            if (info->buffer == nullptr) {
+                *result = ANEURALNETWORKS_OUT_OF_MEMORY;
+                return false;
+            }
+            info->length = length;
+        }
     }
     if (!info->isSufficient()) {
+        uint32_t length = sizeOfData(info->type, info->dimensions);
         LOG(ERROR) << "Insufficient size for model operand: require = " << length
                    << ", provided = " << info->length;
         *result = ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE;
@@ -2686,7 +2699,7 @@ int CpuExecutor::executeOperation(const Operation& operation) {
         } break;
         default: {
             const OperationRegistration* operationRegistration =
-                    OperationResolver::get()->findOperation(operation.type);
+                    mOperationResolver->findOperation(operation.type);
             if (operationRegistration == nullptr) {
                 LOG(ERROR) << getOperationName(operation.type) << " not registered";
             } else if (operationRegistration->prepare == nullptr ||
