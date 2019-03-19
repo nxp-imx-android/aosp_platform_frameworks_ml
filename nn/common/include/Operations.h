@@ -47,10 +47,6 @@ struct Shape;
 bool floorFloat16(const _Float16* inputData, _Float16* outputData, const Shape& shape);
 bool floorFloat32(const float* inputData, float* outputData, const Shape& shape);
 
-bool quantizeFloat32ToQuant8(const float* inputData, uint8_t* outputData, const Shape& outputShape);
-bool quantizeFloat16ToQuant8(const _Float16* inputData, uint8_t* outputData,
-                             const Shape& outputShape);
-
 bool depthwiseConvFloat16(const _Float16* inputData, const Shape& inputShape,
                           const _Float16* filterData, const Shape& filterShape,
                           const _Float16* biasData, const Shape& biasShape, int32_t paddingLeft,
@@ -81,43 +77,6 @@ bool depthwiseConvQuant8PerChannel(const uint8_t* inputData, const Shape& inputS
                                    int32_t dilationWidthFactor, int32_t dilationHeightFactor,
                                    int32_t depthMultiplier, int32_t activation, uint8_t* outputData,
                                    const Shape& outputShape);
-
-template <typename T>
-bool reluFloat(const T* inputData, const Shape& inputShape, T* outputData, const Shape& outputShape,
-               float reluMin = 0.f, float reluMax = std::numeric_limits<float>::max());
-template <typename T>
-bool relu1Float(const T* inputData, const Shape& inputShape, T* outputData,
-                const Shape& outputShape);
-template <typename T>
-bool relu6Float(const T* inputData, const Shape& inputShape, T* outputData,
-                const Shape& outputShape);
-
-bool tanhFloat16(const _Float16* inputData, const Shape& inputShape, _Float16* outputData,
-                 const Shape& outputShape);
-bool tanhFloat32(const float* inputData, const Shape& inputShape, float* outputData,
-                 const Shape& outputShape);
-bool tanhQuant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
-                const Shape& outputShape);
-
-template <typename T>
-bool logisticFloat(const T* inputData, const Shape& inputShape, T* outputData,
-                   const Shape& outputShape);
-
-bool softmaxFloat16(const _Float16* inputData, const Shape& inputShape, const float beta,
-                    int32_t axis, _Float16* outputData, const Shape& outputShape);
-bool softmaxFloat32(const float* inputData, const Shape& inputShape, const float beta, int32_t axis,
-                    float* outputData, const Shape& outputShape);
-
-bool reluQuant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
-                const Shape& outputShape);
-bool relu1Quant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
-                 const Shape& outputShape);
-bool relu6Quant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
-                 const Shape& outputShape);
-bool logisticQuant8(const uint8_t* inputData, const Shape& inputShape, uint8_t* outputData,
-                    const Shape& outputShape);
-bool softmaxQuant8(const uint8_t* inputData, const Shape& inputShape, const float beta,
-                   int32_t axis, uint8_t* outputData, const Shape& outputShape);
 
 template <typename T>
 bool concatenation(const std::vector<const T*>& inputDataPtrs,
