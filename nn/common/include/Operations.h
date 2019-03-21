@@ -30,7 +30,6 @@
 #include "operations/QuantizedLSTM.h"
 #include "operations/RNN.h"
 #include "operations/SVDF.h"
-#include "operations/Slice.h"
 #include "operations/Tile.h"
 #include "operations/TopK_V2.h"
 
@@ -77,11 +76,6 @@ bool depthwiseConvQuant8PerChannel(const uint8_t* inputData, const Shape& inputS
                                    int32_t dilationWidthFactor, int32_t dilationHeightFactor,
                                    int32_t depthMultiplier, int32_t activation, uint8_t* outputData,
                                    const Shape& outputShape);
-
-template <typename T>
-bool concatenation(const std::vector<const T*>& inputDataPtrs,
-                   const std::vector<Shape>& inputShapes, int32_t axis, T* outputData,
-                   const Shape& outputShape);
 
 bool l2normFloat16(const _Float16* inputData, const Shape& inputShape, int32_t axis,
                    _Float16* outputData, const Shape& outputShape);

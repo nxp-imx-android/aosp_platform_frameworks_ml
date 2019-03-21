@@ -847,58 +847,6 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                 break;
             }
         } break;
-        case OperationType::CONCATENATION: {
-            if (outs.size() != 1 || ins.size() < 2) {
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            int numInputTensors = ins.size() - 1;
-            int32_t axis = getScalarData<int32_t>(mOperands[ins[numInputTensors]]);
-
-            RunTimeOperandInfo& output = mOperands[outs[0]];
-            Shape outShape = output.shape();
-
-            const RunTimeOperandInfo& firstInput = mOperands[ins[0]];
-            if (firstInput.type == OperandType::TENSOR_FLOAT32) {
-                std::vector<Shape> inputShapes(numInputTensors);
-                std::vector<const float*> inputDataPtrs(numInputTensors);
-
-                for (int i = 0; i < numInputTensors; i++) {
-                    RunTimeOperandInfo& input = mOperands[ins[i]];
-                    inputShapes[i] = input.shape();
-                    inputDataPtrs[i] = reinterpret_cast<const float*>(input.buffer);
-                }
-                success = concatenationPrepare(inputShapes, axis, &outShape) &&
-                          setInfoAndAllocateIfNeeded(&output, outShape, &result) &&
-                          concatenation(inputDataPtrs, inputShapes, axis,
-                                        reinterpret_cast<float*>(output.buffer), outShape);
-            } else if (firstInput.type == OperandType::TENSOR_FLOAT16) {
-                std::vector<Shape> inputShapes(numInputTensors);
-                std::vector<const _Float16*> inputDataPtrs(numInputTensors);
-
-                for (int i = 0; i < numInputTensors; i++) {
-                    RunTimeOperandInfo& input = mOperands[ins[i]];
-                    inputShapes[i] = input.shape();
-                    inputDataPtrs[i] = reinterpret_cast<const _Float16*>(input.buffer);
-                }
-                success = concatenationPrepare(inputShapes, axis, &outShape) &&
-                          setInfoAndAllocateIfNeeded(&output, outShape, &result) &&
-                          concatenation(inputDataPtrs, inputShapes, axis,
-                                        reinterpret_cast<_Float16*>(output.buffer), outShape);
-            } else if (firstInput.type == OperandType::TENSOR_QUANT8_ASYMM) {
-                std::vector<Shape> inputShapes(numInputTensors);
-                std::vector<const uint8_t*> inputDataPtrs(numInputTensors);
-
-                for (int i = 0; i < numInputTensors; i++) {
-                    RunTimeOperandInfo& input = mOperands[ins[i]];
-                    inputShapes[i] = input.shape();
-                    inputDataPtrs[i] = reinterpret_cast<const uint8_t*>(input.buffer);
-                }
-                success = concatenationPrepare(inputShapes, axis, &outShape) &&
-                          setInfoAndAllocateIfNeeded(&output, outShape, &result) &&
-                          concatenation(inputDataPtrs, inputShapes, axis,
-                                        reinterpret_cast<uint8_t*>(output.buffer), outShape);
-            }
-        } break;
         case OperationType::L2_NORMALIZATION: {
             const size_t inCount = ins.size();
             if ((inCount != 2 && inCount != 1) || !allParametersPresent(inCount, 1)) {
@@ -1882,26 +1830,6 @@ int CpuExecutor::executeOperation(const Operation& operation) {
                       setInfoAndAllocateIfNeeded(&indices, indicesShape, &result) &&
                       topk_v2::eval(input.buffer, input.shape(), k, values.buffer, valuesShape,
                                     indices.buffer, indicesShape);
-        } break;
-        case OperationType::SLICE: {
-            if (!allParametersPresent(3, 1)) {
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            const RunTimeOperandInfo& input = mOperands[ins[0]];
-            const RunTimeOperandInfo& begin = mOperands[ins[1]];
-            const RunTimeOperandInfo& size = mOperands[ins[2]];
-
-            RunTimeOperandInfo& output = mOperands[outs[0]];
-            Shape outputShape = output.shape();
-
-            const int32_t* beginBuffer = reinterpret_cast<int32_t*>(begin.buffer);
-            const int32_t* sizeBuffer = reinterpret_cast<int32_t*>(size.buffer);
-
-            success = slice::prepare(input.shape(), beginBuffer, begin.shape(), sizeBuffer,
-                                     size.shape(), &outputShape) &&
-                      setInfoAndAllocateIfNeeded(&output, outputShape, &result) &&
-                      slice::eval(input.buffer, input.shape(), beginBuffer, begin.shape(),
-                                  sizeBuffer, size.shape(), output.buffer, output.shape());
         } break;
         default: {
             const OperationRegistration* operationRegistration =
