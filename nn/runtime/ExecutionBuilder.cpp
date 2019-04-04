@@ -35,6 +35,8 @@
 namespace android {
 namespace nn {
 
+using HidlToken = hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
+
 const Timing kNoTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 static MeasureTiming measureTiming(const ExecutionBuilder* execution) {
@@ -402,7 +404,7 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
     while (true) {
         std::shared_ptr<StepExecutor> executor;
         VLOG(EXECUTION) << "looking for next StepExecutor";
-        ExecutionBurstController* burstController = nullptr;
+        std::shared_ptr<ExecutionBurstController> burstController = nullptr;
         int n = plan->next(controller, &executor, &burstController);
         if (n != ANEURALNETWORKS_NO_ERROR) {
             if (allowFallback) {
@@ -466,7 +468,8 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
 
 int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
                               BurstBuilder* burstBuilder) {
-    assert(synchronizationCallback == nullptr || burstBuilder == nullptr);
+    CHECK(synchronizationCallback == nullptr || burstBuilder == nullptr)
+            << "synchronizationCallback and burstBuilder cannot simultaneously be used";
 
     const bool synchronous = (synchronizationCallback == nullptr);
 
@@ -730,7 +733,7 @@ bool StepExecutor::isCpu() const {
 }
 
 int StepExecutor::startCompute(sp<ExecutionCallback>* synchronizationCallback,
-                               ExecutionBurstController* burstController) {
+                               const std::shared_ptr<ExecutionBurstController>& burstController) {
     if (VLOG_IS_ON(EXECUTION)) {
         logArguments("input", mInputs);
         logArguments("output", mOutputs);
@@ -742,8 +745,9 @@ int StepExecutor::startCompute(sp<ExecutionCallback>* synchronizationCallback,
     }
 }
 
-int StepExecutor::startComputeOnDevice(sp<ExecutionCallback>* synchronizationCallback,
-                                       ExecutionBurstController* burstController) {
+int StepExecutor::startComputeOnDevice(
+        sp<ExecutionCallback>* synchronizationCallback,
+        const std::shared_ptr<ExecutionBurstController>& burstController) {
     CHECK(!isCpu());
 
     *synchronizationCallback = nullptr;
@@ -762,8 +766,9 @@ int StepExecutor::startComputeOnDevice(sp<ExecutionCallback>* synchronizationCal
         // encountered on an #if-removed code.
         ExecutionPreference preference =
                 static_cast<ExecutionPreference>(ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER);
-        ErrorStatus prepareLaunchStatus =
-                mDevice->getInterface()->prepareModel(model, preference, preparedModelCallback);
+        ErrorStatus prepareLaunchStatus = mDevice->getInterface()->prepareModel(
+                model, preference, hidl_vec<hidl_handle>(), hidl_vec<hidl_handle>(), HidlToken(),
+                preparedModelCallback);
         if (prepareLaunchStatus != ErrorStatus::NONE) {
             return convertErrorStatusToResultCode(prepareLaunchStatus);
         }
@@ -840,9 +845,11 @@ int StepExecutor::startComputeOnDevice(sp<ExecutionCallback>* synchronizationCal
     sp<ExecutionCallback> executionCallback = new ExecutionCallback();
 
     if (burstController != nullptr) {
-        std::vector<intptr_t> memoryIds(mMemories.size());
-        for (size_t i = 0; i < mMemories.size(); ++i) {
-            memoryIds[i] = reinterpret_cast<intptr_t>(mMemories[i]);
+        std::vector<intptr_t> memoryIds;
+        memoryIds.reserve(mMemories.size());
+        for (const Memory* memory : mMemories) {
+            memory->usedBy(burstController);
+            memoryIds.push_back(memory->getKey());
         }
 
         VLOG(EXECUTION) << "Before ExecutionBurstController->compute() "
