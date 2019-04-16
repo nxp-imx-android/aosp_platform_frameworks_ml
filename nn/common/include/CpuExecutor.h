@@ -22,8 +22,9 @@
 #include "OperationsUtils.h"
 #include "Utils.h"
 
-#include <algorithm>
 #include <android-base/macros.h>
+#include <ui/GraphicBuffer.h>
+#include <algorithm>
 #include <vector>
 
 namespace android {
@@ -38,6 +39,17 @@ struct RunTimeOperandInfo {
     // change at runtime.  We include the type because it's useful
     // to pass together with the dimension to the functions implementing
     // the operators.
+    //
+    // A dimension being zero has different meanings for different operands at different stages:
+    // - Model inputs:
+    //   * Specified in model: implies "dynamic", and must be fully-specified in request.
+    //   * Specified in request: illegal.
+    // - Constant operands: illegal.
+    // - Model outputs and internal operands:
+    //   * Before evaluation: implies unknown and to be deduced from execution.
+    //   * After evaluation:
+    //     - If isSufficient reports true: the tensor is zero-sized.
+    //     - Otherwise: implies unknown.
     std::vector<uint32_t> dimensions;
 
     float scale;
@@ -73,7 +85,7 @@ struct RunTimeOperandInfo {
             // We don't know sizes of extension types.
             return true;
         }
-        return length >= sizeOfData(type, dimensions);
+        return length >= nonExtensionOperandSizeOfData(type, dimensions);
     }
 };
 
@@ -109,9 +121,10 @@ private:
     void release();
     void moveFrom(RunTimePoolInfo&& other);
 
-    hidl_memory mHidlMemory;     // always used
-    uint8_t* mBuffer = nullptr;  // always used
-    sp<IMemory> mMemory;         // only used when hidlMemory.name() == "ashmem"
+    hidl_memory mHidlMemory;           // always used
+    uint8_t* mBuffer = nullptr;        // always used
+    sp<IMemory> mMemory;               // only used when hidlMemory.name() == "ashmem"
+    sp<GraphicBuffer> mGraphicBuffer;  // only used when hidlMemory.name() == "hardware_buffer_blob"
 };
 
 bool setRunTimePoolInfosFromHidlMemories(std::vector<RunTimePoolInfo>* poolInfos,
@@ -165,7 +178,7 @@ class CpuExecutor {
     const Request* mRequest = nullptr;
 
     // We're copying the list of all the dimensions from the model, as
-    // these may be modified when we run the operatins.  Since we're
+    // these may be modified when we run the operations.  Since we're
     // making a full copy, the indexes used in the operand description
     // stay valid.
     //    std::vector<uint32_t> mDimensions;

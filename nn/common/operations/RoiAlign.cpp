@@ -76,7 +76,7 @@ inline bool roiAlignNhwc(const T_Input* inputData, const Shape& inputShape, cons
         // Check for malformed data
         // 1. invalid batch id
         // 2. Region out of bound: x1|x2|y1|y2 < 0 || x1|x2 > inWidth || y1|y2 > inHeight
-        // 3. Invalid region: x2 <= x1 || y2 <= y1
+        // 3. Invalid region: x2 < x1 || y2 < y1
         NN_RET_CHECK_GE(batchId, 0);
         NN_RET_CHECK_LT(batchId, numBatches);
         NN_RET_CHECK(roiInfo[0] >= 0);
@@ -206,19 +206,15 @@ inline bool roiAlignNhwc<uint8_t, uint16_t>(const uint8_t* inputData, const Shap
         // Check for malformed data
         // 1. invalid batch id
         // 2. Region out of bound: x1|x2|y1|y2 < 0 || x1|x2 > inWidth || y1|y2 > inHeight
-        // 3. Invalid region: x2 <= x1 || y2 <= y1
+        // 3. Invalid region: x2 < x1 || y2 < y1
         NN_RET_CHECK_GE(batchId, 0);
         NN_RET_CHECK_LT(batchId, numBatches);
-        NN_RET_CHECK(wRoiStart >= 0);
-        NN_RET_CHECK(hRoiStart >= 0);
-        NN_RET_CHECK(wRoiEnd >= 0);
-        NN_RET_CHECK(hRoiEnd >= 0);
-        NN_RET_CHECK(wRoiStart * widthScale <= inWidth);
-        NN_RET_CHECK(hRoiStart * heightScale <= inHeight);
-        NN_RET_CHECK(wRoiEnd * widthScale <= inWidth);
-        NN_RET_CHECK(hRoiEnd * heightScale <= inHeight);
-        NN_RET_CHECK(wRoiStart <= wRoiEnd);
-        NN_RET_CHECK(hRoiStart <= hRoiEnd);
+        NN_RET_CHECK(wRoiStart <= inWidth);
+        NN_RET_CHECK(hRoiStart <= inHeight);
+        NN_RET_CHECK(wRoiEnd <= inWidth);
+        NN_RET_CHECK(hRoiEnd <= inHeight);
+        NN_RET_CHECK_LE(wRoiStart, wRoiEnd);
+        NN_RET_CHECK_LE(hRoiStart, hRoiEnd);
 
         float roiWidth = std::max(wRoiEnd - wRoiStart, 1.0f);
         float roiHeight = std::max(hRoiEnd - hRoiStart, 1.0f);
@@ -375,6 +371,11 @@ bool prepare(IOperationExecutionContext* context) {
     uint32_t inWidth = getSizeOfDimension(input, useNchw ? 3 : 2);
     uint32_t inDepth = getSizeOfDimension(input, useNchw ? 1 : 3);
     uint32_t numRois = getSizeOfDimension(roiShape, 0);
+    // Every dimension must be positive except for numRois.
+    NN_RET_CHECK_GT(numBatches, 0);
+    NN_RET_CHECK_GT(inHeight, 0);
+    NN_RET_CHECK_GT(inWidth, 0);
+    NN_RET_CHECK_GT(inDepth, 0);
     NN_RET_CHECK_EQ(getSizeOfDimension(roiShape, 1), 4);
     NN_RET_CHECK_EQ(getSizeOfDimension(batchSplitShape, 0), numRois);
 
@@ -416,6 +417,8 @@ bool prepare(IOperationExecutionContext* context) {
 }
 
 bool execute(IOperationExecutionContext* context) {
+    // Bypass execution in the case of zero-sized input.
+    if (getNumberOfElements(context->getInputShape(kRoiTensor)) == 0) return true;
     switch (context->getInputType(kInputTensor)) {
         case OperandType::TENSOR_FLOAT16:
             return roiAlign(context->getInputBuffer<_Float16>(kInputTensor),
@@ -467,7 +470,7 @@ bool execute(IOperationExecutionContext* context) {
 }  // namespace roi_align
 
 NN_REGISTER_OPERATION(ROI_ALIGN, roi_align::kOperationName, roi_align::validate, roi_align::prepare,
-                      roi_align::execute);
+                      roi_align::execute, .allowZeroSizedInput = true);
 
 }  // namespace nn
 }  // namespace android

@@ -191,6 +191,7 @@ def DumpMixedType(operands, feedDict):
         "TENSOR_BOOL8",
         "TENSOR_QUANT8_SYMM_PER_CHANNEL",
         "TENSOR_QUANT16_ASYMM",
+        "TENSOR_QUANT8_SYMM",
     ]
     typedMap = {t: [] for t in supportedTensors}
     FeedAndGet = lambda op, d: op.Feed(d).GetListInitialization()
@@ -223,6 +224,8 @@ def DumpMixedType(operands, feedDict):
   .quant8ChannelOperands = {{{int8_map}}},
   // int -> QUANT16_ASYMM map
   .quant16AsymmOperands = {{{uint16_map}}},
+  // int -> QUANT8_SYMM map
+  .quant8SymmOperands = {{{quant8_symm_map}}},
 }}"""
     return mixedTypeTemplate.format(
         dimensions_map=tg.GetJointStr(typedMap.get("DIMENSIONS", [])),
@@ -234,7 +237,8 @@ def DumpMixedType(operands, feedDict):
         float16_map=tg.GetJointStr(typedMap.get("TENSOR_FLOAT16", [])),
         int8_map=tg.GetJointStr(typedMap.get("TENSOR_QUANT8_SYMM_PER_CHANNEL", [])),
         bool8_map=tg.GetJointStr(typedMap.get("TENSOR_BOOL8", [])),
-        uint16_map=tg.GetJointStr(typedMap.get("TENSOR_QUANT16_ASYMM", []))
+        uint16_map=tg.GetJointStr(typedMap.get("TENSOR_QUANT16_ASYMM", [])),
+        quant8_symm_map=tg.GetJointStr(typedMap.get("TENSOR_QUANT8_SYMM", []))
     )
 
 # Dump Example file for Cts tests
@@ -264,11 +268,8 @@ TEST_F({test_case_name}, {test_name}) {{
     execute({namespace}::{create_model_name},
             {namespace}::{is_ignored_name},
             {namespace}::get_{examples_name}(){log_file});\n}}\n"""
-    # TODO(xusongw): Enable CTS dynamic output shape tests once it is supported
-    if example.model.hasDynamicOutputShape:
-        print("#if 0", file=test_fd)
     print(testTemplate.format(
-        test_case_name="DynamicOutputShapeTests" if example.model.hasDynamicOutputShape \
+        test_case_name="DynamicOutputShapeTest" if example.model.hasDynamicOutputShape \
                        else "GeneratedTests",
         test_name=str(example.testName),
         namespace=tg.FileNames.specName,
@@ -276,8 +277,6 @@ TEST_F({test_case_name}, {test_name}) {{
         is_ignored_name=str(example.model.isIgnoredFunctionName),
         examples_name=str(example.examplesName),
         log_file=tg.FileNames.logFile), file=test_fd)
-    if example.model.hasDynamicOutputShape:
-        print("#endif", file=test_fd)
 
 if __name__ == '__main__':
     ParseCmdLine()
