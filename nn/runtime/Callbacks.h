@@ -268,7 +268,8 @@ class PreparedModelCallback : public CallbackBase, public IPreparedModelCallback
  * IPreparedModel::execute.
  */
 class ExecutionCallback : public CallbackBase,  public IExecutionCallback {
-    using ExecutionFinish = std::function<ErrorStatus(ErrorStatus)>;
+    using ExecutionFinish =
+            std::function<ErrorStatus(ErrorStatus, const std::vector<OutputShape>&)>;
 
    public:
     ExecutionCallback();
@@ -367,12 +368,18 @@ class ExecutionCallback : public CallbackBase,  public IExecutionCallback {
      *                      The index into "outputShapes" corresponds to the index
      *                      of the output operand in the Request outputs vector.
      *                      outputShapes must be empty unless the status is either
-     *                      NONE or OUTPUT_INSUFFICIENT_SIZE.
+     *                      NONE or OUTPUT_INSUFFICIENT_SIZE. outputShaps may be
+     *                      empty if the status is NONE and all model output operands
+     *                      are fully-specified at execution time. outputShapes must
+     *                      have the same number of elements as the number of model
+     *                      output operands if the status is OUTPUT_INSUFFICIENT_SIZE,
+     *                      or if the status is NONE and the model has at least one
+     *                      output operand that is not fully-specified.
      */
     const std::vector<OutputShape>& getOutputShapes();
 
     /**
-     * Retrieves the duration of execution ofthe asynchronous task launched
+     * Retrieves the duration of execution of the asynchronous task launched
      * by IPreparedModel::execute_1_2. If IPreparedModel::execute_1_2 has not finished
      * asynchronously executing, this call will block until the asynchronous task
      * notifies the object.
@@ -413,5 +420,12 @@ std::cv_status CallbackBase::wait_for(const std::chrono::duration<Rep,Period>& t
 }  // namespace neuralnetworks
 }  // namespace hardware
 }  // namespace android
+
+namespace android::nn {
+
+using ::android::hardware::neuralnetworks::V1_2::implementation::ExecutionCallback;
+using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
+
+}  // namespace android::nn
 
 #endif  // ANDROID_HARDWARE_NEURALNETWORKS_V1_0_CALLBACKS_H

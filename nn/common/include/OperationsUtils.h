@@ -25,79 +25,12 @@
 namespace android {
 namespace nn {
 
-// The NN_RET_CHECK family of macros defined below is similar to the CHECK family defined in
-// system/core/base/include/android-base/logging.h
-//
-// The difference is that NN_RET_CHECK macros use LOG(ERROR) instead of LOG(FATAL)
-// and return false instead of aborting.
-
-// Logs an error and returns false. Append context using << after. For example:
-//
-//   NN_RET_CHECK_FAIL() << "Something went wrong";
-//
-// The containing function must return a bool.
-#define NN_RET_CHECK_FAIL() return ::android::nn::FalseyErrorStream() << "NN_RET_CHECK failed: "
-
-// Logs an error and returns false if condition is false. Extra logging can be appended using <<
-// after. For example:
-//
-//   NN_RET_CHECK(false) << "Something went wrong";
-//
-// The containing function must return a bool.
-#define NN_RET_CHECK(condition) \
-    while (UNLIKELY(!(condition))) NN_RET_CHECK_FAIL() << #condition << " "
-
-// Helper for NN_CHECK_xx(x, y) macros.
-#define NN_RET_CHECK_OP(LHS, RHS, OP)                                                 \
-    for (auto _values = ::android::base::MakeEagerEvaluator(LHS, RHS);                \
-         UNLIKELY(!(_values.lhs OP _values.rhs));                                     \
-         /* empty */)                                                                 \
-    NN_RET_CHECK_FAIL() << #LHS << " " << #OP << " " << #RHS << " (" << #LHS << " = " \
-                        << _values.lhs << ", " << #RHS << " = " << _values.rhs << ") "
-
-// Logs an error and returns false if a condition between x and y does not hold. Extra logging can
-// be appended using << after. For example:
-//
-//   NN_RET_CHECK_EQ(a, b) << "Something went wrong";
-//
-// The values must implement the appropriate comparison operator as well as
-// `operator<<(std::ostream&, ...)`.
-// The containing function must return a bool.
-#define NN_RET_CHECK_EQ(x, y) NN_RET_CHECK_OP(x, y, ==)
-#define NN_RET_CHECK_NE(x, y) NN_RET_CHECK_OP(x, y, !=)
-#define NN_RET_CHECK_LE(x, y) NN_RET_CHECK_OP(x, y, <=)
-#define NN_RET_CHECK_LT(x, y) NN_RET_CHECK_OP(x, y, <)
-#define NN_RET_CHECK_GE(x, y) NN_RET_CHECK_OP(x, y, >=)
-#define NN_RET_CHECK_GT(x, y) NN_RET_CHECK_OP(x, y, >)
-
 // DEPRECATED. Use NN_RET_CHECK instead.
 #define NN_CHECK(x) NN_RET_CHECK(x)
 #define NN_OPS_CHECK(x) NN_RET_CHECK(x)
 
 // DEPRECATED. Use NN_RET_CHECK_EQ instead.
 #define NN_CHECK_EQ(x, y) NN_RET_CHECK_EQ(x, y)
-
-// A wrapper around LOG(ERROR) that can be implicitly converted to bool (always evaluates to false).
-// Used to implement stream logging in NN_RET_CHECK.
-class FalseyErrorStream {
-    DISALLOW_COPY_AND_ASSIGN(FalseyErrorStream);
-
-   public:
-    FalseyErrorStream() {}
-
-    template <typename T>
-    FalseyErrorStream& operator<<(const T& value) {
-        mBuffer << value;
-        return *this;
-    }
-
-    ~FalseyErrorStream() { LOG(ERROR) << mBuffer.str(); }
-
-    operator bool() const { return false; }
-
-   private:
-    std::ostringstream mBuffer;
-};
 
 // An 8-bit boolean type (sizeof(bool) is implementation-defined).
 typedef uint8_t bool8;
@@ -141,6 +74,7 @@ class IOperationValidationContext {
     virtual uint32_t getNumInputs() const = 0;
     virtual OperandType getInputType(uint32_t index) const = 0;
     virtual Shape getInputShape(uint32_t index) const = 0;
+    virtual const Operand::ExtraParams getInputExtraParams(uint32_t index) const = 0;
 
     virtual uint32_t getNumOutputs() const = 0;
     virtual OperandType getOutputType(uint32_t index) const = 0;
@@ -156,6 +90,7 @@ class IOperationExecutionContext {
     virtual OperandType getInputType(uint32_t index) const = 0;
     virtual Shape getInputShape(uint32_t index) const = 0;
     virtual const void* getInputBuffer(uint32_t index) const = 0;
+    virtual const Operand::ExtraParams getInputExtraParams(uint32_t index) const = 0;
 
     virtual uint32_t getNumOutputs() const = 0;
     virtual OperandType getOutputType(uint32_t index) const = 0;
@@ -165,7 +100,8 @@ class IOperationExecutionContext {
     // Updates the output shape, allocating the buffer if necessary.
     virtual bool setOutputShape(uint32_t index, const Shape& shape) = 0;
 
-    virtual bool isNullInput(uint32_t index) const = 0;
+    virtual bool isOmittedInput(uint32_t index) const = 0;
+    virtual bool isOmittedOutput(uint32_t index) const = 0;
 
     template <typename T>
     const T* getInputBuffer(uint32_t index) const {
@@ -240,6 +176,8 @@ inline uint32_t computeOutSizeTransposeConv(uint32_t imageSize, uint32_t filterS
                                             uint32_t paddingTail) {
     return imageSize * stride + filterSize - stride - paddingHead - paddingTail;
 }
+
+__wur bool QuantizeMultiplier(double double_multiplier, int32_t* quantized_multiplier, int* shift);
 
 __wur
 bool QuantizeMultiplierSmallerThanOne(double double_multiplier,
@@ -355,13 +293,7 @@ bool calculateBroadcastedShape(const Shape& in1, const Shape& in2, Shape* out);
 uint8_t requantize(uint8_t value, const Shape& oldShape, const Shape& newShape);
 
 // Preparation functions for the corresponding ops
-bool addMulPrepare(const Shape& in1, const Shape& in2, Shape* out1);
-
 bool floorPrepare(const Shape& input, Shape* output);
-
-bool dequantizePrepare(const Shape& input, Shape* output);
-
-bool quantizePrepare(const Shape& input, Shape* output);
 
 bool depthwiseConvPrepare(const Shape& input, const Shape& filter, const Shape& bias,
                           int32_t padding_left, int32_t padding_right, int32_t padding_top,
@@ -369,28 +301,7 @@ bool depthwiseConvPrepare(const Shape& input, const Shape& filter, const Shape& 
                           int32_t depth_multiplier, int32_t dilation_width_factor,
                           int32_t dilation_height_factor, Shape* output);
 
-bool convPrepare(const Shape& input, const Shape& filter, const Shape& bias, int32_t padding_left,
-                 int32_t padding_right, int32_t padding_top, int32_t padding_bottom,
-                 int32_t stride_width, int32_t stride_height, int32_t dilation_width_factor,
-                 int32_t dilation_height_factor, Shape* output);
-
-bool genericPoolingPrepare(const Shape& input,
-                           int32_t padding_left, int32_t padding_right,
-                           int32_t padding_top, int32_t padding_bottom,
-                           int32_t stride_width, int32_t stride_height,
-                           int32_t filter_width, int32_t filter_height,
-                           Shape* output);
-
 bool genericActivationPrepare(const Shape& input, Shape* output);
-
-bool fullyConnectedPrepare(const Shape& input,
-                           const Shape& weights,
-                           const Shape& bias,
-                           Shape* output);
-
-bool concatenationPrepare(const std::vector<Shape>& inputShapes,
-                          int32_t axis,
-                          Shape* output);
 
 bool genericNormalizationPrepare(const Shape& input, Shape* output);
 
@@ -398,11 +309,6 @@ bool reshapePrepare(const Shape& input,
                     const int32_t* targetDims,
                     const int32_t targetDimsSize,
                     Shape* output);
-
-bool resizeBilinearPrepare(const Shape& input,
-                           int32_t height,
-                           int32_t width,
-                           Shape* output);
 
 bool depthToSpacePrepare(const Shape& input,
                          int32_t blockSize,
@@ -443,11 +349,6 @@ bool squeezePrepare(const Shape& input,
                     const int32_t* squeezeDims,
                     const Shape& squeezeDimsShape,
                     Shape* output);
-
-bool transposePrepare(const Shape& input,
-                      const int32_t* permData,
-                      const Shape& permShape,
-                      Shape* output);
 
 bool meanPrepare(const Shape& input,
                  const int32_t* axisData,
@@ -504,6 +405,33 @@ inline bool transposeFirstTwoDimensions(const Shape& shape, Shape* transposedSha
     *transposedShape = shape;
     transposedShape->dimensions[0] = shape.dimensions[1];
     transposedShape->dimensions[1] = shape.dimensions[0];
+    return true;
+}
+
+// Given two 3-dimensional tensors, merge them into one 3-dimensional tensor
+// at the third dimension. The merged tensor's third dimension size will be
+// sum of that of the two inputs.
+template <typename T>
+inline bool mergeThirdDimension(const T* bufferA, const std::vector<uint32_t>& dimsA,
+                                const T* bufferB, const std::vector<uint32_t>& dimsB, T* merged) {
+    NN_RET_CHECK_EQ(dimsA.size(), 3u);
+    NN_RET_CHECK_EQ(dimsB.size(), 3u);
+
+    NN_RET_CHECK_EQ(dimsA[0], dimsB[0]);
+    NN_RET_CHECK_EQ(dimsA[1], dimsB[1]);
+
+    for (unsigned int i = 0; i < dimsA[0]; ++i) {
+        for (unsigned int j = 0; j < dimsA[1]; ++j) {
+            for (unsigned int k = 0; k < dimsA[2]; ++k) {
+                merged[(i * dimsA[1] + j) * (dimsA[2] + dimsB[2]) + k] =
+                        bufferA[(i * dimsA[1] + j) * dimsA[2] + k];
+            }
+            for (unsigned int k = 0; k < dimsB[2]; ++k) {
+                merged[(i * dimsA[1] + j) * (dimsA[2] + dimsB[2]) + dimsA[2] + k] =
+                        bufferB[(i * dimsB[1] + j) * dimsB[2] + k];
+            }
+        }
+    }
     return true;
 }
 

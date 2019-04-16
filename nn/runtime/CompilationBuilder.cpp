@@ -30,8 +30,13 @@ namespace android {
 namespace nn {
 
 CompilationBuilder::CompilationBuilder(const ModelBuilder* model,
-                                       const std::vector<std::shared_ptr<Device>>& devices)
-    : mModel(model), mPartitioning(DeviceManager::get()->getPartitioning()), mDevices(devices) {
+                                       const std::vector<std::shared_ptr<Device>>& devices,
+                                       bool explicitDeviceList)
+    : mModel(model),
+      mPartitioning(explicitDeviceList ? DeviceManager::kPartitioningWithoutFallback
+                                       : DeviceManager::get()->getPartitioning()),
+      mDevices(devices),
+      mExplicitDeviceList(explicitDeviceList) {
     VLOG(COMPILATION) << "CompilationBuilder::CompilationBuilder";
 }
 
@@ -43,7 +48,9 @@ int CompilationBuilder::finish() {
     // TODO validate the rest
 
     mFinished = true;
-
+    if (mIsCacheInfoProvided) {
+        mPlan.setCaching(&mCacheDir, mToken);
+    }
     if (mPartitioning) {
         int n = mModel->partitionTheWork(mDevices, mPreference, &mPlan);
         switch (n) {
@@ -149,7 +156,7 @@ int CompilationBuilder::createBurst(BurstBuilder** burst) {
         *burst = nullptr;
         return ANEURALNETWORKS_BAD_STATE;
     }
-    std::vector<std::unique_ptr<ExecutionBurstController>> burstControllers = mPlan.makeBursts();
+    std::vector<std::shared_ptr<ExecutionBurstController>> burstControllers = mPlan.makeBursts();
     *burst = new (std::nothrow) BurstBuilder(this, std::move(burstControllers));
     return (*burst ? ANEURALNETWORKS_NO_ERROR : ANEURALNETWORKS_OUT_OF_MEMORY);
 }

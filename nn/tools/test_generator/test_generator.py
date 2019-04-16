@@ -154,6 +154,7 @@ class Type(NamedVariable):
         "TENSOR_FLOAT16": "_Float16",
         "TENSOR_FLOAT32": "float",
         "TENSOR_QUANT8_ASYMM": "uint8_t",
+        "TENSOR_QUANT8_SYMM": "int8_t",
         "BOOL": "bool8",
         "TENSOR_QUANT16_ASYMM": "uint16_t",
         "TENSOR_QUANT16_SYMM": "int16_t",
@@ -762,7 +763,7 @@ class DataTypeConverter(ModelVariation, ImplicitVariation):
         else:
             typeTuple = (arg[0], op.type.dimensions, *arg[1:])
         # To handle Internal operands
-        if op.value is None:
+        if op.value is None or op.type.GetNumberOfElements() == 0:
             op.type = Type.GetType(*typeTuple)
         else:
             v = Dequantize(op.GetValueAsNumpy().astype(np.float32), op.type)
@@ -815,7 +816,7 @@ class DataLayoutConverter(ModelVariation, ImplicitVariation):
     def TransformOperand(self, op, arg=None):
         if len(op.type.dimensions) == 4:
             # To handle Internal operands
-            if op.value is not None:
+            if op.value is not None and op.type.GetNumberOfElements() != 0:
                 op.SetValueFromNumpy(op.GetValueAsNumpy().transpose(self.perm))
             newDim = [op.type.dimensions[i] for i in self.perm]
             op.type = Type.GetType(op.type.type, newDim, op.type.scale, op.type.zeroPoint)

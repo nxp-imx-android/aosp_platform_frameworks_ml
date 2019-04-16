@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# Bidirectional Sequence LSTM Test:
+# FLOAT32, No Layer Normalization, No Cifg, No Peephole, No Projection, and No Clipping.
+
 n_batch = 1
 n_input = 2
 n_cell = 4
@@ -130,6 +133,16 @@ bw_aux_input_to_cell_weights = Input(
 bw_aux_input_to_output_weights = Input(
     "bw_aux_input_to_output_weights", "TENSOR_FLOAT32", "{{{}, {}}}".format(n_cell, n_input))
 
+fw_input_layer_norm_weights = Input("input_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+fw_forget_layer_norm_weights = Input("forget_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+fw_cell_layer_norm_weights = Input("cell_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+fw_output_layer_norm_weights = Input("output_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+
+bw_input_layer_norm_weights = Input("input_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+bw_forget_layer_norm_weights = Input("forget_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+bw_cell_layer_norm_weights = Input("cell_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+bw_output_layer_norm_weights = Input("output_layer_norm_weights", "TENSOR_FLOAT32", "{%d}" % n_cell)
+
 fw_output=Output("fw_output", "TENSOR_FLOAT32", "{{{}, {}, {}}}".format(max_time, n_batch, n_output))
 bw_output=Output("bw_output", "TENSOR_FLOAT32", "{{{}, {}, {}}}".format(max_time, n_batch, n_output))
 
@@ -174,8 +187,6 @@ def test(
     fw_cell_state_data=[],
     bw_activation_state_data=[],
     bw_cell_state_data=[],
-    fw_output_data=[],
-    bw_output_data=[],
     aux_input_data=[],
     fw_aux_input_to_input_weights_data=[],
     fw_aux_input_to_forget_weights_data=[],
@@ -184,7 +195,17 @@ def test(
     bw_aux_input_to_input_weights_data=[],
     bw_aux_input_to_forget_weights_data=[],
     bw_aux_input_to_cell_weights_data=[],
-    bw_aux_input_to_output_weights_data=[]):
+    bw_aux_input_to_output_weights_data=[],
+    fw_input_layer_norm_weights_data=[],
+    fw_forget_layer_norm_weights_data=[],
+    fw_cell_layer_norm_weights_data=[],
+    fw_output_layer_norm_weights_data=[],
+    bw_input_layer_norm_weights_data=[],
+    bw_forget_layer_norm_weights_data=[],
+    bw_cell_layer_norm_weights_data=[],
+    bw_output_layer_norm_weights_data=[],
+    fw_output_data=[],
+    bw_output_data=[],):
 
   activation = Int32Scalar("activation", 4)
   cell_clip = Float32Scalar("cell_clip", 0.0)
@@ -242,7 +263,15 @@ def test(
       bw_aux_input_to_forget_weights,
       bw_aux_input_to_cell_weights,
       bw_aux_input_to_output_weights,
-      activation, cell_clip, proj_clip, merge_outputs, time_major).To(fw_output, bw_output)
+      activation, cell_clip, proj_clip, merge_outputs, time_major,
+      fw_input_layer_norm_weights,
+      fw_forget_layer_norm_weights,
+      fw_cell_layer_norm_weights,
+      fw_output_layer_norm_weights,
+      bw_input_layer_norm_weights,
+      bw_forget_layer_norm_weights,
+      bw_cell_layer_norm_weights,
+      bw_output_layer_norm_weights,).To(fw_output, bw_output)
 
   example = Example(
       {
@@ -294,6 +323,14 @@ def test(
           bw_aux_input_to_forget_weights: bw_aux_input_to_forget_weights_data,
           bw_aux_input_to_cell_weights: bw_aux_input_to_cell_weights_data,
           bw_aux_input_to_output_weights: bw_aux_input_to_output_weights_data,
+          fw_input_layer_norm_weights: fw_input_layer_norm_weights_data,
+          fw_forget_layer_norm_weights: fw_forget_layer_norm_weights_data,
+          fw_cell_layer_norm_weights: fw_cell_layer_norm_weights_data,
+          fw_output_layer_norm_weights: fw_output_layer_norm_weights_data,
+          bw_input_layer_norm_weights: bw_input_layer_norm_weights_data,
+          bw_forget_layer_norm_weights: bw_forget_layer_norm_weights_data,
+          bw_cell_layer_norm_weights: bw_cell_layer_norm_weights_data,
+          bw_output_layer_norm_weights: bw_output_layer_norm_weights_data,
           fw_output: fw_output_data,
           bw_output: bw_output_data,
       },
