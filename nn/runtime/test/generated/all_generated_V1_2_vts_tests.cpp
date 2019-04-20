@@ -10297,6 +10297,1030 @@ TEST_F(ValidationTest, conv2d_dilation_dynamic_output_shape_nchw_weight_as_input
 
 
 #endif
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_3,
+                           conv2d_dilation::is_ignored_nhwc_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_relaxed_3,
+                           conv2d_dilation::is_ignored_nhwc_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_relaxed());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_quant8_3,
+                           conv2d_dilation::is_ignored_nhwc_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_quant8());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_quant8) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_float16_3,
+                           conv2d_dilation::is_ignored_nhwc_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_float16());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_float16) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_3,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_3,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_3,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_3,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_float16) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_3,
+                           conv2d_dilation::is_ignored_nchw_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw) {
+  const Model model = conv2d_dilation::createTestModel_nchw_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_relaxed_3,
+                           conv2d_dilation::is_ignored_nchw_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_relaxed());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_nchw_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_quant8_3,
+                           conv2d_dilation::is_ignored_nchw_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_quant8());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_quant8) {
+  const Model model = conv2d_dilation::createTestModel_nchw_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_float16_3,
+                           conv2d_dilation::is_ignored_nchw_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_float16());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_float16) {
+  const Model model = conv2d_dilation::createTestModel_nchw_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_3,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_3,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_3,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_quant8) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_float16_3,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_float16) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_relaxed_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_quant8_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_3,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_float16_3,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_4,
+                           conv2d_dilation::is_ignored_nhwc_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_relaxed_4,
+                           conv2d_dilation::is_ignored_nhwc_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_relaxed_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_quant8_4,
+                           conv2d_dilation::is_ignored_nhwc_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_quant8_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_float16_4,
+                           conv2d_dilation::is_ignored_nhwc_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_4,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_4,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_4,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_4,
+                           conv2d_dilation::is_ignored_nhwc_weight_as_input_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nhwc_weight_as_input_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_4,
+                           conv2d_dilation::is_ignored_nchw_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_relaxed_4,
+                           conv2d_dilation::is_ignored_nchw_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_relaxed_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_quant8_4,
+                           conv2d_dilation::is_ignored_nchw_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_quant8_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_float16_4,
+                           conv2d_dilation::is_ignored_nchw_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_4,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_4,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_4,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, conv2d_dilation_valid_padding_nchw_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_nchw_weight_as_input_float16_4,
+                           conv2d_dilation::is_ignored_nchw_weight_as_input_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16_2());
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_nchw_weight_as_input_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_nchw_weight_as_input_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_relaxed_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_quant8_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16_2) {
+  generated_tests::Execute(device,
+                           conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_4,
+                           conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_float16_4,
+                           conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16_2(), true);
+}
+
+TEST_F(ValidationTest, conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16_2) {
+  const Model model = conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_4();
+  const std::vector<Request> requests = createRequests(conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
 // Generated from: conv2d_per_channel.mod.py.
 namespace conv2d_per_channel {
 // Generated conv2d_per_channel test
@@ -16083,6 +17107,1158 @@ TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_dynamic_output_shape_nc
 TEST_F(ValidationTest, depthwise_conv2d_dilation_dynamic_output_shape_nchw_weight_as_input_2) {
   const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_2();
   const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_dynamic_output_shape_nchw_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_3,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_relaxed_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_float16_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_quant8_2,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_2();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_4,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_2());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_4,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_2());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nhwc_weight_as_input_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nhwc_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_4,
+                           depthwise_conv2d_dilation::is_ignored_nchw_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_2());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_4,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_2());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_nchw_weight_as_input_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_nchw_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_4,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_2(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_4,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nhwc_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_4,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_2(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_2) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_4,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_4,
+                           depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_2(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_valid_padding_dynamic_output_shape_nchw_weight_as_input_2) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_4();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_valid_padding_dynamic_output_shape_nchw_weight_as_input_2());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_5,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_5,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_nhwc_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nhwc_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nhwc_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_5,
+                           depthwise_conv2d_dilation::is_ignored_nchw_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_5,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_relaxed());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_quant8());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_nchw_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_float16());
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_nchw_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_nchw_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_nchw_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_5,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_5,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nhwc_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nhwc_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nhwc_weight_as_input_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_5,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_5,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_5,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_5();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_relaxed_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_relaxed(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_relaxed) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_relaxed_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_relaxed());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_quant8_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_quant8(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_quant8) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_quant8_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_float16) {
+  generated_tests::Execute(device,
+                           depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::is_ignored_dynamic_output_shape_nchw_weight_as_input_float16_3,
+                           depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_float16(), true);
+}
+
+TEST_F(ValidationTest, depthwise_conv2d_dilation_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_float16) {
+  const Model model = depthwise_conv2d_dilation::createTestModel_dynamic_output_shape_nchw_weight_as_input_float16_3();
+  const std::vector<Request> requests = createRequests(depthwise_conv2d_dilation::get_examples_same_padding_stride_2_dynamic_output_shape_nchw_weight_as_input_float16());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -50969,6 +53145,110 @@ TEST_F(ValidationTest, not_equal_quantized_different_zero_point_dynamic_output_s
 
 
 #endif
+// Generated from: pad_all_dims.mod.py.
+namespace pad_all_dims {
+// Generated pad_all_dims test
+#include "examples/pad_all_dims.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_all_dims.model.cpp"
+} // namespace pad_all_dims
+
+TEST_F(NeuralnetworksHidlTest, pad_all_dims) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel,
+                           pad_all_dims::is_ignored,
+                           pad_all_dims::get_examples());
+}
+
+TEST_F(ValidationTest, pad_all_dims) {
+  const Model model = pad_all_dims::createTestModel();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, pad_all_dims_float16) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel_float16,
+                           pad_all_dims::is_ignored_float16,
+                           pad_all_dims::get_examples_float16());
+}
+
+TEST_F(ValidationTest, pad_all_dims_float16) {
+  const Model model = pad_all_dims::createTestModel_float16();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, pad_all_dims_quant8) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel_quant8,
+                           pad_all_dims::is_ignored_quant8,
+                           pad_all_dims::get_examples_quant8());
+}
+
+TEST_F(ValidationTest, pad_all_dims_quant8) {
+  const Model model = pad_all_dims::createTestModel_quant8();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_all_dims_dynamic_output_shape) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel_dynamic_output_shape,
+                           pad_all_dims::is_ignored_dynamic_output_shape,
+                           pad_all_dims::get_examples_dynamic_output_shape(), true);
+}
+
+TEST_F(ValidationTest, pad_all_dims_dynamic_output_shape) {
+  const Model model = pad_all_dims::createTestModel_dynamic_output_shape();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples_dynamic_output_shape());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_all_dims_dynamic_output_shape_float16) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel_dynamic_output_shape_float16,
+                           pad_all_dims::is_ignored_dynamic_output_shape_float16,
+                           pad_all_dims::get_examples_dynamic_output_shape_float16(), true);
+}
+
+TEST_F(ValidationTest, pad_all_dims_dynamic_output_shape_float16) {
+  const Model model = pad_all_dims::createTestModel_dynamic_output_shape_float16();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples_dynamic_output_shape_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_all_dims_dynamic_output_shape_quant8) {
+  generated_tests::Execute(device,
+                           pad_all_dims::createTestModel_dynamic_output_shape_quant8,
+                           pad_all_dims::is_ignored_dynamic_output_shape_quant8,
+                           pad_all_dims::get_examples_dynamic_output_shape_quant8(), true);
+}
+
+TEST_F(ValidationTest, pad_all_dims_dynamic_output_shape_quant8) {
+  const Model model = pad_all_dims::createTestModel_dynamic_output_shape_quant8();
+  const std::vector<Request> requests = createRequests(pad_all_dims::get_examples_dynamic_output_shape_quant8());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
 // Generated from: pad_float16.mod.py.
 namespace pad_float16 {
 // Generated pad_float16 test
@@ -51195,6 +53475,118 @@ TEST_F(DynamicOutputShapeTest, pad_v2_1_quant8_dynamic_output_shape) {
 TEST_F(ValidationTest, pad_v2_1_quant8_dynamic_output_shape) {
   const Model model = pad_v2_1_quant8::createTestModel_dynamic_output_shape();
   const std::vector<Request> requests = createRequests(pad_v2_1_quant8::get_examples_dynamic_output_shape());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+// Generated from: pad_v2_all_dims.mod.py.
+namespace pad_v2_all_dims {
+// Generated pad_v2_all_dims test
+#include "examples/pad_v2_all_dims.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_v2_all_dims.model.cpp"
+} // namespace pad_v2_all_dims
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_all_dims) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims::createTestModel,
+                           pad_v2_all_dims::is_ignored,
+                           pad_v2_all_dims::get_examples());
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims) {
+  const Model model = pad_v2_all_dims::createTestModel();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_all_dims_float16) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims::createTestModel_float16,
+                           pad_v2_all_dims::is_ignored_float16,
+                           pad_v2_all_dims::get_examples_float16());
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims_float16) {
+  const Model model = pad_v2_all_dims::createTestModel_float16();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims::get_examples_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_v2_all_dims_dynamic_output_shape) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims::createTestModel_dynamic_output_shape,
+                           pad_v2_all_dims::is_ignored_dynamic_output_shape,
+                           pad_v2_all_dims::get_examples_dynamic_output_shape(), true);
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims_dynamic_output_shape) {
+  const Model model = pad_v2_all_dims::createTestModel_dynamic_output_shape();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims::get_examples_dynamic_output_shape());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_v2_all_dims_dynamic_output_shape_float16) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims::createTestModel_dynamic_output_shape_float16,
+                           pad_v2_all_dims::is_ignored_dynamic_output_shape_float16,
+                           pad_v2_all_dims::get_examples_dynamic_output_shape_float16(), true);
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims_dynamic_output_shape_float16) {
+  const Model model = pad_v2_all_dims::createTestModel_dynamic_output_shape_float16();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims::get_examples_dynamic_output_shape_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+// Generated from: pad_v2_all_dims_quant8.mod.py.
+namespace pad_v2_all_dims_quant8 {
+// Generated pad_v2_all_dims_quant8 test
+#include "examples/pad_v2_all_dims_quant8.example.cpp"
+// Generated model constructor
+#include "vts_models/pad_v2_all_dims_quant8.model.cpp"
+} // namespace pad_v2_all_dims_quant8
+
+TEST_F(NeuralnetworksHidlTest, pad_v2_all_dims_quant8) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims_quant8::createTestModel,
+                           pad_v2_all_dims_quant8::is_ignored,
+                           pad_v2_all_dims_quant8::get_examples());
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims_quant8) {
+  const Model model = pad_v2_all_dims_quant8::createTestModel();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims_quant8::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, pad_v2_all_dims_quant8_dynamic_output_shape) {
+  generated_tests::Execute(device,
+                           pad_v2_all_dims_quant8::createTestModel_dynamic_output_shape,
+                           pad_v2_all_dims_quant8::is_ignored_dynamic_output_shape,
+                           pad_v2_all_dims_quant8::get_examples_dynamic_output_shape(), true);
+}
+
+TEST_F(ValidationTest, pad_v2_all_dims_quant8_dynamic_output_shape) {
+  const Model model = pad_v2_all_dims_quant8::createTestModel_dynamic_output_shape();
+  const std::vector<Request> requests = createRequests(pad_v2_all_dims_quant8::get_examples_dynamic_output_shape());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -62747,6 +65139,262 @@ TEST_F(DynamicOutputShapeTest, roi_align_zero_sized_dynamic_output_shape_nchw_fl
 TEST_F(ValidationTest, roi_align_zero_sized_dynamic_output_shape_nchw_float16) {
   const Model model = roi_align::createTestModel_zero_sized_dynamic_output_shape_nchw_float16();
   const std::vector<Request> requests = createRequests(roi_align::get_examples_zero_sized_dynamic_output_shape_nchw_float16());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_5,
+                           roi_align::is_ignored_nhwc_5,
+                           roi_align::get_examples_nhwc_5());
+}
+
+TEST_F(ValidationTest, roi_align_nhwc_5) {
+  const Model model = roi_align::createTestModel_nhwc_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nhwc_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_relaxed_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_relaxed_5,
+                           roi_align::is_ignored_nhwc_relaxed_5,
+                           roi_align::get_examples_nhwc_relaxed_5());
+}
+
+TEST_F(ValidationTest, roi_align_nhwc_relaxed_5) {
+  const Model model = roi_align::createTestModel_nhwc_relaxed_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nhwc_relaxed_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_quant8_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_quant8_5,
+                           roi_align::is_ignored_nhwc_quant8_5,
+                           roi_align::get_examples_nhwc_quant8_5());
+}
+
+TEST_F(ValidationTest, roi_align_nhwc_quant8_5) {
+  const Model model = roi_align::createTestModel_nhwc_quant8_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nhwc_quant8_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nhwc_float16_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nhwc_float16_5,
+                           roi_align::is_ignored_nhwc_float16_5,
+                           roi_align::get_examples_nhwc_float16_5());
+}
+
+TEST_F(ValidationTest, roi_align_nhwc_float16_5) {
+  const Model model = roi_align::createTestModel_nhwc_float16_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nhwc_float16_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_5,
+                           roi_align::is_ignored_nchw_5,
+                           roi_align::get_examples_nchw_5());
+}
+
+TEST_F(ValidationTest, roi_align_nchw_5) {
+  const Model model = roi_align::createTestModel_nchw_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nchw_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_relaxed_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_relaxed_5,
+                           roi_align::is_ignored_nchw_relaxed_5,
+                           roi_align::get_examples_nchw_relaxed_5());
+}
+
+TEST_F(ValidationTest, roi_align_nchw_relaxed_5) {
+  const Model model = roi_align::createTestModel_nchw_relaxed_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nchw_relaxed_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_quant8_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_quant8_5,
+                           roi_align::is_ignored_nchw_quant8_5,
+                           roi_align::get_examples_nchw_quant8_5());
+}
+
+TEST_F(ValidationTest, roi_align_nchw_quant8_5) {
+  const Model model = roi_align::createTestModel_nchw_quant8_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nchw_quant8_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+TEST_F(NeuralnetworksHidlTest, roi_align_nchw_float16_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_nchw_float16_5,
+                           roi_align::is_ignored_nchw_float16_5,
+                           roi_align::get_examples_nchw_float16_5());
+}
+
+TEST_F(ValidationTest, roi_align_nchw_float16_5) {
+  const Model model = roi_align::createTestModel_nchw_float16_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_nchw_float16_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nhwc_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nhwc_5,
+                           roi_align::is_ignored_dynamic_output_shape_nhwc_5,
+                           roi_align::get_examples_dynamic_output_shape_nhwc_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nhwc_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nhwc_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nhwc_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nhwc_relaxed_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nhwc_relaxed_5,
+                           roi_align::is_ignored_dynamic_output_shape_nhwc_relaxed_5,
+                           roi_align::get_examples_dynamic_output_shape_nhwc_relaxed_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nhwc_relaxed_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nhwc_relaxed_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nhwc_relaxed_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nhwc_quant8_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nhwc_quant8_5,
+                           roi_align::is_ignored_dynamic_output_shape_nhwc_quant8_5,
+                           roi_align::get_examples_dynamic_output_shape_nhwc_quant8_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nhwc_quant8_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nhwc_quant8_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nhwc_quant8_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nhwc_float16_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nhwc_float16_5,
+                           roi_align::is_ignored_dynamic_output_shape_nhwc_float16_5,
+                           roi_align::get_examples_dynamic_output_shape_nhwc_float16_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nhwc_float16_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nhwc_float16_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nhwc_float16_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nchw_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nchw_5,
+                           roi_align::is_ignored_dynamic_output_shape_nchw_5,
+                           roi_align::get_examples_dynamic_output_shape_nchw_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nchw_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nchw_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nchw_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nchw_relaxed_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nchw_relaxed_5,
+                           roi_align::is_ignored_dynamic_output_shape_nchw_relaxed_5,
+                           roi_align::get_examples_dynamic_output_shape_nchw_relaxed_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nchw_relaxed_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nchw_relaxed_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nchw_relaxed_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nchw_quant8_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nchw_quant8_5,
+                           roi_align::is_ignored_dynamic_output_shape_nchw_quant8_5,
+                           roi_align::get_examples_dynamic_output_shape_nchw_quant8_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nchw_quant8_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nchw_quant8_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nchw_quant8_5());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, roi_align_dynamic_output_shape_nchw_float16_5) {
+  generated_tests::Execute(device,
+                           roi_align::createTestModel_dynamic_output_shape_nchw_float16_5,
+                           roi_align::is_ignored_dynamic_output_shape_nchw_float16_5,
+                           roi_align::get_examples_dynamic_output_shape_nchw_float16_5(), true);
+}
+
+TEST_F(ValidationTest, roi_align_dynamic_output_shape_nchw_float16_5) {
+  const Model model = roi_align::createTestModel_dynamic_output_shape_nchw_float16_5();
+  const std::vector<Request> requests = createRequests(roi_align::get_examples_dynamic_output_shape_nchw_float16_5());
   validateModel(model);
   validateRequests(model, requests);
 }
@@ -76947,6 +79595,46 @@ TEST_F(DynamicOutputShapeTest, sub_v1_2_broadcast_quant8_dynamic_output_shape) {
 TEST_F(ValidationTest, sub_v1_2_broadcast_quant8_dynamic_output_shape) {
   const Model model = sub_v1_2_broadcast::createTestModel_quant8_dynamic_output_shape();
   const std::vector<Request> requests = createRequests(sub_v1_2_broadcast::get_examples_quant8_dynamic_output_shape());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#endif
+// Generated from: svdf_bias_present_float16.mod.py.
+namespace svdf_bias_present_float16 {
+// Generated svdf_bias_present_float16 test
+#include "examples/svdf_bias_present_float16.example.cpp"
+// Generated model constructor
+#include "vts_models/svdf_bias_present_float16.model.cpp"
+} // namespace svdf_bias_present_float16
+
+TEST_F(NeuralnetworksHidlTest, svdf_bias_present_float16) {
+  generated_tests::Execute(device,
+                           svdf_bias_present_float16::createTestModel,
+                           svdf_bias_present_float16::is_ignored,
+                           svdf_bias_present_float16::get_examples());
+}
+
+TEST_F(ValidationTest, svdf_bias_present_float16) {
+  const Model model = svdf_bias_present_float16::createTestModel();
+  const std::vector<Request> requests = createRequests(svdf_bias_present_float16::get_examples());
+  validateModel(model);
+  validateRequests(model, requests);
+}
+
+
+#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE
+TEST_F(DynamicOutputShapeTest, svdf_bias_present_float16_dynamic_output_shape) {
+  generated_tests::Execute(device,
+                           svdf_bias_present_float16::createTestModel_dynamic_output_shape,
+                           svdf_bias_present_float16::is_ignored_dynamic_output_shape,
+                           svdf_bias_present_float16::get_examples_dynamic_output_shape(), true);
+}
+
+TEST_F(ValidationTest, svdf_bias_present_float16_dynamic_output_shape) {
+  const Model model = svdf_bias_present_float16::createTestModel_dynamic_output_shape();
+  const std::vector<Request> requests = createRequests(svdf_bias_present_float16::get_examples_dynamic_output_shape());
   validateModel(model);
   validateRequests(model, requests);
 }
