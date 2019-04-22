@@ -177,7 +177,8 @@ void compare_(
 #undef VECTOR_TYPE
 inline void compare(const MixedTyped& golden, const MixedTyped& test, float fpRange = 1e-5f) {
     size_t totalNumberOfErrors = 0;
-    compare_<0>(golden, test, [&totalNumberOfErrors, fpRange](float g, float t) {
+    compare_<0>(golden, test, [&totalNumberOfErrors, fpRange](float g, float t) mutable {
+	    fpRange = (g<0.5&&g>-0.5) ? 0.002 : fabs(g*0.004);
         if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
             EXPECT_NEAR(g, t, fpRange);
         }
