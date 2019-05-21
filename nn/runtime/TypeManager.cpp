@@ -20,10 +20,26 @@
 
 #include "Utils.h"
 
+#include <android-base/file.h>
+#include <android-base/properties.h>
+#include <android/content/pm/IPackageManagerNative.h>
+#include <binder/IServiceManager.h>
+#include <procpartition/procpartition.h>
 #include <algorithm>
+#include <string_view>
 
 namespace android {
 namespace nn {
+
+// Replacement function for std::string_view::starts_with()
+// which shall be available in C++20.
+#if __cplusplus >= 202000L
+#error "When upgrading to C++20, remove this error and file a bug to remove this workaround."
+#endif
+inline bool StartsWith(std::string_view sv, std::string_view prefix) {
+    return sv.substr(0u, prefix.size()) == prefix;
+}
+
 namespace {
 
 const uint8_t kLowBitsType = static_cast<uint8_t>(Model::ExtensionTypeEncoding::LOW_BITS_TYPE);
@@ -39,11 +55,148 @@ bool equal(const Extension& a, const Extension& b) {
     return true;
 }
 
+// Property for disabling NNAPI vendor extensions on product image (used on GSI /product image,
+// which can't use NNAPI vendor extensions).
+const char kVExtProductDeny[] = "ro.nnapi.extensions.deny_on_product";
+bool isNNAPIVendorExtensionsUseAllowedInProductImage() {
+    const std::string vExtProductDeny = android::base::GetProperty(kVExtProductDeny, "");
+    return vExtProductDeny.empty();
+}
+
+// The file containing list of Android apps and binaries whitelisted for vendor extensions
+// usage. Each line of the file contains new entry. If entry is prefixed by
+// '/' slash, then it's a native binary path (e.g. '/data/foo'). If not, it's a name
+// of Android app package (e.g. 'com.foo.bar').
+const char kAppWhitelistPath[] = "/vendor/etc/nnapi_extensions_app_whitelist";
+const char kCtsWhitelist[] = "/data/local/tmp/CTSNNAPITestCases";
+std::vector<std::string> getVendorExtensionWhitelistedApps() {
+    std::string data;
+    // Whitelist CTS by default.
+    std::vector<std::string> whitelist = {kCtsWhitelist};
+
+    if (!android::base::ReadFileToString(kAppWhitelistPath, &data)) {
+        // Return default whitelist (no app can use extensions).
+        LOG(INFO) << "Failed to read " << kAppWhitelistPath
+                  << " ; No app whitelisted for vendor extensions use.";
+        return whitelist;
+    }
+
+    std::istringstream streamData(data);
+    std::string line;
+    while (std::getline(streamData, line)) {
+        // Do some basic sanity check on entry, it's either
+        // fs path or package name.
+        if (StartsWith(line, "/") || line.find('.') != std::string::npos) {
+            whitelist.push_back(line);
+        } else {
+            LOG(ERROR) << kAppWhitelistPath << " - Invalid entry: " << line;
+        }
+    }
+    return whitelist;
+}
+
+// Query PackageManagerNative service about Android app properties.
+// On success, it will populate appPackageInfo->app* fields.
+bool fetchAppPackageLocationInfo(uid_t uid, TypeManager::AppPackageInfo* appPackageInfo) {
+    sp<::android::IServiceManager> sm(::android::defaultServiceManager());
+    sp<::android::IBinder> binder(sm->getService(String16("package_native")));
+    if (binder == nullptr) {
+        LOG(ERROR) << "getService package_native failed";
+        return false;
+    }
+
+    sp<content::pm::IPackageManagerNative> packageMgr =
+            interface_cast<content::pm::IPackageManagerNative>(binder);
+    std::vector<int> uids{static_cast<int>(uid)};
+    std::vector<std::string> names;
+    binder::Status status = packageMgr->getNamesForUids(uids, &names);
+    if (!status.isOk()) {
+        LOG(ERROR) << "package_native::getNamesForUids failed: "
+                   << status.exceptionMessage().c_str();
+        return false;
+    }
+    const std::string& packageName = names[0];
+
+    appPackageInfo->appPackageName = packageName;
+    int flags = 0;
+    status = packageMgr->getLocationFlags(packageName, &flags);
+    if (!status.isOk()) {
+        LOG(ERROR) << "package_native::getLocationFlags failed: "
+                   << status.exceptionMessage().c_str();
+        return false;
+    }
+    // isSystemApp()
+    appPackageInfo->appIsSystemApp =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_SYSTEM) != 0);
+    // isVendor()
+    appPackageInfo->appIsOnVendorImage =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_VENDOR) != 0);
+    // isProduct()
+    appPackageInfo->appIsOnProductImage =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_PRODUCT) != 0);
+    return true;
+}
+
+// Check if this process is allowed to use NNAPI Vendor extensions.
+bool isNNAPIVendorExtensionsUseAllowed(const std::vector<std::string>& whitelist) {
+    TypeManager::AppPackageInfo appPackageInfo = {
+            .binaryPath = ::android::procpartition::getExe(getpid()),
+            .appPackageName = "",
+            .appIsSystemApp = false,
+            .appIsOnVendorImage = false,
+            .appIsOnProductImage = false};
+
+    if (appPackageInfo.binaryPath == "/system/bin/app_process64" ||
+        appPackageInfo.binaryPath == "/system/bin/app_process32") {
+        if (!fetchAppPackageLocationInfo(getuid(), &appPackageInfo)) {
+            LOG(ERROR) << "Failed to get app information from package_manager_native";
+            return false;
+        }
+    }
+    return TypeManager::isExtensionsUseAllowed(
+            appPackageInfo, isNNAPIVendorExtensionsUseAllowedInProductImage(), whitelist);
+}
+
 }  // namespace
 
 TypeManager::TypeManager() {
     VLOG(MANAGER) << "TypeManager::TypeManager";
+    mExtensionsAllowed = isNNAPIVendorExtensionsUseAllowed(getVendorExtensionWhitelistedApps());
+    VLOG(MANAGER) << "NNAPI Vendor extensions enabled: " << mExtensionsAllowed;
     findAvailableExtensions();
+}
+
+bool TypeManager::isExtensionsUseAllowed(const AppPackageInfo& appPackageInfo,
+                                         bool useOnProductImageEnabled,
+                                         const std::vector<std::string>& whitelist) {
+    // Only selected partitions and user-installed apps (/data)
+    // are allowed to use extensions.
+    if (StartsWith(appPackageInfo.binaryPath, "/vendor/") ||
+        StartsWith(appPackageInfo.binaryPath, "/odm/") ||
+        StartsWith(appPackageInfo.binaryPath, "/data/") ||
+        (StartsWith(appPackageInfo.binaryPath, "/product/") && useOnProductImageEnabled)) {
+#ifdef NN_DEBUGGABLE
+        // Only on userdebug and eng builds.
+        // When running tests with mma and adb push.
+        if (StartsWith(appPackageInfo.binaryPath, "/data/nativetest") ||
+            // When running tests with Atest.
+            StartsWith(appPackageInfo.binaryPath, "/data/local/tmp/NeuralNetworksTest_")) {
+            return true;
+        }
+#endif  // NN_DEBUGGABLE
+
+        return std::find(whitelist.begin(), whitelist.end(), appPackageInfo.binaryPath) !=
+               whitelist.end();
+    } else if (appPackageInfo.binaryPath == "/system/bin/app_process64" ||
+               appPackageInfo.binaryPath == "/system/bin/app_process32") {
+        // App is not system app OR vendor app OR (product app AND product enabled)
+        // AND app is on whitelist.
+        return (!appPackageInfo.appIsSystemApp || appPackageInfo.appIsOnVendorImage ||
+                (appPackageInfo.appIsOnProductImage && useOnProductImageEnabled)) &&
+               std::find(whitelist.begin(), whitelist.end(), appPackageInfo.appPackageName) !=
+                       whitelist.end();
+    }
+    return false;
 }
 
 void TypeManager::findAvailableExtensions() {

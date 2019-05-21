@@ -76,6 +76,9 @@ class TypeManager {
     // Aborts if the type is an unknown extension type.
     uint32_t getSizeOfData(OperandType type, const std::vector<uint32_t>& dimensions) const;
 
+    // Returns true if extensions usage is allowed in current process.
+    bool areExtensionsAllowed() const { return mExtensionsAllowed; }
+
     // This method is intended for use only by internal unit tests.
     //
     // Registers an extension.
@@ -95,6 +98,30 @@ class TypeManager {
     // state (including assigned prefixes) and re-discovers extensions from
     // available devices.
     void forTest_reset() { *this = TypeManager(); }
+
+    // Collection of app-related arguments for the isExtensionsUseAllowed method.
+    struct AppPackageInfo {
+        // Path of the binary (/proc/$PID/exe)
+        std::string binaryPath;
+        // Package name of the Android app (empty string if not Android app).
+        std::string appPackageName;
+        // Is the app a system app? (false if not an Android app)
+        bool appIsSystemApp;
+        // Is the app preinstalled on vendor image? (false if not an Android app)
+        bool appIsOnVendorImage;
+        // Is the app preinstalled on product image? (false if not an Android app)
+        bool appIsOnProductImage;
+    };
+
+    // Check if NNAPI Vendor extensions are usable in the process with the given app
+    // and supplemental infomation.
+    //
+    // useOnProductImageEnabled - whether apps/binaries preinstalled on /product partition
+    //  can be whitelisted.
+    // whitelist - list of apps/binaries which are allowed to use extensions.
+    static bool isExtensionsUseAllowed(const AppPackageInfo& appPackageInfo,
+                                       bool useOnProductImageEnabled,
+                                       const std::vector<std::string>& whitelist);
 
    private:
     TypeManager();
@@ -125,6 +152,9 @@ class TypeManager {
     // Entries of mPrefixToExtension point into mExtensionNameToExtension.
     // prefix=0 corresponds to no extension and should never be looked up.
     std::vector<Extension*> mPrefixToExtension = {nullptr};
+
+    // True if Extensions can be used in current process.
+    bool mExtensionsAllowed = false;
 };
 
 }  // namespace nn

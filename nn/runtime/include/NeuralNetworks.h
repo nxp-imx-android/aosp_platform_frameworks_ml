@@ -1030,12 +1030,21 @@ typedef enum {
      *      the input.
      * * 1: An {@link ANEURALNETWORKS_INT32} scalar, specifying the radius of
      *      the normalization window.
-     * * 2: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the bias, must
-     *      not be zero.
-     * * 3: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the scale
-     *      factor, alpha.
-     * * 4: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the exponent,
-     *      beta.
+     * * 2: A scalar, specifying the bias, must not be zero.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias
+     *      value must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the bias
+     *      value must be of {@link ANEURALNETWORKS_FLOAT32}.
+     * * 3: A scalar, specifying the scale factor, alpha.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the
+     *      alpha value must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the
+     *      alpha value must be of {@link ANEURALNETWORKS_FLOAT32}.
+     * * 4: A scalar, specifying the exponent, beta.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the beta
+     *      value must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the beta
+     *      value must be of {@link ANEURALNETWORKS_FLOAT32}.
      * * 5: An optional {@link ANEURALNETWORKS_INT32} scalar, default to -1,
      *      specifying the dimension normalization would be performed on.
      *      Negative index is used to specify axis from the end (e.g. -1 for
@@ -1193,28 +1202,32 @@ typedef enum {
      * https://arxiv.org/pdf/1607.06450.pdf
      *
      * The operation has the following independently optional inputs:
+     * * The cell-to-input weights (\f$W_{ci}\f$), cell-to-forget weights
+     *   (\f$W_{cf}\f$) and cell-to-output weights (\f$W_{co}\f$) either all
+     *   have values or neither of them have values (i.e., all set to null). If
+     *   they have values, the peephole optimization is used.
      * * The input-to-input weights (\f$W_{xi}\f$), recurrent-to-input weights
-     *   (\f$W_{hi}\f$), cell-to-input (\f$W_{ci}\f$) weights, and input gate
-     *   bias (\f$b_i\f$) either all have values, or none of them have values
-     *   (i.e., all set to null). If they have no values, coupling of input and
-     *   forget gates (CIFG) is used, in which case the input gate (\f$i_t\f$)
-     *   is calculated using the following equation instead.
+     *   (\f$W_{hi}\f$) and input gate bias (\f$b_i\f$) either all have values,
+     *   or none of them have values. If they have no values, coupling of input
+     *   and forget gates (CIFG) is used, in which case the input gate
+     *   (\f$i_t\f$) is calculated using the following equation instead.
      *   \f{eqnarray*}{
      *   i_t = 1 - f_t
      *   \f}
-     * * The cell-to-forget weights (\f$W_{cf}\f$) and cell-to-output weights
-     *   (\f$W_{co}\f$) either both have values or neither of them have values.
-     *   If they have values, the peephole optimization is used. Additionally,
-     *   if CIFG is not used, cell-to-input weights (\f$W_{ci}\f$) is also
-     *   required to have values for peephole optimization.
+     *   In case peephole optimization is used and CIFG is not used
+     *   cell-to-input (\f$W_{ci}\f$) weights must be present. Otherwise, the
+     *   cell-to-input weights must have no value.
      * * The projection weights (\f$W_{proj}\f$) is required only for the
      *   recurrent projection layer, and should otherwise have no value.
      * * The projection bias (\f$b_{proj}\f$) may (but not required to) have a
      *   value if the recurrent projection layer exists, and should otherwise
      *   have no value.
      * * (API level >= 29) The four layer normalization weights either all have
-     *   values or none of them have values. Layer normalization is used when
-     *   values are present.
+     *   values or none of them have values. Additionally, if CIFG is used,
+     *   input layer normalization weights tensor is omitted and the other layer
+     *   normalization weights either all have values or none of them have
+     *   values. Layer normalization is used when the values of all the layer
+     *   normalization weights are present.
      *
      * References:
      *
@@ -1570,6 +1583,11 @@ typedef enum {
      *      shape of the output tensor. The number of elements implied by shape
      *      must be the same as the number of elements in the input tensor.
      *
+     *      If one component of shape is the special value -1, the size of that
+     *      dimension is computed so that the total size remains constant. In
+     *      particular, a shape of [-1] flattens into 1-D. At most one component
+     *      of shape can be -1.
+     *
      * Outputs:
      * * 0: The output tensor, of shape specified by the input shape.
      *
@@ -1601,9 +1619,9 @@ typedef enum {
      *      the input. Since API level 29, zero batches is supported for this
      *      tensor.
      * * 1: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
-     *      height of the output tensor.
-     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
      *      width of the output tensor.
+     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      height of the output tensor.
      * * 3: An optional {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
      *      Available since API level 29.
@@ -1611,15 +1629,15 @@ typedef enum {
      * Inputs (resizing by scale, since API level 29):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying
      *      the input. Zero batches is supported for this tensor.
-     * * 1: A scalar, specifying height_scale, the scaling factor of the height
+     * * 1: A scalar, specifying width_scale, the scaling factor of the width
      *      dimension from the input tensor to the output tensor. The output
-     *      height is calculated as new_height = floor(height * height_scale).
+     *      width is calculated as new_width = floor(width * width_scale).
      *      The scalar must be of {@link ANEURALNETWORKS_FLOAT16} if input0 is
      *      of {@link ANEURALNETWORKS_TENSOR_FLOAT16} and of
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
-     * * 2: A scalar, specifying width_scale, the scaling factor of the width
+     * * 2: A scalar, specifying height_scale, the scaling factor of the height
      *      dimension from the input tensor to the output tensor. The output
-     *      width is calculated as new_width = floor(width * width_scale).
+     *      height is calculated as new_height = floor(height * height_scale).
      *      The scalar must be of {@link ANEURALNETWORKS_FLOAT16} if input0 is
      *      of {@link ANEURALNETWORKS_TENSOR_FLOAT16} and of
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
@@ -1974,9 +1992,6 @@ typedef enum {
      * in axis. If keep_dims is true, the reduced dimensions are retained with
      * length 1.
      *
-     * If dimensions to reduce have no entries, all dimensions are reduced, and
-     * a tensor with a single element is returned.
-     *
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
@@ -1987,8 +2002,14 @@ typedef enum {
      * Inputs:
      * * 0: A tensor, specifying the input.
      * * 1: A 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32}. The dimensions
-     *      to reduce. If None (the default), reduces all dimensions. Must be in
-     *      the range [-rank(input_tensor), rank(input_tensor)).
+     *      to reduce. Must be in the range
+     *      [-rank(input_tensor), rank(input_tensor)).
+     *
+     *      NOTE: When the operation was introduced, the documentation
+     *      incorrectly stated that if dimensions were empty, the operation
+     *      would reduce across all dimensions. This behavior was never
+     *      implemented.
+     *
      * * 2: An {@link ANEURALNETWORKS_INT32} scalar, keep_dims. If positive,
      *      retains reduced dimensions with length 1.
      *
@@ -2007,7 +2028,8 @@ typedef enum {
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} (full support since API
+     *   level 29, see the output section)
      *
      * Supported tensor rank: up to 4
      *
@@ -2030,6 +2052,10 @@ typedef enum {
      *          output0.dimension[i] =
      *              padding[i, 0] + input0.dimension[i] + padding[i, 1]
      *
+     *      NOTE: Before API level 29, the pad value for
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} is undefined.
+     *      Since API level 29, the pad value is always the logical zero.
+     *
      * Available since API level 28.
      */
     ANEURALNETWORKS_PAD = 32,
@@ -2049,7 +2075,8 @@ typedef enum {
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} (full support since API
+     *   level 29, see the output section)
      *
      * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
      * With the default data layout NHWC, the data is stored in the order of:
@@ -2075,6 +2102,10 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *
+     *      NOTE: Before API level 29, the pad value for
+     *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} is undefined.
+     *      Since API level 29, the pad value is always the logical zero.
      *
      * Available since API level 28.
      */
@@ -3517,8 +3548,12 @@ typedef enum {
      *
      * Inputs:
      * * 0: A tensor specifying the input logits.
-     * * 1: An {@link ANEURALNETWORKS_FLOAT32} scalar, specifying the positive
-     *      scaling factor for the exponent, beta.
+     * * 1: A scalar, specifying the positive scaling factor for the exponent,
+     *      beta.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the beta
+     *      value must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32}, the beta
+     *      value must be of {@link ANEURALNETWORKS_FLOAT32}.
      * * 2: An {@link ANEURALNETWORKS_INT32} scalar specifying the axis to
      *      reduce across. Negative index is used to specify axis from the
      *      end (e.g. -1 for the last axis). Must be in the range [-n, n).
@@ -3540,13 +3575,15 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      *
+     * Supported tensor rank: from 1.
+     *
      * Inputs:
      * * 0: A tensor.
      * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
      *      with input0.
      *
      * Outputs:
-     * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+     * * 0: A tensor of the same {@link OperandCode} as input0.
      *
      * Available since API level 29.
      */
@@ -3561,13 +3598,15 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      *
+     * Supported tensor rank: from 1.
+     *
      * Inputs:
      * * 0: A tensor.
      * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
      *      with input0.
      *
      * Outputs:
-     * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+     * * 0: A tensor of the same {@link OperandCode} as input0.
      *
      * Available since API level 29.
      */
@@ -4399,7 +4438,8 @@ typedef enum {
      *
      * Inputs (explicit padding):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
-     *      specifying the input.
+     *      specifying the input. Since API level 29, zero batches is supported
+     *      for this tensor.
      * * 1: A 4-D tensor, of shape
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
@@ -4436,7 +4476,8 @@ typedef enum {
      *
      * Inputs (implicit padding):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
-     *      specifying the input.
+     *      specifying the input. Since API level 29, zero batches is supported
+     *      for this tensor.
      * * 1: A 4-D tensor, of shape
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
@@ -4667,24 +4708,24 @@ typedef enum {
      * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying
      *      the input. Zero batches is supported for this tensor.
      * * 1: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
-     *      height of the output tensor.
-     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
      *      width of the output tensor.
+     * * 2: An {@link ANEURALNETWORKS_INT32} scalar, specifying the output
+     *      height of the output tensor.
      * * 3: An {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
      *
      * Inputs (resizing by scale):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying
      *      the input. Zero batches is supported for this tensor.
-     * * 1: A scalar, specifying height_scale, the scaling factor of the height
+     * * 1: A scalar, specifying width_scale, the scaling factor of the width
      *      dimension from the input tensor to the output tensor. The output
-     *      height is calculated as new_height = floor(height * height_scale).
+     *      width is calculated as new_width = floor(width * width_scale).
      *      The scalar must be of {@link ANEURALNETWORKS_FLOAT16} if input0 is
      *      of {@link ANEURALNETWORKS_TENSOR_FLOAT16} and of
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
-     * * 2: A scalar, specifying width_scale, the scaling factor of the width
+     * * 2: A scalar, specifying height_scale, the scaling factor of the height
      *      dimension from the input tensor to the output tensor. The output
-     *      width is calculated as new_width = floor(width * width_scale).
+     *      height is calculated as new_height = floor(height * height_scale).
      *      The scalar must be of {@link ANEURALNETWORKS_FLOAT16} if input0 is
      *      of {@link ANEURALNETWORKS_TENSOR_FLOAT16} and of
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
@@ -4886,14 +4927,21 @@ enum { ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN = 32 };
  * runtime and drivers the tensors that define a model. See
  * {@link ANeuralNetworksModel_setOperandValueFromMemory}. An application
  * should typically create one shared memory object that contains every constant tensor
- * needed to define a model. {@link ANeuralNetworksMemory_createFromFd} can be
- * used to create shared memory from a file handle.
+ * needed to define a model. {@link ANeuralNetworksMemory_createFromFd} can be used to
+ * create shared memory from a file handle.
  * {@link ANeuralNetworksMemory_createFromAHardwareBuffer} can be used to
  * create shared memory from an AHardwareBuffer handle.
  *
  * Memory objects can also be used to specify the input and output arguments of
  * an execution. See {@link ANeuralNetworksExecution_setInputFromMemory}
  * and {@link ANeuralNetworksExecution_setOutputFromMemory}.
+ *
+ * When calling {@link ANeuralNetworksModel_setOperandValueFromMemory},
+ * {@link ANeuralNetworksExecution_setInputFromMemory} and
+ * {@link ANeuralNetworksExecution_setOutputFromMemory}, each operand in the shared
+ * memory object must be aligned on a boundary of a byte size that is a multiple
+ * of the element type byte size, e.g., a tensor with
+ * {@link ANEURALNETWORKS_TENSOR_FLOAT32} type must be aligned on 4-byte boundary.
  *
  * Available since API level 27.
  */
@@ -5526,7 +5574,10 @@ int ANeuralNetworksMemory_createFromAHardwareBuffer(const AHardwareBuffer* ahwb,
         __INTRODUCED_IN(29);
 
 /**
- * Specifies whether duration of the {@link ANeuralNetworksExecution} is to be measured.
+
+ * Specifies whether duration of the {@link ANeuralNetworksExecution} is to be
+ * measured. Evaluation of the execution must not have been scheduled.
+ *
  * By default, duration is not measured.
  *
  * The {@link ANeuralNetworksExecution} must have been created with
@@ -6048,7 +6099,8 @@ void ANeuralNetworksExecution_free(ANeuralNetworksExecution* execution) __INTROD
 
 /**
  * Associate a user buffer with an input of the model of the
- * {@link ANeuralNetworksExecution}.
+ * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
+ * been scheduled.
  *
  * <p>The provided buffer must outlive the execution.</p>
  *
@@ -6087,7 +6139,8 @@ int ANeuralNetworksExecution_setInput(ANeuralNetworksExecution* execution, int32
 
 /**
  * Associate part of a memory object with an input of the model of the
- * {@link ANeuralNetworksExecution}.
+ * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
+ * been scheduled.
  *
  * <p>The provided memory must outlive the execution.</p>
  *
@@ -6130,7 +6183,8 @@ int ANeuralNetworksExecution_setInputFromMemory(ANeuralNetworksExecution* execut
 
 /**
  * Associate a user buffer with an output of the model of the
- * {@link ANeuralNetworksExecution}.
+ * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
+ * been scheduled.
  *
  * If the output is optional, you can indicate that it is omitted by
  * passing nullptr for buffer and 0 for length.
@@ -6174,7 +6228,8 @@ int ANeuralNetworksExecution_setOutput(ANeuralNetworksExecution* execution, int3
 
 /**
  * Associate part of a memory object with an output of the model of the
- * {@link ANeuralNetworksExecution}.
+ * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
+ * been scheduled.
  *
  * If the output is optional, you can indicate that it is omitted by
  * using {@link ANeuralNetworksExecution_setOutput} instead, passing nullptr for
