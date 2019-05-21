@@ -35,7 +35,7 @@ class Memory;
 
 class ModelBuilder {
    public:
-    ModelBuilder();
+    ModelBuilder() {}
     // Returns an operand/operation type corresponding to a given extension operand/operation type.
     int getExtensionType(const char* extensionName, uint16_t typeWithinExtension, int32_t* type);
     // Adds an operand to the model.
@@ -61,9 +61,12 @@ class ModelBuilder {
     bool hasOEMOperation() const { return mHasOEMOperation; }
     bool hasExtensionOperation() const { return mHasExtensionOperation; }
 
+    // explicitDeviceList is true if the list of devices was provided explicitly
+    // via the ANeuralNetworksModel_createForDevices API (which has certain
+    // special semantics) and false otherwise.
     int createCompilation(CompilationBuilder** compilation,
                           const std::vector<std::shared_ptr<Device>>& devices,
-                          bool forceNoFallback = false);
+                          bool explicitDeviceList = false);
 
     void setHidlModel(Model* model) const;
 
@@ -78,8 +81,10 @@ class ModelBuilder {
     uint32_t inputCount() const { return static_cast<uint32_t>(mInputIndexes.size()); }
     uint32_t outputCount() const { return static_cast<uint32_t>(mOutputIndexes.size()); }
     uint32_t getInputOperandIndex(uint32_t i) const { return mInputIndexes[i]; }
+    const std::vector<uint32_t>& getInputOperandIndexes() const { return mInputIndexes; }
     const Operand& getInputOperand(uint32_t i) const { return mOperands[getInputOperandIndex(i)]; }
     uint32_t getOutputOperandIndex(uint32_t i) const { return mOutputIndexes[i]; }
+    const std::vector<uint32_t>& getOutputOperandIndexes() const { return mOutputIndexes; }
     const Operand& getOutputOperand(uint32_t i) const {
         return mOperands[getOutputOperandIndex(i)];
     }
@@ -163,8 +168,6 @@ class ModelBuilder {
     // No further modifications are allowed to the model.
     bool mInvalidModel = false;
 
-    // True if Extensions can be used in the model.
-    bool mExtensionsAllowed = false;
 
     // 'true' indicates TENSOR_FLOAT32 may be calculated with range and/or
     // precision as low as that of the IEEE 754 16-bit floating-point format.

@@ -22,7 +22,7 @@
 #include "Tracing.h"
 #include "Utils.h"
 
-#include <android/hidl/manager/1.0/IServiceManager.h>
+#include <android/hidl/manager/1.2/IServiceManager.h>
 #include <build/version.h>
 #include <hidl/HidlTransportSupport.h>
 #include <hidl/ServiceManagement.h>
@@ -31,7 +31,6 @@
 #include <functional>
 
 using ::android::hardware::neuralnetworks::V1_2::implementation::ExecutionCallback;
-using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 using HidlToken = hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
 
 namespace android {
@@ -59,7 +58,7 @@ class DriverDevice : public Device {
     int64_t getFeatureLevel() override { return mInterface->getFeatureLevel(); }
     int32_t getType() const override { return mInterface->getType(); }
     hidl_vec<Extension> getSupportedExtensions() const override;
-    void getSupportedOperations(const Model& hidlModel,
+    void getSupportedOperations(const Model& hidlModel, IModelSlicer* slicer,
                                 hidl_vec<bool>* supportedOperations) override;
     PerformanceInfo getPerformance(OperandType type) const override;
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const override {
@@ -81,12 +80,6 @@ class DriverDevice : public Device {
                               std::shared_ptr<VersionedIPreparedModel>* preparedModel) override;
 
    private:
-    int prepareModelHelper(
-            const std::function<Return<ErrorStatus>(const sp<PreparedModelCallback>& callback)>&
-                    prepare,
-            const std::string& prepareName,
-            std::shared_ptr<VersionedIPreparedModel>* preparedModel);
-
     std::string mName;
     std::string mVersionString;
     const std::shared_ptr<VersionedIDevice> mInterface;
@@ -164,12 +157,12 @@ hidl_vec<Extension> DriverDevice::getSupportedExtensions() const {
     return mSupportedExtensions;
 }
 
-void DriverDevice::getSupportedOperations(const Model& hidlModel,
+void DriverDevice::getSupportedOperations(const Model& hidlModel, IModelSlicer* slicer,
                                           hidl_vec<bool>* outSupportedOperations) {
     // Query the driver for what it can do.
     ErrorStatus status = ErrorStatus::GENERAL_FAILURE;
     hidl_vec<bool> supportedOperations;
-    std::tie(status, supportedOperations) = mInterface->getSupportedOperations(hidlModel);
+    std::tie(status, supportedOperations) = mInterface->getSupportedOperations(hidlModel, slicer);
 
     if (status != ErrorStatus::NONE) {
         LOG(ERROR) << "IDevice::getSupportedOperations returned the error " << toString(status);
@@ -232,37 +225,24 @@ PerformanceInfo DriverDevice::getPerformance(OperandType type) const {
     return lookup(mCapabilities.operandPerformance, type);
 }
 
-// Compilation logic copied from StepExecutor::startComputeOnDevice().
-int DriverDevice::prepareModelHelper(
-        const std::function<Return<ErrorStatus>(const sp<PreparedModelCallback>& callback)>&
-                prepare,
-        const std::string& prepareName, std::shared_ptr<VersionedIPreparedModel>* preparedModel) {
-    *preparedModel = nullptr;
-    sp<PreparedModelCallback> preparedModelCallback = new PreparedModelCallback();
+static int prepareModelCheck(ErrorStatus status,
+                             const std::shared_ptr<VersionedIPreparedModel>& preparedModel,
+                             const char* prepareName, const char* serviceName,
+                             std::shared_ptr<VersionedIPreparedModel>* preparedModelOut) {
+    CHECK(preparedModelOut != nullptr) << "prepareModelCheck -- preparedModelOut must be non-null";
+    *preparedModelOut = nullptr;
 
-    Return<ErrorStatus> prepareLaunchStatus = prepare(preparedModelCallback);
-    if (!prepareLaunchStatus.isOk()) {
-        LOG(ERROR) << prepareName << " compilation failed due to transport error: "
-                   << prepareLaunchStatus.description();
+    if (status != ErrorStatus::NONE) {
+        LOG(ERROR) << prepareName << " on " << serviceName << " failed: "
+                   << "prepareReturnStatus=" << toString(status);
         return ANEURALNETWORKS_OP_FAILED;
     }
-    if (prepareLaunchStatus != ErrorStatus::NONE) {
-        LOG(ERROR) << prepareName << " compilation failed with error: "
-                   << toString(static_cast<ErrorStatus>(prepareLaunchStatus));
+    if (preparedModel == nullptr) {
+        LOG(ERROR) << prepareName << " on " << serviceName << " failed: preparedModel is nullptr";
         return ANEURALNETWORKS_OP_FAILED;
     }
 
-    preparedModelCallback->wait();
-    ErrorStatus prepareReturnStatus = preparedModelCallback->getStatus();
-    if (auto returnedPreparedModel = preparedModelCallback->getPreparedModel()) {
-        *preparedModel = VersionedIPreparedModel::create(returnedPreparedModel);
-    }
-    if (prepareReturnStatus != ErrorStatus::NONE || *preparedModel == nullptr) {
-        LOG(ERROR) << prepareName << " on " << getName() << " failed:"
-                   << " prepareReturnStatus=" << toString(prepareReturnStatus)
-                   << ", preparedModel=" << preparedModel->get();
-        return ANEURALNETWORKS_OP_FAILED;
-    }
+    *preparedModelOut = preparedModel;
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -272,13 +252,11 @@ int DriverDevice::prepareModel(const Model& hidlModel, ExecutionPreference execu
                                std::shared_ptr<VersionedIPreparedModel>* preparedModel) {
     // Note that some work within VersionedIDevice will be subtracted from the IPC layer
     NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_COMPILATION, "prepareModel");
-    return prepareModelHelper(
-            [this, &hidlModel, &executionPreference, &modelCache, &dataCache,
-             &token](const sp<PreparedModelCallback>& callback) {
-                return mInterface->prepareModel(hidlModel, executionPreference, modelCache,
-                                                dataCache, token, callback);
-            },
-            "prepareModel", preparedModel);
+
+    const auto [status, localPreparedModel] =
+            mInterface->prepareModel(hidlModel, executionPreference, modelCache, dataCache, token);
+
+    return prepareModelCheck(status, localPreparedModel, "prepareModel", getName(), preparedModel);
 }
 
 int DriverDevice::prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
@@ -287,11 +265,12 @@ int DriverDevice::prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
                                         std::shared_ptr<VersionedIPreparedModel>* preparedModel) {
     // Note that some work within VersionedIDevice will be subtracted from the IPC layer
     NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_COMPILATION, "prepareModelFromCache");
-    return prepareModelHelper(
-            [this, &modelCache, &dataCache, &token](const sp<PreparedModelCallback>& callback) {
-                return mInterface->prepareModelFromCache(modelCache, dataCache, token, callback);
-            },
-            "prepareModelFromCache", preparedModel);
+
+    const auto [status, localPreparedModel] =
+            mInterface->prepareModelFromCache(modelCache, dataCache, token);
+
+    return prepareModelCheck(status, localPreparedModel, "prepareModelFromCache", getName(),
+                             preparedModel);
 }
 
 // A special abstracted device for the CPU. Only one instance of this class will exist.
@@ -312,7 +291,7 @@ class CpuDevice : public Device {
     int64_t getFeatureLevel() override { return kFeatureLevel; }
     int32_t getType() const override { return ANEURALNETWORKS_DEVICE_CPU; }
     hidl_vec<Extension> getSupportedExtensions() const override { return {/* No extensions. */}; }
-    void getSupportedOperations(const Model& hidlModel,
+    void getSupportedOperations(const Model& hidlModel, IModelSlicer* slicer,
                                 hidl_vec<bool>* supportedOperations) override;
     PerformanceInfo getPerformance(OperandType) const override { return kPerformance; }
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const override {
@@ -349,12 +328,14 @@ class CpuDevice : public Device {
                                                           /*numDataCache=*/0};
 };
 
-void CpuDevice::getSupportedOperations(const Model& hidlModel,
+void CpuDevice::getSupportedOperations(const Model& hidlModel, IModelSlicer*,
                                        hidl_vec<bool>* supportedOperations) {
     const size_t count = hidlModel.operations.size();
     hidl_vec<bool> result(count);
     for (size_t i = 0; i < count; i++) {
         // TODO(b/119870033): Decide whether and how post-P operations would be supported on CPU.
+        //                    We may want to use the slicer for CpuDevice just as we do for
+        //                    DriverDevice.
         OperationType operationType = hidlModel.operations[i].type;
         result[i] = !isExtensionOperationType(operationType) &&
                     operationType != OperationType::OEM_OPERATION;
@@ -392,26 +373,27 @@ std::shared_ptr<Device> DeviceManager::forTest_makeDriverDevice(const std::strin
 }
 
 void DeviceManager::findAvailableDevices() {
-    using ::android::hidl::manager::V1_0::IServiceManager;
+    using ::android::hidl::manager::V1_2::IServiceManager;
     VLOG(MANAGER) << "findAvailableDevices";
 
-    sp<IServiceManager> manager = hardware::defaultServiceManager();
+    sp<IServiceManager> manager = hardware::defaultServiceManager1_2();
     if (manager == nullptr) {
         LOG(ERROR) << "Unable to open defaultServiceManager";
         return;
     }
 
-    manager->listByInterface(V1_0::IDevice::descriptor, [this](const hidl_vec<hidl_string>& names) {
-        for (const auto& name : names) {
-            VLOG(MANAGER) << "Found interface " << name.c_str();
-            sp<V1_0::IDevice> device = V1_0::IDevice::getService(name);
-            if (device == nullptr) {
-                LOG(ERROR) << "Got a null IDEVICE for " << name.c_str();
-                continue;
-            }
-            registerDevice(name.c_str(), device);
-        }
-    });
+    manager->listManifestByInterface(
+            V1_0::IDevice::descriptor, [this](const hidl_vec<hidl_string>& names) {
+                for (const auto& name : names) {
+                    VLOG(MANAGER) << "Found interface " << name.c_str();
+                    sp<V1_0::IDevice> device = V1_0::IDevice::getService(name);
+                    if (device == nullptr) {
+                        LOG(ERROR) << "Got a null IDEVICE for " << name.c_str();
+                        continue;
+                    }
+                    registerDevice(name.c_str(), device);
+                }
+            });
 
     // register CPU fallback device
     mDevices.push_back(CpuDevice::get());
@@ -429,6 +411,7 @@ DeviceManager::DeviceManager() {
     VLOG(MANAGER) << "DeviceManager::DeviceManager";
     findAvailableDevices();
 #ifdef NN_DEBUGGABLE
+    mStrictSlicing = (getProp("debug.nn.strict-slicing") != 0);
     mPartitioning = getProp("debug.nn.partition", kPartitioningDefault);
     mDebugNNCpuOnly = (getProp("debug.nn.cpuonly") != 0);
     mSyncExecCpu = (getProp("debug.nn.syncexec-cpu", 1) != 0);
