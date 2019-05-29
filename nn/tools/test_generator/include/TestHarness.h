@@ -175,8 +175,25 @@ void compare_(
 }
 #undef VALUE_TYPE
 #undef VECTOR_TYPE
+
+// Currently we only need relaxed accuracy criteria on mobilenet tests, so we return the quant8
+// tolerance simply based on the current test name.
+inline int getQuant8AllowedError() {
+    const ::testing::TestInfo* const testInfo =
+            ::testing::UnitTest::GetInstance()->current_test_info();
+    const std::string testCaseName = testInfo->test_case_name();
+    const std::string testName = testInfo->name();
+    // We relax the quant8 precision for mobilenet
+    if (testName.find("mobilenet") != std::string::npos) {
+        return 2;
+    } else {
+        return 1;
+    }
+}
+
 inline void compare(const MixedTyped& golden, const MixedTyped& test,
                     float fpAtol = 1e-5f, float fpRtol = 1e-5f) {
+    int quant8AllowedError = getQuant8AllowedError();
     size_t totalNumberOfErrors = 0;
     compare_<0>(golden, test, [&totalNumberOfErrors, fpAtol, fpRtol](float g, float t) {
         // Compute the range based on both absolute tolerance and relative tolerance
@@ -196,11 +213,11 @@ inline void compare(const MixedTyped& golden, const MixedTyped& test,
             totalNumberOfErrors++;
         }
     });
-    compare_<2>(golden, test, [&totalNumberOfErrors](uint8_t g, uint8_t t) {
+    compare_<2>(golden, test, [&totalNumberOfErrors, quant8AllowedError](uint8_t g, uint8_t t) {
         if (totalNumberOfErrors < gMaximumNumberOfErrorMessages) {
-            EXPECT_NEAR(g, t, 1);
+            EXPECT_NEAR(g, t, quant8AllowedError);
         }
-        if (std::abs(g - t) > 1) {
+        if (std::abs(g - t) > quant8AllowedError) {
             totalNumberOfErrors++;
         }
     });
