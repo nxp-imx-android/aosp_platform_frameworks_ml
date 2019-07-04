@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_ML_NN_RUNTIME_MEMORY_H
-#define ANDROID_ML_NN_RUNTIME_MEMORY_H
+#ifndef FRAMEWORKS_ML_RUNTIME_MEMORY_H
+#define FRAMEWORKS_ML_RUNTIME_MEMORY_H
 
 #include "NeuralNetworks.h"
 #include "Utils.h"
@@ -190,11 +190,13 @@ class MemoryTracker {
     // Returns the ith memory.
     const Memory* operator[](size_t i) const { return mMemories[i]; }
     // Iteration
-    decltype(mMemories.begin()) begin() { return mMemories.begin(); }
-    decltype(mMemories.end()) end() { return mMemories.end(); }
+    auto begin() { return mMemories.begin(); }
+    auto end() { return mMemories.end(); }
+    auto cbegin() const { return mMemories.cbegin(); }
+    auto cend() const { return mMemories.cend(); }
 };
 
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_ML_NN_RUNTIME_MEMORY_H
+#endif  // FRAMEWORKS_ML_RUNTIME_MEMORY_H

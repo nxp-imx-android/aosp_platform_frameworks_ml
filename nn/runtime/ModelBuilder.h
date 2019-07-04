@@ -17,8 +17,8 @@
 // Class used to build a model through a succession of successive calls
 // to the NN API.
 
-#ifndef ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H
-#define ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H
+#ifndef FRAMEWORKS_ML_RUNTIME_MODEL_BUILDER_H
+#define FRAMEWORKS_ML_RUNTIME_MODEL_BUILDER_H
 
 #include "HalInterfaces.h"
 #include "Memory.h"
@@ -68,7 +68,7 @@ class ModelBuilder {
                           const std::vector<std::shared_ptr<Device>>& devices,
                           bool explicitDeviceList = false);
 
-    void setHidlModel(Model* model) const;
+    Model makeHidlModel() const;
 
     uint32_t operandCount() const {
         // We don't allow more than uint32_t worth of operands
@@ -179,4 +179,4 @@ class ModelBuilder {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H
+#endif  // FRAMEWORKS_ML_RUNTIME_MODEL_BUILDER_H
