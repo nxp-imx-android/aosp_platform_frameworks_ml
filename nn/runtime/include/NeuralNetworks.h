@@ -1932,7 +1932,6 @@ typedef enum {
 
     // Operations below are available since API level 28.
 
-    // TODO: make the description easier to understand.
     /**
      * BatchToSpace for N-dimensional tensors.
      *
@@ -2096,7 +2095,6 @@ typedef enum {
      */
     ANEURALNETWORKS_PAD = 32,
 
-    // TODO: make the description easier to understand.
     /**
      * SpaceToBatch for N-Dimensional tensors.
      *
@@ -4870,10 +4868,11 @@ typedef enum {
      * the same; for odd number of padding, padding to the ending is bigger
      * than the padding to the beginning by 1.
      *
-     * total_padding is a function of input, stride and filter size.
+     * total_padding is a function of input, stride, dilation and filter size.
      * It could be computed as follows:
-     *    out_size = (input + stride - 1) / stride;
-     *    needed_input = (out_size - 1) * stride + filter_size
+     *    out_size = (input + stride - 1) / stride
+     *    effective_filter_size = (filter_size - 1) * dilation + 1
+     *    needed_input = (out_size - 1) * stride + effective_filter_size
      *    total_padding = max(0, needed_input - input_size)
      *  The computation is the same for the horizontal and vertical directions.
      */
@@ -5657,8 +5656,6 @@ int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
  * Calling {@link ANeuralNetworksModel_setOperandValueFromMemory} with shared memory
  * backed by an AHardwareBuffer of a format other than AHARDWAREBUFFER_FORMAT_BLOB is
  * disallowed.
- *
- * TODO(miaowang): add documentation about intended usage with introspection API.
  *
  * Available since API level 29.
  *
