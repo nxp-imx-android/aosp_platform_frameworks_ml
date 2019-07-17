@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_ML_NN_RUNTIME_EXTENSION_MANAGER_H
-#define ANDROID_ML_NN_RUNTIME_EXTENSION_MANAGER_H
+#ifndef FRAMEWORKS_ML_NN_RUNTIME_TYPE_MANAGER_H
+#define FRAMEWORKS_ML_NN_RUNTIME_TYPE_MANAGER_H
 
 #include "HalInterfaces.h"
 #include "Manager.h"
@@ -117,11 +117,11 @@ class TypeManager {
     // and supplemental infomation.
     //
     // useOnProductImageEnabled - whether apps/binaries preinstalled on /product partition
-    //  can be whitelisted.
-    // whitelist - list of apps/binaries which are allowed to use extensions.
+    // can be enabled for extensions use.
+    // allowlist - list of apps/binaries which are allowed to use extensions.
     static bool isExtensionsUseAllowed(const AppPackageInfo& appPackageInfo,
                                        bool useOnProductImageEnabled,
-                                       const std::vector<std::string>& whitelist);
+                                       const std::vector<std::string>& allowlist);
 
    private:
     TypeManager();
@@ -160,4 +160,4 @@ class TypeManager {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_ML_NN_RUNTIME_EXTENSION_MANAGER_H
+#endif  // FRAMEWORKS_ML_NN_RUNTIME_TYPE_MANAGER_H

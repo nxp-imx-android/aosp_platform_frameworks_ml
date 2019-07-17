@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
-#define ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#ifndef FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#define FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
 
 #include <string>
 #include <vector>
@@ -53,6 +53,14 @@ struct RandomOperand {
     int32_t opIndex = -1;
     // The index of the input/output as specified in model->identifyInputsAndOutputs(...).
     int32_t ioIndex = -1;
+
+    // If set true, this operand will be ignored during the accuracy checking step.
+    bool doNotCheckAccuracy = false;
+
+    // If set true, this operand will not be connected to another operation, e.g. if this operand is
+    // an operation output, then it will not be used as an input to another operation, and will
+    // eventually end up being a model output.
+    bool doNotConnect = false;
 
     RandomOperand(const OperandSignature& op, Type dataType, uint32_t rank);
 
@@ -103,11 +111,13 @@ struct RandomOperation {
 // TODO: Consider relative bias and mse on floating point data types?
 struct AccuracyCriterion {
     // We expect the driver results to be unbiased.
-    // Formula: abs(sum_{i}(actual - expected)) <= bias
+    // Formula: abs(sum_{i}(diff)) <= bias, where
+    // * fixed point: diff = actual - expected
+    // * floating point: diff = (actual - expected) / max(1, abs(expected))
     float bias = std::numeric_limits<float>::max();
 
     // Set the threshold on Mean Square Error (MSE).
-    // Formula: sum_{i}((actual - expected) ^ 2) / sum(1) <= mse
+    // Formula: sum_{i}(diff ^ 2) / sum(1) <= mse
     float mse = std::numeric_limits<float>::max();
 
     // We also set accuracy thresholds on each element to detect any particular edge cases that may
@@ -153,6 +163,8 @@ class RandomGraph {
     // Dump the generated random graph to a spec file for debugging and visualization purpose.
     void dumpSpecFile(std::string filename, std::string testname);
 
+    const std::vector<RandomOperation>& getOperations() const { return mOperations; }
+
    private:
     // Generate the graph structure.
     bool generateGraph(uint32_t numOperations);
@@ -168,4 +180,4 @@ class RandomGraph {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#endif  // FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
