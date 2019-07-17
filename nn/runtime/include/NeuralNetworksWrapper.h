@@ -16,8 +16,8 @@
 
 // Provides C++ classes to more easily use the Neural Networks API.
 
-#ifndef ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
-#define ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
+#ifndef FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
+#define FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
 
 #include "NeuralNetworks.h"
 
@@ -77,6 +77,20 @@ struct SymmPerChannelQuantParams {
                 .scaleCount = static_cast<uint32_t>(scales.size()),
                 .scales = scales.size() > 0 ? scales.data() : nullptr,
         };
+    }
+
+    SymmPerChannelQuantParams(const SymmPerChannelQuantParams& other)
+        : params(other.params), scales(other.scales) {
+        params.scales = scales.size() > 0 ? scales.data() : nullptr;
+    }
+
+    SymmPerChannelQuantParams& operator=(const SymmPerChannelQuantParams& other) {
+        if (this != &other) {
+            params = other.params;
+            scales = other.scales;
+            params.scales = scales.size() > 0 ? scales.data() : nullptr;
+        }
+        return *this;
     }
 };
 
@@ -451,4 +465,4 @@ class Execution {
 }  // namespace nn
 }  // namespace android
 
-#endif  //  ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
+#endif  //  FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_WRAPPER_H
