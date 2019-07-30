@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Copyright (C) 2019 The Android Open Source Project
 #
@@ -12,8 +14,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# Disable all checks for generated files.
-exclude_files=.
-filter=-
+set -Eeuo pipefail
+
+# usage: visualize_spec.sh spec
+
+SPEC_FILE=$1
+SPEC_NAME=`basename -s .mod.py $1`
+VISUALIZER_DIR=$ANDROID_BUILD_TOP/frameworks/ml/nn/tools/test_generator
+
+# Create tmp dir for the generated HTML.
+LOG_DIR=$(mktemp -d)/nnapi-spec-html
+mkdir -p $LOG_DIR
+$VISUALIZER_DIR/spec_visualizer.py $SPEC_FILE -o $LOG_DIR/${SPEC_NAME}.html
+
+google-chrome $LOG_DIR/${SPEC_NAME}.html
