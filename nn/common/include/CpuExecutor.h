@@ -24,6 +24,7 @@
 
 #include <android-base/macros.h>
 #include <ui/GraphicBuffer.h>
+
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -108,7 +109,7 @@ class RunTimePoolInfo {
     static RunTimePoolInfo createFromExistingBuffer(uint8_t* buffer);
 
     uint8_t* getBuffer() const;
-    bool update() const;
+    bool flush() const;
     hal::hidl_memory getHidlMemory() const;
 
    private:
@@ -213,18 +214,18 @@ class CpuExecutor {
 // b/109953668, disable OpenMP
 #ifdef NNAPI_OPENMP
 class ScopedOpenmpSettings {
-public:
+   public:
     ScopedOpenmpSettings();
     ~ScopedOpenmpSettings();
     DISALLOW_COPY_AND_ASSIGN(ScopedOpenmpSettings);
-private:
+
+   private:
     int mBlocktimeInitial;
 #if NNAPI_LIMIT_CPU_THREADS
     int mMaxThreadsInitial;
 #endif
 };
 #endif  // NNAPI_OPENMP
-
 
 namespace {
 
@@ -235,7 +236,7 @@ T getScalarData(const RunTimeOperandInfo& info) {
     return data[0];
 }
 
-inline bool IsNullInput(const RunTimeOperandInfo *input) {
+inline bool IsNullInput(const RunTimeOperandInfo* input) {
     return input->lifetime == hal::OperandLifeTime::NO_VALUE;
 }
 
@@ -250,12 +251,12 @@ inline int NumOutputs(const hal::Operation& operation) {
     return operation.outputs.size();
 }
 
-inline size_t NumDimensions(const RunTimeOperandInfo *operand) {
-  return operand->shape().dimensions.size();
+inline size_t NumDimensions(const RunTimeOperandInfo* operand) {
+    return operand->shape().dimensions.size();
 }
 
-inline uint32_t SizeOfDimension(const RunTimeOperandInfo *operand, int i) {
-  return operand->shape().dimensions[i];
+inline uint32_t SizeOfDimension(const RunTimeOperandInfo* operand, int i) {
+    return operand->shape().dimensions[i];
 }
 
 inline RunTimeOperandInfo* GetInput(const hal::Operation& operation,
@@ -270,7 +271,7 @@ inline RunTimeOperandInfo* GetOutput(const hal::Operation& operation,
 
 }  // anonymous namespace
 
-} // namespace nn
-} // namespace android
+}  // namespace nn
+}  // namespace android
 
 #endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_CPU_EXECUTOR_H
