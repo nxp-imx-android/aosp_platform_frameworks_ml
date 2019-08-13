@@ -25,17 +25,15 @@ Used by cts_generator.py, vts_generator.py, and spec_visualizer.py
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import argparse
 import copy
 from functools import reduce
+import argparse
+import io
 import itertools
-import math
 import os
 import re
-import struct
 import sys
-import contextlib
-import pprint
+import traceback
 import numpy as np
 
 def GetJointStr(l, sep=", ", method=str):
@@ -77,19 +75,6 @@ def Quantize(v, ty):
     elif ty.type == "UINT32":
         v = np.maximum(v, 0)
     return v
-
-@contextlib.contextmanager
-def SmartOpen(filename=None, mode="w"):
-    if filename and filename != '-':
-        fh = open(filename, mode)
-    else:
-        fh = sys.stdout
-
-    try:
-        yield fh
-    finally:
-        if fh is not sys.stdout:
-            fh.close()
 
 # Tracking objects inside a model with a unique name
 class NamedObject:
@@ -160,7 +145,7 @@ class Type(NamedVariable):
         "TENSOR_QUANT16_SYMM": "int16_t",
         "TENSOR_BOOL8": "bool8",
         "TENSOR_QUANT8_SYMM_PER_CHANNEL": "int8_t",
-#     "OEM_SCALAR": this is service-defined.
+    #     "OEM_SCALAR": this is service-defined.
         "TENSOR_OEM_BYTE": "uint8_t",
     }
 
@@ -265,26 +250,26 @@ class ImplicitParameter():
 
 # ExtraParams with per-channel quantization.
 class SymmPerChannelQuantParams():
-  def __init__(self, channelDim, scales, hide = False):
-    self.channelDim = channelDim
-    self.scales = scales
-    self.hide = hide
+    def __init__(self, channelDim, scales, hide = False):
+        self.channelDim = channelDim
+        self.scales = scales
+        self.hide = hide
 
-  def GetScalesBroadcastArray(self, dimensions):
-    bshape = [1] * len(dimensions)
-    bshape[self.channelDim] = len(self.scales)
-    return np.array(self.scales).reshape(bshape)
+    def GetScalesBroadcastArray(self, dimensions):
+        bshape = [1] * len(dimensions)
+        bshape[self.channelDim] = len(self.scales)
+        return np.array(self.scales).reshape(bshape)
 
-  def GetConstructor(self):
-    return "SymmPerChannelQuantParams({%s},%d)" % (
-        ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
+    def GetConstructor(self):
+        return "SymmPerChannelQuantParams({%s},%d)" % (
+            ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
-  def GetVtsSetter(self):
-    return "channelQuant"
+    def GetVtsSetter(self):
+        return "channelQuant"
 
-  def GetVtsConstructor(self):
-    return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
-        ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
+    def GetVtsConstructor(self):
+        return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
+            ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
 
 # An operand that can be fed into operations. Also, an operand is always
@@ -330,6 +315,15 @@ class Operand(NamedVariable):
     def ToUnspecifiedDim(self):
         self.dimensions = self.type.dimensions
         self.type = self.type.ToUnspecifiedDim()
+
+    def ConvertTo(self, DerivedClass, name=None):
+        assert issubclass(DerivedClass, Operand)
+        name = self.name if name is None else name
+        newop = DerivedClass(name, self.type.GetSignatureTuple(), skipRenaming=True,
+                             extraParams=self.type.extraParams)
+        if not issubclass(DerivedClass, Internal):
+            newop.SetValue(self.value)
+        return newop
 
 # Base class of user-defined input/output operand
 class InOut(Operand):
@@ -430,8 +424,9 @@ class Float32Vector(Parameter, ImplicitParameter):
 
 # An explicitly declared intermediate result
 class Internal(Operand):
-    def __init__(self, name, opType, backward=None, skipRenaming=False):
-        Operand.__init__(self, name, opType, backward, None, skipRenaming=skipRenaming)
+    def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
+        Operand.__init__(self, name, opType, backward, None, skipRenaming=skipRenaming,
+                         extraParams=extraParams)
         self.lifetime = "TEMPORARY_VARIABLE"
 
 # An operation in a model, does not need a name
@@ -611,6 +606,14 @@ class Model:
         self.compiled = True
         return self
 
+    def Feed(self, feedDict):
+        for i in self.GetInputs():
+            i.Feed(feedDict[0])
+        for o in self.GetOutputs():
+            o.Feed(feedDict[1])
+        return self
+
+
 # To track implicitly convertible variation types
 class ImplicitVariation:
     @staticmethod
@@ -626,6 +629,10 @@ class ImplicitVariation:
                 return var
         assert False, "%s not supported for implicit variation"%value[0]
 
+# An exception indicating that the current variation list should be skipped.
+class SkipVariation(Exception):
+    pass
+
 # The base class for model variations
 class ModelVariation:
 
@@ -633,52 +640,21 @@ class ModelVariation:
         self.targetOperands = {}
         self.name = name
 
-    def ApplyToHelper(self, model, args, feedDicts, transform):
-        opVarList = []
-        for op in model.GetEquivalentOperands(sorted(args.keys())):
-            opVar = op
-            feedDictsVar = []
-            if isinstance(op, Input) or isinstance(op, Output):
-                for feedDict in feedDicts:
-                    op_tmp = copy.deepcopy(op)
-                    if op_tmp in feedDict[0]:
-                        opVar = transform(op_tmp.Feed(feedDict[0]), args[op_tmp])
-                    elif op_tmp in feedDict[1]:
-                        opVar = transform(op_tmp.Feed(feedDict[1]), args[op_tmp])
-                    else:
-                        assert False
-                    feedDictsVar.append(opVar.value)
-                assert type(op) == type(opVar), "Can not handle %s -> %s"%(type(op), type(opVar))
-            else:
-                opVar = transform(op, args[op])
-                # handle Parameter -> Input
-                if isinstance(opVar, Input) or isinstance(opVar, Output):
-                    feedDictsVar = [opVar.value] * len(feedDicts)
-            if isinstance(opVar, Input) or isinstance(opVar, Output):
-                for feedDict, feedDictVar in zip(feedDicts, feedDictsVar):
-                    if opVar in feedDict[1]:
-                        feedDict[1][opVar] = feedDictVar
-                    else:
-                        feedDict[0][opVar] = feedDictVar
-            opVarList.append(opVar)
-        return opVarList
-
-    # Make a deepcopy of the model and feedDicts, and apply the change
-    def ApplyTo(self, modelOrigin, feedDictsOrigin):
-        model, feedDicts = copy.deepcopy((modelOrigin, feedDictsOrigin))
+    # Make a deepcopy of the model and apply the change
+    def ApplyTo(self, modelOrigin):
+        model = copy.deepcopy(modelOrigin)
         model.compiled = False
         model.dumped = False
 
         if not self.targetOperands:
             self.AutoIdentify(model)
 
-        # get transformed operands and update feedDicts
-        operandsVar = self.ApplyToHelper(
-            model, self.targetOperands, feedDicts, self.TransformOperand)
-
+        # Transform operands and model.
+        targets = model.GetEquivalentOperands(sorted(self.targetOperands.keys()))
+        model.UpdateEquivalentOperands(
+            [self.TransformOperand(op, self.targetOperands[op]) for op in targets])
         model = self.TransformModel(model)
-        model.UpdateEquivalentOperands(operandsVar)
-        return model, feedDicts
+        return model
 
     def IdentifyOperands(self, args=None):
         if args is None:
@@ -884,28 +860,6 @@ class AxisConverter(ModelVariation):
         op = self.RemoveAxis(op)
         return op
 
-# Convert a Parameter to Input
-class ParameterAsInputConverter(ModelVariation, ImplicitVariation):
-
-    def __init__(self, arg="as_input", prefix="weight", name=None):
-        ModelVariation.__init__(self, name=name)
-        assert ParameterAsInputConverter.IsCompatible(arg.lower())
-        self.prefix = prefix
-
-    @staticmethod
-    def IsCompatible(value):
-        return value.lower() in ["as_input"]
-
-    def SetToDefaultName(self):
-        self.name = self.prefix + "_as_input"
-        return self
-
-    def TransformOperand(self, op, arg=None):
-        assert isinstance(op, Parameter), "%s cannot be converted to Input."%type(op)
-        newop = Input(op.name, op.type.GetSignatureTuple(), skipRenaming=True, extraParams=op.type.extraParams)
-        newop.SetValue(op.value)
-        return newop
-
 # Convert Output based on activation
 class ActivationConverter(ModelVariation, ImplicitVariation):
     # (Enum, low, high)
@@ -957,6 +911,63 @@ class DynamicOutputShapeConverter(ModelVariation):
         model.TestDynamicOutputShape(True)
         return model
 
+# Convert all constant tensors as model inputs.
+class AllTensorsAsInputsConverter(ModelVariation):
+
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    def SetToDefaultName(self):
+        self.name = "all_tensors_as_inputs"
+        return self
+
+    def TransformModel(self, model):
+        if len(model.operations) != 1:
+            raise SkipVariation
+
+        # Find all constant tensors.
+        tensorParams = [p for p in model.operands if type(p) is Parameter and not p.type.IsScalar()]
+        if not tensorParams:
+            raise SkipVariation
+
+        # Convert to model inputs.
+        model.UpdateEquivalentOperands([op.ConvertTo(Input) for op in tensorParams])
+        return model
+
+# Add a dummy ADD operation before each model input to make it as an internal operand.
+class AllInputsAsInternalCoverter(ModelVariation):
+
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    def SetToDefaultName(self):
+        self.name = "all_inputs_as_internal"
+        return self
+
+    def TransformModel(self, model):
+        if len(model.operations) != 1:
+            raise SkipVariation
+
+        # Find all input tensors that can be an output of the ADD operation.
+        # Currently ADD only support FLOAT32/16 and QUANT8_ASYMM tensors with rank <= 4.
+        CompatibleWithADD = lambda op: len(op.type.dimensions) <= 4 and len(op.value) > 0 and \
+            op.type.type in ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_FLOAT16"]
+        modelInputs = [i for i in model.GetInputs() if CompatibleWithADD(i)]
+        if not modelInputs:
+            raise SkipVariation
+
+        # Make every input a sink of a dummy operation: input_tmp ADD dummy = input.
+        for op in modelInputs:
+            newInput = op.ConvertTo(Input, name=op.name + "_tmp")
+            dummyParam = Parameter("dummy", (op.type.type, [1], op.type.scale, op.type.zeroPoint),
+                                   [op.type.zeroPoint])
+            model.Operation("ADD", newInput, dummyParam, 0).To(op)
+
+        # Convert to internal operands.
+        model.UpdateEquivalentOperands([op.ConvertTo(Internal) for op in modelInputs])
+        return model
+
+
 # An example is always attached to a model, and could have multiple variations
 class Example:
     examples = []
@@ -967,6 +978,8 @@ class Example:
         self.name = name
         self.expectedMultinomialDistributionTolerance = None
         self.expectFailure = False
+        self.testDynamicOutputShape = True
+        self.testLifeTimeVariation = True
         self.feedDicts = []
         for feedDict in args:
             if type(feedDict) is tuple or type(feedDict) is list:
@@ -978,10 +991,7 @@ class Example:
                 ))
             else:
                 assert False
-        if Configuration.test_dynamic_output_shape:
-            self.variations = [[DefaultVariation(), DynamicOutputShapeConverter()]]
-        else:
-            self.variations = []
+        self.variations = []
         Example.examples.append(self)
 
     @staticmethod
@@ -1024,11 +1034,6 @@ class Example:
 
     def AddRelaxed(self, isRelaxed=True, includeDefault=True, defaultName=None):
         var = RelaxedModeConverter(isRelaxed)
-        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
-        return self
-
-    def AddInput(self, *args, includeDefault=True, defaultName=None):
-        var = ParameterAsInputConverter().Identify(args)
         self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
         return self
 
@@ -1118,45 +1123,70 @@ class Example:
         return self
 
     def Dump(self, DumpModel, model_fd, DumpExample, example_fd, DumpTest, test_fd):
+        if self.testLifeTimeVariation and len(self.model.operations) == 1 and \
+                self.expectedMultinomialDistributionTolerance is None:
+            self.AddVariations(AllTensorsAsInputsConverter())
+            self.AddVariations(AllInputsAsInternalCoverter())
+        if self.testDynamicOutputShape:
+            self.AddVariations(DynamicOutputShapeConverter())
         [v.SetToDefaultName() for vs in self.variations for v in vs if v.name is None]
-        for variationList in itertools.product(*self.variations):
-            # Apply variations
-            modelOrigin, feedDictsOrigin = self.model, self.feedDicts
-            self.model, self.feedDicts = copy.deepcopy((self.model, self.feedDicts))
-            for variation in variationList:
-                self.model, self.feedDicts = variation.ApplyTo(self.model, self.feedDicts)
-            # Concat names for test and examples
-            varNames = [v.name for v in variationList]
-            self.testName = NamedTest(FileNames.specName, self.model.name, self.name, *varNames)
-            self.examplesName = GlobalVariable("examples", self.model.name, self.name, *varNames)
-            if str(self.testName) in Example.versionOverrides:
-                self.model.IntroducedIn(Example.versionOverrides[str(self.testName)])
-            self.model.WithSuffix(*varNames).Compile()
-            # Dump files
-            if DumpModel is not None and model_fd is not None:
-                DumpModel(self.model, model_fd)
-            if DumpExample is not None and example_fd is not None:
-                DumpExample(self, example_fd)
-            if DumpTest is not None and test_fd is not None:
-                DumpTest(self, test_fd)
-            # Restore model and feedDicts before variation
-            self.model = modelOrigin
-            self.feedDicts = feedDictsOrigin
+
+        for feedDict in self.feedDicts:
+            self.model.Feed(feedDict)
+            for variationList in itertools.product(*self.variations):
+                modelOrigin = self.model
+                self.model = copy.deepcopy(self.model)
+
+                # Apply variations
+                try:
+                    for variation in variationList:
+                        self.model = variation.ApplyTo(self.model)
+                except SkipVariation:
+                    self.model = modelOrigin
+                    continue
+
+                # Concat names for test and examples
+                varNames = [v.name for v in variationList]
+                self.testName = NamedTest(FileNames.specName, self.model.name, self.name, *varNames)
+                self.examplesName = GlobalVariable("examples", self.model.name, self.name,
+                                                   *varNames)
+                if str(self.testName) in Example.versionOverrides:
+                    self.model.IntroducedIn(Example.versionOverrides[str(self.testName)])
+                self.model.WithSuffix(*varNames).Compile()
+
+                # Dump files
+                if DumpModel is not None and model_fd is not None:
+                    DumpModel(self.model, model_fd)
+                if DumpExample is not None and example_fd is not None:
+                    DumpExample(self, example_fd)
+                if DumpTest is not None and test_fd is not None:
+                    DumpTest(self, test_fd)
+
+                # Restore model before variation
+                self.model = modelOrigin
         return self
 
     # Specifies the RANDOM_MULTINOMIAL distribution tolerance.
     # If set to greater than zero, the input is compared as log-probabilities
     # to the output and must be within this tolerance to pass.
     def WithMultinomialDistributionTolerance(self, expectedTolerance):
-      assert self.expectFailure is False
-      self.expectedMultinomialDistributionTolerance = expectedTolerance
-      return self
+        assert self.expectFailure is False
+        self.expectedMultinomialDistributionTolerance = expectedTolerance
+        return self
 
     # Specifies that this example is expected to fail during compilation or execution.
     def ExpectFailure(self):
-      assert self.expectedMultinomialDistributionTolerance is None
-      self.expectFailure = True
-      return self
+        assert self.expectedMultinomialDistributionTolerance is None
+        self.expectFailure = True
+        return self
+
+    def DisableDynamicOutputShapeVariation(self):
+        self.testDynamicOutputShape = False
+        return self
+
+    def DisableLifeTimeVariation(self):
+        self.testLifeTimeVariation = False
+        return self
 
 class FileNames:
     specFiles = []
@@ -1186,11 +1216,13 @@ class FileNames:
             for f in FileNames.specFiles]
         FileNames.modelFiles = FileNames.ParseTargetFiles(model, ".model.cpp")
         FileNames.exampleFiles = FileNames.ParseTargetFiles(example, ".example.cpp")
-        FileNames.testFiles = FileNames.ParseTargetFiles(test, ".mod.py.cpp")
+        FileNames.testFiles = FileNames.ParseTargetFiles(test, ".test.cpp")
 
     @staticmethod
     def ParseTargetFiles(arg, ext):
         numFiles = len(FileNames.specFiles)
+        if arg is None:
+            return [None] * numFiles
         absPath = os.path.abspath(arg)
         if os.path.isdir(arg):
             target = [os.path.join(absPath, f + ext) for f in FileNames.specNames]
@@ -1228,9 +1260,112 @@ class FileNames:
 
 class Configuration:
     use_shm_for_weights = False
-    force_regenerate = False
-    test_dynamic_output_shape = True
+    hook_mode = False
 
     @staticmethod
     def useSHM():
         return Configuration.use_shm_for_weights
+
+def GetTestGeneratorMTime():
+    tgFiles = ['test_generator.py', 'cts_generator.py', 'vts_generator.py']
+    tgDir = os.path.dirname(__file__)
+    return max(os.path.getmtime(os.path.join(tgDir, filename))
+               for filename in tgFiles)
+
+def MightNeedRegeneration():
+    specTime = os.path.getmtime(FileNames.specFile)
+    tgTime = GetTestGeneratorMTime()
+    return any(not os.path.exists(filename) or os.path.getmtime(filename) <= max(specTime, tgTime)
+               for filename in [FileNames.modelFile, FileNames.exampleFile, FileNames.testFile]
+               if filename is not None)
+
+def Read(filename):
+    with open(filename) as reader:
+        return reader.read()
+
+def AtomicWrite(filename, data):
+    # os.replace(src, dest) may fail if src and dest are on diffrent
+    # filesystems.
+    tempFile = filename + '.tmp'
+    try:
+        with open(tempFile, 'w') as writer:
+            writer.write(data)
+        os.replace(tempFile, filename)
+        tempFile = None
+    finally:
+        if tempFile is not None and os.path.exists(tempFile):
+            os.remove(tempFile)
+
+def GetExecScope():
+    return dict(
+        ActivationConverter=ActivationConverter,
+        BoolScalar=BoolScalar,
+        Configuration=Configuration,
+        DataLayoutConverter=DataLayoutConverter,
+        DataTypeConverter=DataTypeConverter,
+        Example=Example,
+        Float16Scalar=Float16Scalar,
+        Float32Scalar=Float32Scalar,
+        Float32Vector=Float32Vector,
+        IgnoredOutput=IgnoredOutput,
+        Input=Input,
+        Int32Scalar=Int32Scalar,
+        Int32Vector=Int32Vector,
+        Internal=Internal,
+        Model=Model,
+        Operand=Operand,
+        Output=Output,
+        Parameter=Parameter,
+        RelaxedModeConverter=RelaxedModeConverter,
+        SymmPerChannelQuantParams=SymmPerChannelQuantParams)
+
+def ArgumentParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("spec", help="the spec file or directory")
+    parser.add_argument("--hook", help="hook mode", action='store_true')
+    parser.add_argument("-m", "--model", help="the output model file or directory")
+    parser.add_argument("-t", "--test", help="the output test file or directory")
+    return parser
+
+def ParseArgs(parser):
+    args = parser.parse_args()
+    Configuration.hook_mode = args.hook
+    return args
+
+def Run(InitializeFiles=None, DumpModel=None, DumpExample=None, DumpTest=None):
+    exec_scope = GetExecScope()
+    while FileNames.NextFile():
+        try:
+            if not MightNeedRegeneration():
+                continue
+            exec(Read(FileNames.specFile), exec_scope)
+            model_buf = io.StringIO() if FileNames.modelFile else None
+            example_buf = io.StringIO() if FileNames.exampleFile else None
+            test_buf = io.StringIO() if FileNames.testFile else None
+            InitializeFiles(model_fd=model_buf,
+                            example_fd=example_buf,
+                            test_fd=test_buf)
+            Example.DumpAllExamples(
+                DumpModel=DumpModel, model_fd=model_buf,
+                DumpExample=DumpExample, example_fd=example_buf,
+                DumpTest=DumpTest, test_fd=test_buf)
+            for buf, filename in [
+                    (model_buf, FileNames.modelFile),
+                    (example_buf, FileNames.exampleFile),
+                    (test_buf, FileNames.testFile),
+            ]:
+                if filename is None:
+                    continue
+                if Configuration.hook_mode and (not os.path.exists(filename) or
+                                                Read(filename) != buf.getvalue()):
+                    print(('\n{filename} is out of date. '
+                           'Please run {generate_all_tests_sh} before uploading.\n').format(
+                                   filename=filename,
+                                   generate_all_tests_sh=os.path.abspath(os.path.join(
+                                           os.path.dirname(__file__), '..', '..', 'runtime', 'test',
+                                           'specs', 'generate_all_tests.sh'))))
+                    sys.exit(1)
+                AtomicWrite(filename, buf.getvalue())
+        except Exception:
+            traceback.print_exc()
+            sys.exit("Exception raised when processing {}".format(FileNames.specFile))
