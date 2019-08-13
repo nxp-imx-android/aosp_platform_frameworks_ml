@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
-#define FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
 
 #include "Callbacks.h"
 #include "HalInterfaces.h"
@@ -27,9 +27,6 @@
 #include <atomic>
 #include <unordered_map>
 #include <vector>
-
-using ::android::hardware::neuralnetworks::V1_2::implementation::ExecutionCallback;
-using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 
 namespace android {
 namespace nn {
@@ -56,18 +53,18 @@ struct ModelArgumentInfo {
     //   locationAndLength.{poolIndex, offset, length} is valid.
     //   dimensions is valid.
     enum { POINTER, MEMORY, HAS_NO_VALUE, UNSPECIFIED } state = UNSPECIFIED;
-    DataLocation locationAndLength;
+    hal::DataLocation locationAndLength;
     std::vector<uint32_t> dimensions;
     void* buffer;
     bool isSufficient = true;
 
-    int setFromPointer(const Operand& operand, const ANeuralNetworksOperandType* type, void* buffer,
-                       uint32_t length);
-    int setFromMemory(const Operand& operand, const ANeuralNetworksOperandType* type,
+    int setFromPointer(const hal::Operand& operand, const ANeuralNetworksOperandType* type,
+                       void* buffer, uint32_t length);
+    int setFromMemory(const hal::Operand& operand, const ANeuralNetworksOperandType* type,
                       uint32_t poolIndex, uint32_t offset, uint32_t length);
-    int setFromTemporaryMemory(const Operand& operand, uint32_t poolIndex, uint32_t offset,
+    int setFromTemporaryMemory(const hal::Operand& operand, uint32_t poolIndex, uint32_t offset,
                                uint32_t length);
-    int updateDimensionInfo(const Operand& operand, const ANeuralNetworksOperandType* newType);
+    int updateDimensionInfo(const hal::Operand& operand, const ANeuralNetworksOperandType* newType);
 };
 
 class ExecutionBuilder {
@@ -96,19 +93,22 @@ public:
     int burstCompute(BurstBuilder* burst) { return compute(nullptr, burst); }
 
     // Initialize output dimensional information from ModelArgumentInfo.
-    void initializeOutputShapes(std::vector<OutputShape>* outputShapes) const;
+    void initializeOutputShapes(std::vector<hal::OutputShape>* outputShapes) const;
 
     int getOutputOperandDimensions(uint32_t index, uint32_t* dimensions);
     int getOutputOperandRank(uint32_t index, uint32_t* rank);
 
     // Handshake with lower-level execution support
     bool measureTiming() const { return mMeasureTiming; }
-    void reportTiming(Timing timing) { mTiming = timing; }
+    void reportTiming(hal::Timing timing) { mTiming = timing; }
 
     const CompilationBuilder* getCompilation() const { return mCompilation; }
     const ModelBuilder* getModel() const { return mModel; }
 
-    ErrorStatus finish(ErrorStatus error, const std::vector<OutputShape>& outputShapes);
+    hal::ErrorStatus finish(hal::ErrorStatus error,
+                            const std::vector<hal::OutputShape>& outputShapes);
+
+    bool inFlight() const { return mStarted && !mFinished; }
 
    private:
     // If a callback is provided, then this is asynchronous. If a callback is
@@ -124,7 +124,7 @@ public:
     const CompilationBuilder* mCompilation;
 
     // Update output dimensional information from OutputShape to ModelArgumentInfo.
-    bool updateOutputShapes(const std::vector<OutputShape>& outputShapes);
+    bool updateOutputShapes(const std::vector<hal::OutputShape>& outputShapes);
 
     const ModelBuilder* mModel;
     const ExecutionPlan* mPlan;
@@ -151,7 +151,7 @@ public:
     bool mMeasureTiming = false;
 
     // Timing reported from the driver
-    Timing mTiming = {};
+    hal::Timing mTiming = {};
 
     // Properties cannot be set once the execution has started.
     std::atomic_bool mStarted = false;
@@ -186,7 +186,8 @@ class StepExecutor {
     void mapInputsAndOutputsTrivially();
 
     // Update output shapes returned from ExecutionCallback to ExecutionBuilder.
-    bool updateOutputShapes(const std::vector<OutputShape>& from, std::vector<OutputShape>* to);
+    bool updateOutputShapes(const std::vector<hal::OutputShape>& from,
+                            std::vector<hal::OutputShape>* to);
 
     // Map inputs and outputs from ExecutionBuilder to StepExecutor,
     // one at a time.  Note that these are input/output indexes, not
@@ -238,7 +239,7 @@ class StepExecutor {
     void mapInputOrOutput(const ModelArgumentInfo& builderInputOrOutput,
                           ModelArgumentInfo* executorInputOrOutput);
 
-    int setInputOrOutputFromTemporaryMemory(const Operand& inputOrOutputOperand,
+    int setInputOrOutputFromTemporaryMemory(const hal::Operand& inputOrOutputOperand,
                                             const Memory* memory, uint32_t offset,
                                             ModelArgumentInfo* inputOrOutputInfo);
 
@@ -273,4 +274,4 @@ class StepExecutor {
 } // namespace nn
 } // namespace android
 
-#endif  // FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H

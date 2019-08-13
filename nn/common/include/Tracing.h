@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef FRAMEWORKS_ML_NN_COMMON_TRACING_H
-#define FRAMEWORKS_ML_NN_COMMON_TRACING_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_TRACING_H
+#define ANDROID_FRAMEWORKS_ML_NN_COMMON_TRACING_H
 
 #define ATRACE_TAG ATRACE_TAG_NNAPI
-#include "utils/Trace.h"
+#include <utils/Trace.h>
 
 // Neural Networks API (NNAPI) systracing
 //
@@ -171,4 +171,4 @@
 #undef ATRACE_NAME
 #undef ATRACE_CALL
 
-#endif  // FRAMEWORKS_ML_NN_COMMON_TRACING_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_TRACING_H

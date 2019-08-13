@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Operations"
+
 #include "SVDF.h"
 
 #include "CpuExecutor.h"
@@ -24,6 +26,8 @@
 
 namespace android {
 namespace nn {
+
+using namespace hal;
 
 SVDF::SVDF(const Operation& operation,
            std::vector<RunTimeOperandInfo>& operands) {

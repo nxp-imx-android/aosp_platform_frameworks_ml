@@ -31,7 +31,6 @@ import numpy as np
 import os
 import re
 import struct
-import sys
 import contextlib
 import pprint
 
@@ -64,6 +63,11 @@ from test_generator import SymmPerChannelQuantParams
 from cts_generator import DumpCtsExample
 from cts_generator import DumpCtsIsIgnored
 
+
+# TODO: Make this part of tg.Configuration?
+target_hal_version = None
+
+
 # Take a model from command line
 def ParseCmdLine():
     parser = argparse.ArgumentParser()
@@ -74,9 +78,16 @@ def ParseCmdLine():
         "-e", "--example", help="the output example file", default="-")
     parser.add_argument(
         "-t", "--test", help="the output test file", default="-")
+    parser.add_argument(
+        "--target_hal_version",
+        help="the HAL version of the output",
+        required=True,
+        choices=["V1_0", "V1_1", "V1_2"])
     args = parser.parse_args()
     tg.FileNames.InitializeFileLists(
         args.spec, args.model, args.example, args.test)
+    global target_hal_version
+    target_hal_version = args.target_hal_version
 
 # Generate operands in VTS format
 def generate_vts_operands(model):
@@ -251,6 +262,7 @@ Model {create_test_model_name}() {{
 }}
 """
   model_dict = {
+      "hal_version": target_hal_version,
       "create_test_model_name": str(model.createTestFunctionName),
       "operations": generate_vts_operations(model),
       "operand_decls": generate_vts_operands(model),
@@ -263,26 +275,36 @@ Model {create_test_model_name}() {{
   print(model_fmt.format(**model_dict), file = model_file)
 
 def generate_vts(model, model_file):
-  assert model.compiled
-  generate_vts_model(model, model_file)
-  DumpCtsIsIgnored(model, model_file)
+    assert model.compiled
+    # Do not generate DynamicOutputShapeTest for pre-1.2 VTS.
+    if model.hasDynamicOutputShape and target_hal_version < "V1_2":
+        return
+    generate_vts_model(model, model_file)
+    DumpCtsIsIgnored(model, model_file)
 
 def generate_vts_test(example, test_file):
-    testTemplate = """\
+    # Do not generate DynamicOutputShapeTest for pre-1.2 VTS.
+    if example.model.hasDynamicOutputShape and target_hal_version < "V1_2":
+        return
+
+    generatedTestTemplate = """\
 TEST_F({test_case_name}, {test_name}) {{
   generated_tests::Execute(device,
                            {namespace}::{create_model_name},
                            {namespace}::{is_ignored_name},
-                           {namespace}::get_{examples_name}(){test_dynamic_output_shape});\n}}
-
+                           {namespace}::get_{examples_name}(){test_dynamic_output_shape});\n}}\n
+"""
+    validationTestTemplate = """\
 TEST_F(ValidationTest, {test_name}) {{
   const Model model = {namespace}::{create_model_name}();
   const std::vector<Request> requests = createRequests({namespace}::get_{examples_name}());
-  validateEverything(model, requests);
+  {validation_method}(model, requests);
 }}\n
 """
-    if example.model.hasDynamicOutputShape:
-        print("#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE", file=test_fd)
+
+    testTemplate = validationTestTemplate if example.expectFailure \
+                   else generatedTestTemplate + validationTestTemplate
+
     print(testTemplate.format(
             test_case_name="DynamicOutputShapeTest" if example.model.hasDynamicOutputShape \
                            else "NeuralnetworksHidlTest",
@@ -291,10 +313,9 @@ TEST_F(ValidationTest, {test_name}) {{
             create_model_name=str(example.model.createTestFunctionName),
             is_ignored_name=str(example.model.isIgnoredFunctionName),
             examples_name=str(example.examplesName),
-            test_dynamic_output_shape=", true" if example.model.hasDynamicOutputShape else ""
+            test_dynamic_output_shape=", true" if example.model.hasDynamicOutputShape else "",
+            validation_method="validateFailure" if example.expectFailure else "validateEverything"
         ), file=test_fd)
-    if example.model.hasDynamicOutputShape:
-        print("#endif", file=test_fd)
 
 def InitializeFiles(model_fd, example_fd, test_fd):
     fileHeader = "// clang-format off\n// Generated file (from: {spec_file}). Do not edit"
@@ -320,13 +341,11 @@ namespace {spec_name} {{
 if __name__ == "__main__":
     ParseCmdLine()
     while tg.FileNames.NextFile():
-        print("Generating test(s) from spec: %s" % tg.FileNames.specFile, file=sys.stderr)
+        print("Generating tests from %s" % tg.FileNames.specFile)
         exec (open(tg.FileNames.specFile, "r").read())
-        print("Output VTS model: %s" % tg.FileNames.modelFile, file=sys.stderr)
-        print("Output example:" + tg.FileNames.exampleFile, file=sys.stderr)
         with SmartOpen(tg.FileNames.modelFile) as model_fd, \
              SmartOpen(tg.FileNames.exampleFile) as example_fd, \
-             SmartOpen(tg.FileNames.testFile, mode="a") as test_fd:
+             SmartOpen(tg.FileNames.testFile) as test_fd:
             InitializeFiles(model_fd, example_fd, test_fd)
             Example.DumpAllExamples(
                 DumpModel=generate_vts, model_fd=model_fd,

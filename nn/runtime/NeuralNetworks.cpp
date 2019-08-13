@@ -26,19 +26,23 @@
 #include "Callbacks.h"
 #include "CompilationBuilder.h"
 #include "ExecutionBuilder.h"
+#include "HalInterfaces.h"
 #include "Manager.h"
 #include "Memory.h"
+#include "MetaModel.h"
 #include "ModelBuilder.h"
 #include "NeuralNetworksExtensions.h"
 #include "NeuralNetworksOEM.h"
 #include "Tracing.h"
 #include "Utils.h"
 
-#include "vndk/hardware_buffer.h"
+#include <vndk/hardware_buffer.h>
 
 #include <cstddef>
 #include <memory>
 #include <vector>
+
+using namespace android::nn::hal;
 
 // Make sure the constants defined in the header files have not changed values.
 // IMPORTANT: When adding new values, update kNumberOfDataTypes or kNumberOfDataTypesOEM
@@ -547,7 +551,6 @@ static_assert(static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN) ==
                       ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN,
               "Constant::BYTE_SIZE_OF_CACHE_TOKEN != ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN");
 
-using android::sp;
 using namespace android::nn;
 
 int ANeuralNetworks_getDeviceCount(uint32_t* numDevices) {
@@ -661,8 +664,9 @@ int ANeuralNetworksModel_getSupportedOperationsForDevices(
         }
 
         Device* d = reinterpret_cast<Device*>(const_cast<ANeuralNetworksDevice*>(devices[i]));
+        const MetaModel metaModel(hidlModel, DeviceManager::get()->strictSlicing());
         hidl_vec<bool> supportsByDevice;
-        d->getSupportedOperations(hidlModel, &supportsByDevice);
+        d->getSupportedOperations(metaModel, &supportsByDevice);
         for (uint32_t j = 0; j < supportsByDevice.size(); j++) {
             uint32_t originalIdx = opMap[j];
             supportedOps[originalIdx] |= supportsByDevice[j];
@@ -989,7 +993,6 @@ int ANeuralNetworksCompilation_create(ANeuralNetworksModel* model,
 void ANeuralNetworksCompilation_free(ANeuralNetworksCompilation* compilation) {
     NNTRACE_RT(NNTRACE_PHASE_TERMINATION, "ANeuralNetworksCompilation_free");
     // No validation.  Free of nullptr is valid.
-    // TODO specification says that a compilation-in-flight can be deleted
     CompilationBuilder* c = reinterpret_cast<CompilationBuilder*>(compilation);
     delete c;
 }
@@ -1043,9 +1046,13 @@ int ANeuralNetworksExecution_create(ANeuralNetworksCompilation* compilation,
 
 void ANeuralNetworksExecution_free(ANeuralNetworksExecution* execution) {
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_free");
-    // TODO specification says that an execution-in-flight can be deleted
-    // No validation.  Free of nullptr is valid.
+    // Free of nullptr is valid.
     ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    if (r && r->inFlight()) {
+        LOG(ERROR) << "ANeuralNetworksExecution_free passed an in-flight ANeuralNetworksExecution"
+                   << " and is therefore ignored";
+        return;
+    }
     delete r;
 }
 

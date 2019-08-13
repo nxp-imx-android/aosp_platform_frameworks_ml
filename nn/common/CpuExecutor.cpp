@@ -24,7 +24,7 @@
 #include "OperationsUtils.h"
 #include "Tracing.h"
 
-#include "Eigen/Core"
+#include <Eigen/Core>
 // b/109953668, disable OpenMP
 #ifdef NNAPI_OPENMP
 #include <omp.h>
@@ -36,6 +36,8 @@ namespace android {
 namespace nn {
 
 namespace {
+
+using namespace hal;
 
 class OperationExecutionContext : public IOperationExecutionContext {
     DISALLOW_IMPLICIT_CONSTRUCTORS(OperationExecutionContext);
@@ -542,8 +544,7 @@ int CpuExecutor::run(const Model& model, const Request& request,
 #endif  // NNAPI_OPENMP
 
     mModel = &model;
-    mRequest = &request;  // TODO check if mRequest is needed
-    initializeRunTimeInfo(modelPoolInfos, requestPoolInfos);
+    initializeRunTimeInfo(request, modelPoolInfos, requestPoolInfos);
     // The model has serialized the operation in execution order.
     for (const auto& operation : model.operations) {
         int n = executeOperation(operation);
@@ -563,7 +564,8 @@ int CpuExecutor::run(const Model& model, const Request& request,
     return ANEURALNETWORKS_NO_ERROR;
 }
 
-bool CpuExecutor::initializeRunTimeInfo(const std::vector<RunTimePoolInfo>& modelPoolInfos,
+bool CpuExecutor::initializeRunTimeInfo(const Request& request,
+                                        const std::vector<RunTimePoolInfo>& modelPoolInfos,
                                         const std::vector<RunTimePoolInfo>& requestPoolInfos) {
     VLOG(CPUEXE) << "CpuExecutor::initializeRunTimeInfo";
     const size_t count = mModel->operands.size();
@@ -640,8 +642,8 @@ bool CpuExecutor::initializeRunTimeInfo(const std::vector<RunTimePoolInfo>& mode
             }
         }
     };
-    updateForArguments(mModel->inputIndexes, mRequest->inputs);
-    updateForArguments(mModel->outputIndexes, mRequest->outputs);
+    updateForArguments(mModel->inputIndexes, request.inputs);
+    updateForArguments(mModel->outputIndexes, request.outputs);
 
     return true;
 }

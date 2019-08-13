@@ -336,6 +336,14 @@ Example.SetVersion(<version>, testName0, testName1, ...)
 
 This is useful when only a subset of variations has a different version.
 
+### Creating negative tests
+
+Negative test, also known as validation test, is a testing method that supplies invalid model or request, and expects the target framework or driver to fail gracefully. You can use `ExpectFailure` to tag a example as invalid.
+
+```Python
+Example.ExpectFailure()
+```
+
 ### A Complete Example
 
 ```Python
@@ -382,16 +390,6 @@ $ANDROID_BUILD_TOP/frameworks/ml/nn/runtime/test/specs/generate_test.sh
 $ANDROID_BUILD_TOP/frameworks/ml/nn/runtime/test/specs/generate_vts_test.sh
 ```
 
-It will read and generate all CTS/VTS unit tests based on spec files in `nn/runtime/test/specs/V1_*/*` if needed. CTS test generator is able to identify which spec files are modified since last generation and only regenerate those files to reduce compilation time. To force a regeneration, use `-f` flag.
-
-```
-$ANDROID_BUILD_TOP/frameworks/ml/nn/runtime/test/specs/generate_test.sh -f
-```
-
-If you only want to regenerate a certain set of files, simply append the file names to the end of the command, and optionally, use `-f` flag.
-
-```
-$ANDROID_BUILD_TOP/frameworks/ml/nn/runtime/test/specs/generate_test.sh -f file1.mod.py file2.mod.py ...
-```
+It will read and generate all CTS/VTS unit tests based on spec files in `nn/runtime/test/specs/V1_*/*` if needed. CTS test generator is able to identify which spec files are modified since last generation and only regenerate those files to reduce compilation time. To force a regeneration, use `-f` flag. The VTS test generator will regenerate tests targeting the latest HAL version by default. Pass the `all` positional argument to override.
 
 Rebuild with mm afterwards.
