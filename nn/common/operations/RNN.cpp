@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Operations"
+
 #include "RNN.h"
 
 #include "CpuExecutor.h"
@@ -24,6 +26,8 @@
 
 namespace android {
 namespace nn {
+
+using namespace hal;
 
 RNN::RNN(const Operation& operation,
          std::vector<RunTimeOperandInfo>& operands) {

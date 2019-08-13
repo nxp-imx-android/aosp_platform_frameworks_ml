@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
-#define FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
 
 #include "HalInterfaces.h"
 #include "Utils.h"
@@ -28,6 +28,9 @@
 
 namespace android {
 namespace nn {
+
+// Forward declaration
+class MetaModel;
 
 // A unified interface for actual driver devices as well as the CPU
 class Device {
@@ -42,38 +45,28 @@ class Device {
     virtual const char* getVersionString() const = 0;
     virtual int64_t getFeatureLevel() = 0;
     virtual int32_t getType() const = 0;
-    virtual hidl_vec<Extension> getSupportedExtensions() const = 0;
+    virtual hal::hidl_vec<hal::Extension> getSupportedExtensions() const = 0;
 
-    // If hidlModel is not compliant with the HAL version of the driver device,
-    // then the behavior depends on whether or not a non-nullptr slicer is
-    // provided.
-    //
-    // If there is no slicer, then no operations are supported.
-    //
-    // If there is a slicer, and it successfully slices the model, then some
-    // operations may be supported.
-    //
-    // See the IModelSlicer class in Utils.h for more details.
-    virtual void getSupportedOperations(const Model& hidlModel, IModelSlicer* slicer,
-                                        hidl_vec<bool>* supportedOperations) = 0;
-    void getSupportedOperations(const Model& hidlModel, hidl_vec<bool>* supportedOperations) {
-        return getSupportedOperations(hidlModel, nullptr, supportedOperations);
-    }
+    // See the MetaModel class in MetaModel.h for more details.
+    virtual void getSupportedOperations(const MetaModel& metaModel,
+                                        hal::hidl_vec<bool>* supportedOperations) = 0;
 
-    virtual PerformanceInfo getPerformance(OperandType type) const = 0;
-    virtual PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const = 0;
-    virtual PerformanceInfo getRelaxedFloat32toFloat16PerformanceTensor() const = 0;
+    virtual hal::PerformanceInfo getPerformance(hal::OperandType type) const = 0;
+    virtual hal::PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const = 0;
+    virtual hal::PerformanceInfo getRelaxedFloat32toFloat16PerformanceTensor() const = 0;
     virtual std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const = 0;
     bool isCachingSupported() const;
 
     virtual int prepareModel(
-            const Model& hidlModel, ExecutionPreference executionPreference,
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
+            const hal::Model& hidlModel, hal::ExecutionPreference executionPreference,
+            const hal::hidl_vec<hal::hidl_handle>& modelCache,
+            const hal::hidl_vec<hal::hidl_handle>& dataCache,
+            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
             std::shared_ptr<VersionedIPreparedModel>* preparedModel) = 0;
     virtual int prepareModelFromCache(
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
+            const hal::hidl_vec<hal::hidl_handle>& modelCache,
+            const hal::hidl_vec<hal::hidl_handle>& dataCache,
+            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
             std::shared_ptr<VersionedIPreparedModel>* preparedModel) = 0;
 };
 
@@ -134,7 +127,7 @@ class DeviceManager {
     }
 
     // Register a test device.
-    void forTest_registerDevice(const char* name, const sp<V1_0::IDevice>& device) {
+    void forTest_registerDevice(const char* name, const sp<hal::V1_0::IDevice>& device) {
         registerDevice(name, device);
     }
 
@@ -147,7 +140,7 @@ class DeviceManager {
 
     // Make a test device
     static std::shared_ptr<Device> forTest_makeDriverDevice(const std::string& name,
-                                                            const sp<V1_0::IDevice>& device);
+                                                            const sp<hal::V1_0::IDevice>& device);
 
     bool forTest_isCpuDevice(const ANeuralNetworksDevice* device) const {
         return reinterpret_cast<const Device*>(device) == getCpuDevice().get();
@@ -158,7 +151,7 @@ class DeviceManager {
     DeviceManager();
 
     // Adds a device for the manager to use.
-    void registerDevice(const char* name, const sp<V1_0::IDevice>& device);
+    void registerDevice(const char* name, const sp<hal::V1_0::IDevice>& device);
 
     void findAvailableDevices();
 
@@ -190,4 +183,4 @@ class DeviceManager {
 } // namespace nn
 } // namespace android
 
-#endif  // FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H

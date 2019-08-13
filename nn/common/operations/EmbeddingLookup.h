@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H
-#define FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H
+#define ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H
 
 #include "HalOperation.h"
 
@@ -28,9 +28,8 @@ struct RunTimeOperandInfo;
 
 class EmbeddingLookup {
  public:
-  EmbeddingLookup(
-      const Operation &operation,
-      std::vector<RunTimeOperandInfo> &operands);
+  EmbeddingLookup(const hardware::neuralnetworks::V1_2::Operation& operation,
+                  std::vector<RunTimeOperandInfo>& operands);
 
   bool Eval();
 
@@ -49,4 +48,4 @@ class EmbeddingLookup {
 }  // namespace nn
 }  // namespace android
 
-#endif  // FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_EMBEDDING_LOOKUP_H

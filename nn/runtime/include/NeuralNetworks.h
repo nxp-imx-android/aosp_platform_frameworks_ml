@@ -23,8 +23,8 @@
  * @file NeuralNetworks.h
  */
 
-#ifndef FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
-#define FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
 
 /******************************************************************
  *
@@ -1931,7 +1931,6 @@ typedef enum {
 
     // Operations below are available since API level 28.
 
-    // TODO: make the description easier to understand.
     /**
      * BatchToSpace for N-dimensional tensors.
      *
@@ -2095,7 +2094,6 @@ typedef enum {
      */
     ANEURALNETWORKS_PAD = 32,
 
-    // TODO: make the description easier to understand.
     /**
      * SpaceToBatch for N-Dimensional tensors.
      *
@@ -4869,10 +4867,11 @@ typedef enum {
      * the same; for odd number of padding, padding to the ending is bigger
      * than the padding to the beginning by 1.
      *
-     * total_padding is a function of input, stride and filter size.
+     * total_padding is a function of input, stride, dilation and filter size.
      * It could be computed as follows:
-     *    out_size = (input + stride - 1) / stride;
-     *    needed_input = (out_size - 1) * stride + filter_size
+     *    out_size = (input + stride - 1) / stride
+     *    effective_filter_size = (filter_size - 1) * dilation + 1
+     *    needed_input = (out_size - 1) * stride + effective_filter_size
      *    total_padding = max(0, needed_input - input_size)
      *  The computation is the same for the horizontal and vertical directions.
      */
@@ -5038,6 +5037,15 @@ enum { ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN = 32 };
  * of the element type byte size, e.g., a tensor with
  * {@link ANEURALNETWORKS_TENSOR_FLOAT32} type must be aligned on 4-byte boundary.
  *
+ * It is the application's responsibility to ensure that there are no uses of
+ * the memory after calling {@link ANeuralNetworksMemory_free}. This includes
+ * any model which references this memory because of a call to
+ * {@link ANeuralNetworksModel_setOperandValueFromMemory}, any compilation
+ * created using such a model, any execution object or burst object created
+ * using such a compilation, or any execution which references this memory
+ * because of a call to {@link ANeuralNetworksExecution_setInputFromMemory} or
+ * {@link ANeuralNetworksExecution_setOutputFromMemory}.
+ *
  * Available since API level 27.
  */
 typedef struct ANeuralNetworksMemory ANeuralNetworksMemory;
@@ -5157,6 +5165,13 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * <p>It is the application's responsibility to make sure that only one thread
  * modifies an execution at a given time. It is however safe for more than one
  * thread to use {@link ANeuralNetworksEvent_wait} at the same time.</p>
+ *
+ * <p>It is also the application's responsibility to ensure that the execution
+ * either has never been scheduled or has completed (i.e., that
+ * {@link ANeuralNetworksExecution_burstCompute},
+ * {@link ANeuralNetworksExecution_compute}, or
+ * {@link ANeuralNetworksEvent_wait} has returned) before calling
+ * {@link ANeuralNetworksExecution_free}.</p>.
  *
  * <p>It is also the application's responsibility to ensure that there are no other
  * uses of the execution after calling {@link ANeuralNetworksExecution_free}.</p>
@@ -5657,8 +5672,6 @@ int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
  * backed by an AHardwareBuffer of a format other than AHARDWAREBUFFER_FORMAT_BLOB is
  * disallowed.
  *
- * TODO(miaowang): add documentation about intended usage with introspection API.
- *
  * Available since API level 29.
  *
  * @param ahwb The AHardwareBuffer handle.
@@ -5770,7 +5783,8 @@ int ANeuralNetworksMemory_createFromFd(size_t size, int protect, int fd, size_t 
  *
  * Available since API level 27.
  *
- * @param memory The memory object to be freed.
+ * @param memory The memory object to be freed. Passing NULL is acceptable and
+ *               results in no operation.
  */
 void ANeuralNetworksMemory_free(ANeuralNetworksMemory* memory) __INTRODUCED_IN(27);
 
@@ -6112,7 +6126,7 @@ int ANeuralNetworksCompilation_create(ANeuralNetworksModel* model,
  * Destroy a compilation.
  *
  * The compilation need not have been finished by a call to
- * {@link ANeuralNetworksModel_finish}.
+ * {@link ANeuralNetworksCompilation_finish}.
  *
  * See {@link ANeuralNetworksCompilation} for information on multithreaded usage.
  *
@@ -6185,12 +6199,15 @@ int ANeuralNetworksExecution_create(ANeuralNetworksCompilation* compilation,
 /**
  * Destroy an execution.
  *
- * <p>If called on an execution for which
- * {@link ANeuralNetworksExecution_startCompute} has been called, the
- * function will return immediately but will mark the execution to be deleted
- * once the computation completes. The related {@link ANeuralNetworksEvent}
- * will be signaled and the {@link ANeuralNetworksEvent_wait} will return
- * ANEURALNETWORKS_ERROR_DELETED.
+ * <p>The execution need not have been scheduled by a call to
+ * {@link ANeuralNetworksExecution_burstCompute},
+ * {@link ANeuralNetworksExecution_compute}, or
+ * {@link ANeuralNetworksExecution_startCompute}; but if it has been scheduled,
+ * then the application must not call {@link ANeuralNetworksExecution_free}
+ * until the execution has completed (i.e.,
+ * {@link ANeuralNetworksExecution_burstCompute},
+ * {@link ANeuralNetworksExecution_compute}, or
+ * {@link ANeuralNetworksEvent_wait} has returned).
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
@@ -6440,6 +6457,9 @@ int ANeuralNetworksEvent_wait(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
  * Available since API level 27.
+ *
+ * @param event The event object to be destroyed. Passing NULL is acceptable and
+ *              results in no operation.
  */
 void ANeuralNetworksEvent_free(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
 
@@ -6447,6 +6467,6 @@ void ANeuralNetworksEvent_free(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
 
 __END_DECLS
 
-#endif  // FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
 
 /** @} */

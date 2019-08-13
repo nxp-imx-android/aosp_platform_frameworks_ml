@@ -978,6 +978,7 @@ class Example:
         self.model = Model.models[-1] if model is None else model
         self.name = name
         self.expectedMultinomialDistributionTolerance = None
+        self.expectFailure = False
         self.feedDicts = []
         for feedDict in args:
             if type(feedDict) is tuple or type(feedDict) is list:
@@ -1159,7 +1160,14 @@ class Example:
     # If set to greater than zero, the input is compared as log-probabilities
     # to the output and must be within this tolerance to pass.
     def WithMultinomialDistributionTolerance(self, expectedTolerance):
+      assert self.expectFailure is False
       self.expectedMultinomialDistributionTolerance = expectedTolerance
+      return self
+
+    # Specifies that this example is expected to fail during compilation or execution.
+    def ExpectFailure(self):
+      assert self.expectedMultinomialDistributionTolerance is None
+      self.expectFailure = True
       return self
 
     # For backward-compatibility with slicing.py
@@ -1219,13 +1227,12 @@ class FileNames:
     modelFile = ""
     exampleFile = ""
     testFile = ""
-    ctsFile = ""
     logFile = ""
     version = ""
     fileIndex = 0
 
     @staticmethod
-    def InitializeFileLists(spec, model, example, test, cts="-", log=""):
+    def InitializeFileLists(spec, model, example, test, log=""):
         # get all spec files and target files
         if os.path.isfile(spec):
             FileNames.specFiles = [os.path.abspath(spec)]
@@ -1239,7 +1246,6 @@ class FileNames:
         FileNames.modelFiles = FileNames.ParseTargetFiles(model, ".model.cpp")
         FileNames.exampleFiles = FileNames.ParseTargetFiles(example, ".example.cpp")
         FileNames.testFiles = FileNames.ParseTargetFiles(test, ".mod.py.cpp")
-        FileNames.ctsFile = os.path.abspath(cts) if cts != "-" else "-"
         FileNames.logFile = ", \"%s\""%log if log != "" else ""
 
     @staticmethod
