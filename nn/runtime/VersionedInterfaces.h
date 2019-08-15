@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
-#define ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
 
 #include "HalInterfaces.h"
 
 #include <android-base/macros.h>
+#include <cstddef>
+#include <functional>
 #include <memory>
+#include <optional>
+#include <shared_mutex>
 #include <string>
 #include <tuple>
+#include <utility>
 #include "Callbacks.h"
 
 namespace android {
@@ -31,8 +36,8 @@ namespace nn {
 // forward declarations
 class ExecutionBurstController;
 class IDeviceDeathHandler;
-class IModelSlicer;
 class IPreparedModelDeathHandler;
+class MetaModel;
 class VersionedIPreparedModel;
 
 /**
@@ -53,6 +58,9 @@ class VersionedIPreparedModel;
 class VersionedIDevice {
     DISALLOW_IMPLICIT_CONSTRUCTORS(VersionedIDevice);
 
+    // forward declaration of nested class
+    class Core;
+
    public:
     /**
      * Create a VersionedIDevice object.
@@ -60,40 +68,26 @@ class VersionedIDevice {
      * Prefer using this function over the constructor, as it adds more
      * protections.
      *
-     * This call linksToDeath a hidl_death_recipient that can
-     * proactively handle the case when the service containing the IDevice
-     * object crashes.
-     *
+     * @param serviceName The name of the service that provides "device".
      * @param device A device object that is at least version 1.0 of the IDevice
      *               interface.
      * @return A valid VersionedIDevice object, otherwise nullptr.
      */
-    static std::shared_ptr<VersionedIDevice> create(sp<V1_0::IDevice> device);
+    static std::shared_ptr<VersionedIDevice> create(std::string serviceName,
+                                                    sp<hal::V1_0::IDevice> device);
 
     /**
      * Constructor for the VersionedIDevice object.
      *
-     * VersionedIDevice is constructed with the V1_0::IDevice object, which
-     * represents a device that is at least v1.0 of the interface. The
-     * constructor downcasts to the latest version of the IDevice interface, and
-     * will default to using the latest version of all IDevice interface
-     * methods automatically.
+     * VersionedIDevice will default to using the latest version of all IDevice
+     * interface methods automatically.
      *
-     * @param device A device object that is at least version 1.0 of the IDevice
-     *               interface.
-     * @param deathHandler A hidl_death_recipient that will proactively handle
-     *                     the case when the service containing the IDevice
-     *                     object crashes.
+     * @param serviceName The name of the service that provides core.getDevice<V1_0::IDevice>().
+     * @param core An object that encapsulates a V1_0::IDevice, any appropriate downcasts to
+     *             newer interfaces, and a hidl_death_recipient that will proactively handle
+     *             the case when the service containing the IDevice object crashes.
      */
-    VersionedIDevice(sp<V1_0::IDevice> device, sp<IDeviceDeathHandler> deathHandler);
-
-    /**
-     * Destructor for the VersionedIDevice object.
-     *
-     * This destructor unlinksToDeath this object's hidl_death_recipient as it
-     * no longer needs to handle the case where the IDevice's service crashes.
-     */
-    ~VersionedIDevice();
+    VersionedIDevice(std::string serviceName, Core core);
 
     /**
      * Gets the capabilities of a driver.
@@ -104,7 +98,7 @@ class VersionedIDevice {
      *                - GENERAL_FAILURE if there is an unspecified error
      * @return capabilities Capabilities of the driver.
      */
-    std::pair<ErrorStatus, Capabilities> getCapabilities();
+    std::pair<hal::ErrorStatus, hal::Capabilities> getCapabilities();
 
     /**
      * Gets information about extensions supported by the driver implementation.
@@ -121,22 +115,24 @@ class VersionedIDevice {
      *     - GENERAL_FAILURE if there is an unspecified error
      * @return extensions A list of supported extensions.
      */
-    std::pair<ErrorStatus, hidl_vec<Extension>> getSupportedExtensions();
+    std::pair<hal::ErrorStatus, hal::hidl_vec<hal::Extension>> getSupportedExtensions();
 
     /**
-     * Gets the supported operations in a model.
+     * Gets the supported operations in a MetaModel.
      *
-     * getSupportedOperations indicates which operations of a model are fully
-     * supported by the vendor driver. If an operation may not be supported for
-     * any reason, getSupportedOperations must return false for that operation.
+     * getSupportedOperations indicates which operations of
+     * MetaModel::getModel() are fully supported by the vendor driver. If an
+     * operation may not be supported for any reason, getSupportedOperations
+     * must return false for that operation.
      *
-     * @param model A model whose operations--and their corresponding
-     *              operands--are to be verified by the driver.
-     * @param slicer When the model is not compliant with the HAL version of the
-     *               vendor driver, the slicer (if any) is employed to query the
-     *               vendor driver about which of the subset of compliant
-     *               operations are supported.  See the IModelSlicer class in
-     *               Utils.h for more details.
+     * @param metaModel A MetaModel whose operations--and their corresponding
+     *                  operands--are to be verified by the driver.  When
+     *                  metaModel.getModel() is not compliant with the HAL
+     *                  version of the vendor driver, the MetaModel's slicing
+     *                  functionality (MetaModel::getSlice*()) is employed
+     *                  to query the vendor driver about which of the subset of
+     *                  compliant operations are supported.  See the MetaModel
+     *                  class in MetaModel.h for more details.
      * @return status Error status of the call, must be:
      *                - NONE if successful
      *                - DEVICE_UNAVAILABLE if driver is offline or busy
@@ -149,8 +145,8 @@ class VersionedIDevice {
      *                             corresponds with the index of the operation
      *                             it is describing.
      */
-    std::pair<ErrorStatus, hidl_vec<bool>> getSupportedOperations(const Model& model,
-                                                                  IModelSlicer* slicer = nullptr);
+    std::pair<hal::ErrorStatus, hal::hidl_vec<bool>> getSupportedOperations(
+            const MetaModel& metaModel);
 
     /**
      * Synchronously creates a prepared model for execution and optionally saves it
@@ -242,10 +238,12 @@ class VersionedIDevice {
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *         that has been prepared for execution, else nullptr.
      */
-    std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
-            const Model& model, ExecutionPreference preference,
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
+    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
+            const hal::Model& model, hal::ExecutionPreference preference,
+            const hal::hidl_vec<hal::hidl_handle>& modelCache,
+            const hal::hidl_vec<hal::hidl_handle>& dataCache,
+            const hal::hidl_array<uint8_t,
+                                  static_cast<uint32_t>(hal::Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
                     token);
 
     /**
@@ -314,9 +312,11 @@ class VersionedIDevice {
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *        that has been prepared for execution, else nullptr.
      */
-    std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
+    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
+            const hal::hidl_vec<hal::hidl_handle>& modelCache,
+            const hal::hidl_vec<hal::hidl_handle>& dataCache,
+            const hal::hidl_array<uint8_t,
+                                  static_cast<uint32_t>(hal::Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
                     token);
 
     /**
@@ -328,7 +328,7 @@ class VersionedIDevice {
      *                - DeviceStatus::OFFLINE
      *                - DeviceStatus::UNKNOWN
      */
-    DeviceStatus getStatus();
+    hal::DeviceStatus getStatus();
 
     /**
      * Returns the feature level of a driver.
@@ -383,7 +383,7 @@ class VersionedIDevice {
      * @return version The version string of the device implementation.
      *     Must have nonzero length if the query is successful, and must be an empty string if not.
      */
-    std::pair<ErrorStatus, hidl_string> getVersionString();
+    std::pair<hal::ErrorStatus, hal::hidl_string> getVersionString();
 
     /**
      * Gets the caching requirements of the driver implementation.
@@ -423,7 +423,14 @@ class VersionedIDevice {
      *                      the driver needs to cache a single prepared model. It must
      *                      be less than or equal to Constant::MAX_NUMBER_OF_CACHE_FILES.
      */
-    std::tuple<ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeeded();
+    std::tuple<hal::ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeeded();
+
+    /**
+     * Returns the name of the service that implements the driver
+     *
+     * @return serviceName The name of the service.
+     */
+    std::string getServiceName() const { return mServiceName; }
 
     /**
      * Returns whether this handle to an IDevice object is valid or not.
@@ -443,33 +450,166 @@ class VersionedIDevice {
 
    private:
     /**
-     * All versions of IDevice are necessary because the driver could be v1.0,
-     * v1.1, or a later version. All these pointers logically represent the same
-     * object.
+     * This is a utility class for VersionedIDevice that encapsulates a
+     * V1_0::IDevice, any appropriate downcasts to newer interfaces, and a
+     * hidl_death_recipient that will proactively handle the case when the
+     * service containing the IDevice object crashes.
      *
-     * The general strategy is: HIDL returns a V1_0 device object, which
-     * (if not nullptr) could be v1.0, v1.1, or a greater version. The V1_0
-     * object is then "dynamically cast" to a V1_1 object. If successful,
-     * mDeviceV1_1 will point to the same object as mDeviceV1_0; otherwise,
-     * mDeviceV1_1 will be nullptr.
-     *
-     * In general:
-     * * If the device is truly v1.0, mDeviceV1_0 will point to a valid object
-     *   and mDeviceV1_1 will be nullptr.
-     * * If the device is truly v1.1 or later, both mDeviceV1_0 and mDeviceV1_1
-     *   will point to the same valid object.
-     *
-     * Idiomatic usage: if mDeviceV1_1 is non-null, do V1_1 dispatch; otherwise,
-     * do V1_0 dispatch.
+     * This is a convenience class to help VersionedIDevice recover from an
+     * IDevice object crash: It bundles together all the data that needs to
+     * change when recovering from a crash, and simplifies the process of
+     * instantiating that data (at VersionedIDevice creation time) and
+     * re-instantiating that data (at crash recovery time).
      */
-    sp<V1_0::IDevice> mDeviceV1_0;
-    sp<V1_1::IDevice> mDeviceV1_1;
-    sp<V1_2::IDevice> mDeviceV1_2;
+    class Core {
+       public:
+        /**
+         * Constructor for the Core object.
+         *
+         * Core is constructed with a V1_0::IDevice object, which represents a
+         * device that is at least v1.0 of the interface. The constructor
+         * downcasts to the latest version of the IDevice interface, allowing
+         * VersionedIDevice to default to using the latest version of all
+         * IDevice interface methods automatically.
+         *
+         * @param device A device object that is at least version 1.0 of the IDevice
+         *               interface.
+         * @param deathHandler A hidl_death_recipient that will proactively handle
+         *                     the case when the service containing the IDevice
+         *                     object crashes.
+         */
+        Core(sp<hal::V1_0::IDevice> device, sp<IDeviceDeathHandler> deathHandler);
 
-    /**
-     * HIDL callback to be invoked if the service for mDeviceV1_0 crashes.
-     */
-    const sp<IDeviceDeathHandler> mDeathHandler;
+        /**
+         * Destructor for the Core object.
+         *
+         * This destructor unlinksToDeath this object's hidl_death_recipient as it
+         * no longer needs to handle the case where the IDevice's service crashes.
+         */
+        ~Core();
+
+        // Support move but not copy
+        Core(Core&&) noexcept;
+        Core& operator=(Core&&) noexcept;
+        Core(const Core&) = delete;
+        Core& operator=(const Core&) = delete;
+
+        /**
+         * Create a Core object.
+         *
+         * Prefer using this function over the constructor, as it adds more
+         * protections.
+         *
+         * This call linksToDeath a hidl_death_recipient that can
+         * proactively handle the case when the service containing the IDevice
+         * object crashes.
+         *
+         * @param device A device object that is at least version 1.0 of the IDevice
+         *               interface.
+         * @return A valid Core object, otherwise nullopt.
+         */
+        static std::optional<Core> create(sp<hal::V1_0::IDevice> device);
+
+        /**
+         * Returns sp<*::IDevice> that is a downcast of the sp<V1_0::IDevice>
+         * passed to the constructor.  This will be nullptr if that IDevice is
+         * not actually of the specified downcast type.
+         */
+        template <typename T_IDevice>
+        sp<T_IDevice> getDevice() const;
+        template <>
+        sp<hal::V1_0::IDevice> getDevice() const {
+            return mDeviceV1_0;
+        }
+        template <>
+        sp<hal::V1_1::IDevice> getDevice() const {
+            return mDeviceV1_1;
+        }
+        template <>
+        sp<hal::V1_2::IDevice> getDevice() const {
+            return mDeviceV1_2;
+        }
+
+        /**
+         * Returns sp<*::IDevice> (as per getDevice()) and the
+         * hidl_death_recipient that will proactively handle the case when the
+         * service containing the IDevice object crashes.
+         */
+        template <typename T_IDevice>
+        std::pair<sp<T_IDevice>, sp<IDeviceDeathHandler>> getDeviceAndDeathHandler() const;
+
+       private:
+        /**
+         * All versions of IDevice are necessary because the driver could be v1.0,
+         * v1.1, or a later version. All these pointers logically represent the same
+         * object.
+         *
+         * The general strategy is: HIDL returns a V1_0 device object, which
+         * (if not nullptr) could be v1.0, v1.1, or a greater version. The V1_0
+         * object is then "dynamically cast" to a V1_1 object. If successful,
+         * mDeviceV1_1 will point to the same object as mDeviceV1_0; otherwise,
+         * mDeviceV1_1 will be nullptr.
+         *
+         * In general:
+         * * If the device is truly v1.0, mDeviceV1_0 will point to a valid object
+         *   and mDeviceV1_1 will be nullptr.
+         * * If the device is truly v1.1 or later, both mDeviceV1_0 and mDeviceV1_1
+         *   will point to the same valid object.
+         *
+         * Idiomatic usage: if mDeviceV1_1 is non-null, do V1_1 dispatch; otherwise,
+         * do V1_0 dispatch.
+         */
+        sp<hal::V1_0::IDevice> mDeviceV1_0;
+        sp<hal::V1_1::IDevice> mDeviceV1_1;
+        sp<hal::V1_2::IDevice> mDeviceV1_2;
+
+        /**
+         * HIDL callback to be invoked if the service for mDeviceV1_0 crashes.
+         *
+         * nullptr if this Core instance is a move victim and hence has no
+         * callback to be unlinked.
+         */
+        sp<IDeviceDeathHandler> mDeathHandler;
+    };
+
+    // This method retrieves the appropriate mCore.mDevice* field, under a read lock.
+    template <typename T_IDevice>
+    sp<T_IDevice> getDevice() const EXCLUDES(mMutex) {
+        std::shared_lock lock(mMutex);
+        return mCore.getDevice<T_IDevice>();
+    }
+
+    // This method retrieves the appropriate mCore.mDevice* fields, under a read lock.
+    template <typename T_IDevice>
+    auto getDeviceAndDeathHandler() const EXCLUDES(mMutex) {
+        std::shared_lock lock(mMutex);
+        return mCore.getDeviceAndDeathHandler<T_IDevice>();
+    }
+
+    // This method calls the function fn in a manner that supports recovering
+    // from a driver crash: If the driver implementation is dead because the
+    // driver crashed either before the call to fn or during the call to fn, we
+    // will attempt to obtain a new instance of the same driver and call fn
+    // again.
+    //
+    // If a callback is provided, this method protects it against driver death
+    // and waits for it (callback->wait()).
+    template <typename T_Return, typename T_IDevice, typename T_Callback = std::nullptr_t>
+    hal::Return<T_Return> recoverable(
+            const char* context,
+            const std::function<hal::Return<T_Return>(const sp<T_IDevice>&)>& fn,
+            const T_Callback& callback = nullptr) const EXCLUDES(mMutex);
+
+    // The name of the service that implements the driver.
+    const std::string mServiceName;
+
+    // Guards access to mCore.
+    mutable std::shared_mutex mMutex;
+
+    // Data that can be rewritten during driver recovery.  Guarded againt
+    // synchronous access by a mutex: Any number of concurrent read accesses is
+    // permitted, but a write access excludes all other accesses.
+    mutable Core mCore GUARDED_BY(mMutex);
 };
 
 /** This class wraps an IPreparedModel object of any version. */
@@ -495,7 +635,7 @@ class VersionedIPreparedModel {
      *                     the case when the service containing the IDevice
      *                     object crashes.
      */
-    VersionedIPreparedModel(sp<V1_0::IPreparedModel> preparedModel,
+    VersionedIPreparedModel(sp<hal::V1_0::IPreparedModel> preparedModel,
                             sp<IPreparedModelDeathHandler> deathHandler);
 
     /**
@@ -552,8 +692,8 @@ class VersionedIPreparedModel {
      *                - INVALID_ARGUMENT if one of the input arguments is
      *                  invalid
      */
-    ErrorStatus execute(const Request& request, MeasureTiming timing,
-                        const sp<ExecutionCallback>& callback);
+    hal::ErrorStatus execute(const hal::Request& request, hal::MeasureTiming timing,
+                             const sp<ExecutionCallback>& callback);
 
     /**
      * Performs a synchronous execution on a prepared model.
@@ -604,8 +744,8 @@ class VersionedIPreparedModel {
      *                choose to report any time as UINT64_MAX, indicating that
      *                measurement is not available.
      */
-    std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronously(
-            const Request& request, MeasureTiming measure);
+    std::tuple<hal::ErrorStatus, hal::hidl_vec<hal::OutputShape>, hal::Timing> executeSynchronously(
+            const hal::Request& request, hal::MeasureTiming measure);
 
     /**
      * Creates a burst controller on a prepared model.
@@ -653,8 +793,8 @@ class VersionedIPreparedModel {
      * Idiomatic usage: if mPreparedModelV1_2 is non-null, do V1_2 dispatch; otherwise,
      * do V1_0 dispatch.
      */
-    sp<V1_0::IPreparedModel> mPreparedModelV1_0;
-    sp<V1_2::IPreparedModel> mPreparedModelV1_2;
+    sp<hal::V1_0::IPreparedModel> mPreparedModelV1_0;
+    sp<hal::V1_2::IPreparedModel> mPreparedModelV1_2;
 
     /**
      * HIDL callback to be invoked if the service for mPreparedModelV1_0 crashes.
@@ -665,4 +805,4 @@ class VersionedIPreparedModel {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H

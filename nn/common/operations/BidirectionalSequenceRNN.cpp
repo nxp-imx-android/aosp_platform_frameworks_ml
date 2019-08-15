@@ -16,6 +16,7 @@
 
 #define LOG_TAG "Operations"
 
+#include "HalInterfaces.h"
 #include "OperationResolver.h"
 #include "RNN.h"
 
@@ -48,6 +49,8 @@ constexpr uint32_t kFwOutputTensor = 0;
 constexpr uint32_t kBwOutputTensor = 1;  // Only if mergeOutputs parameter is false
 
 namespace {
+
+using namespace hal;
 
 template <typename T>
 void transposeFirstTwoDims(const T* input, const Shape& inputShape, T* output) {
@@ -168,12 +171,18 @@ bool executeTyped(IOperationExecutionContext* context) {
     const uint32_t maxTime = getSizeOfDimension(inputShape, 0);
     const uint32_t batchSize = getSizeOfDimension(inputShape, 1);
     const uint32_t inputSize = getSizeOfDimension(inputShape, 2);
-    const uint32_t auxInputSize = getSizeOfDimension(auxInputShape, 2);
+    uint32_t auxInputSize = 0;
+    if (hasAuxInputs) {
+        auxInputSize = getSizeOfDimension(auxInputShape, 2);
+    }
     const uint32_t fwNumUnits = getSizeOfDimension(fwWeightsShape, 0);
     const uint32_t bwNumUnits = getSizeOfDimension(bwWeightsShape, 0);
 
     Shape fixedTimeInputShape = removeFirstDim(inputShape);
-    Shape fixedTimeAuxInputShape = removeFirstDim(auxInputShape);
+    Shape fixedTimeAuxInputShape = auxInputShape;
+    if (hasAuxInputs) {
+        fixedTimeAuxInputShape = removeFirstDim(auxInputShape);
+    }
 
     // Create an additional buffer to store a hidden state between steps.
     std::vector<T> tempHiddenState(batchSize * fwNumUnits);

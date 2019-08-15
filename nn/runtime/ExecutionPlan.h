@@ -16,8 +16,8 @@
 
 // Classes used to plan how to execute a model across multiple devices.
 
-#ifndef ANDROID_ML_NN_RUNTIME_EXECUTION_PLAN_H
-#define ANDROID_ML_NN_RUNTIME_EXECUTION_PLAN_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_PLAN_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_PLAN_H
 
 #include "HalInterfaces.h"
 #include "Memory.h"
@@ -29,8 +29,10 @@
 
 #include <openssl/sha.h>
 
+#include <ostream>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace android {
 namespace nn {
@@ -248,7 +250,12 @@ public:
 
     // These functions are solely intended for use by unit tests of
     // the partitioning algorithm.
-    enum class Kind { ERROR, EMPTY, SIMPLE, COMPOUND };
+    enum class Kind {
+        ERROR,
+        EMPTY,
+        SIMPLE,
+        COMPOUND
+    };  // See operator<< defined outside this class
     Kind forTest_getKind() const;
     std::shared_ptr<const Device> forTest_simpleGetDevice() const;
     const std::vector<std::shared_ptr<ExecutionStep>>& forTest_compoundGetSteps() const;
@@ -321,7 +328,16 @@ public:
     const uint8_t* mToken = nullptr;
 };
 
+inline std::ostream& operator<<(std::ostream& out, ExecutionPlan::Kind kind) {
+    const int intKind = static_cast<int>(kind);
+    if (kind < ExecutionPlan::Kind::ERROR || kind > ExecutionPlan::Kind::COMPOUND) {
+        return out << "<UNK(" << intKind << ")>";
+    }
+    static const char* name[] = {"ERROR", "EMPTY", "SIMPLE", "COMPOUND"};
+    return out << name[intKind];
+}
+
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_ML_NN_RUNTIME_EXECUTION_PLAN_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_PLAN_H

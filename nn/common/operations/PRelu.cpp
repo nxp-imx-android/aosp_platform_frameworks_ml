@@ -21,11 +21,14 @@
 #include "OperationResolver.h"
 #include "OperationsUtils.h"
 #include "Tracing.h"
-#include "tensorflow/lite/kernels/internal/optimized/legacy_optimized_ops.h"
+
+#include <tensorflow/lite/kernels/internal/optimized/legacy_optimized_ops.h>
 
 namespace android {
 namespace nn {
 namespace prelu {
+
+using namespace hal;
 
 constexpr char kOperationName[] = "PRELU";
 
@@ -86,6 +89,7 @@ bool evalQuant8(const uint8_t* aData, const Shape& aShape, const uint8_t* bData,
                                  tflite::MultiplyByQuantizedMultiplier(
                                          input * alpha, output_multiplier_neg, output_shift_neg);
                 }
+                output_val = std::max(0, std::min(255, output_val));
                 return static_cast<uint8_t>(output_val);
             },
             aData, aShape, bData, bShape, outputData, outputShape);

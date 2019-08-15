@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FRAMEWORKS_ML_NN_HASHTABLE_LOOKUP_H
-#define FRAMEWORKS_ML_NN_HASHTABLE_LOOKUP_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_HASHTABLE_LOOKUP_H
+#define ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_HASHTABLE_LOOKUP_H
 
 #include "HalOperation.h"
 
@@ -28,9 +28,8 @@ struct RunTimeOperandInfo;
 
 class HashtableLookup {
  public:
-  HashtableLookup(
-      const Operation &operation,
-      std::vector<RunTimeOperandInfo> &operands);
+  HashtableLookup(const hardware::neuralnetworks::V1_2::Operation& operation,
+                  std::vector<RunTimeOperandInfo>& operands);
 
   bool Eval();
 
@@ -53,4 +52,4 @@ class HashtableLookup {
 }  // namespace nn
 }  // namespace android
 
-#endif  // FRAMEWORKS_ML_NN_HASHTABLE_LOOKUP_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_HASHTABLE_LOOKUP_H

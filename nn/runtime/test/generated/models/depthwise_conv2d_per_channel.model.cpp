@@ -1,8 +1,13 @@
+// Generated from depthwise_conv2d_per_channel.mod.py
+// DO NOT EDIT
 // clang-format off
-// Generated file (from: depthwise_conv2d_per_channel.mod.py). Do not edit
+#include "TestGenerated.h"
+
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_same(Model *model) {
   OperandType type0(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 0);
-  OperandType type1(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f},3));
+  OperandType type1(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, SymmPerChannelQuantParams({0.5f, 0.5f},3));
   OperandType type2(Type::TENSOR_INT32, {2});
   OperandType type3(Type::TENSOR_QUANT8_ASYMM, {1, 1, 1, 2}, 1.0f, 0);
   OperandType type4(Type::INT32, {});
@@ -48,14 +53,17 @@ void CreateModel_same(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_same(int i) {
+bool is_ignored_same(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_same_weight_as_input(Model *model) {
   OperandType type0(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 0);
-  OperandType type11(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f},3));
+  OperandType type11(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, SymmPerChannelQuantParams({0.5f, 0.5f},3));
   OperandType type2(Type::TENSOR_INT32, {2});
   OperandType type3(Type::TENSOR_QUANT8_ASYMM, {1, 1, 1, 2}, 1.0f, 0);
   OperandType type4(Type::INT32, {});
@@ -97,14 +105,17 @@ void CreateModel_same_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_same_weight_as_input(int i) {
+bool is_ignored_same_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_same_dynamic_output_shape(Model *model) {
   OperandType type0(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 0);
-  OperandType type1(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f},3));
+  OperandType type1(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, SymmPerChannelQuantParams({0.5f, 0.5f},3));
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 0);
   OperandType type2(Type::TENSOR_INT32, {2});
   OperandType type4(Type::INT32, {});
@@ -150,15 +161,18 @@ void CreateModel_same_dynamic_output_shape(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_same_dynamic_output_shape(int i) {
+bool is_ignored_same_dynamic_output_shape(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_same_dynamic_output_shape_weight_as_input(Model *model) {
   OperandType type0(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 0);
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 0);
-  OperandType type13(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f},3));
+  OperandType type13(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 2}, SymmPerChannelQuantParams({0.5f, 0.5f},3));
   OperandType type2(Type::TENSOR_INT32, {2});
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -199,15 +213,18 @@ void CreateModel_same_dynamic_output_shape_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_same_dynamic_output_shape_weight_as_input(int i) {
+bool is_ignored_same_dynamic_output_shape_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_different(Model *model) {
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
-  OperandType type6(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type6(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type7(Type::TENSOR_INT32, {4});
   OperandType type8(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 4}, 1.0f, 128);
   // Phase 1, operands
@@ -252,13 +269,16 @@ void CreateModel_different(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_different(int i) {
+bool is_ignored_different(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_different_weight_as_input(Model *model) {
-  OperandType type14(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type14(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
   OperandType type7(Type::TENSOR_INT32, {4});
@@ -301,16 +321,19 @@ void CreateModel_different_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_different_weight_as_input(int i) {
+bool is_ignored_different_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
 
 void CreateModel_different_dynamic_output_shape(Model *model) {
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
-  OperandType type6(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type6(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type7(Type::TENSOR_INT32, {4});
   // Phase 1, operands
   auto op11 = model->addOperand(&type5);
@@ -354,14 +377,17 @@ void CreateModel_different_dynamic_output_shape(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_different_dynamic_output_shape(int i) {
+bool is_ignored_different_dynamic_output_shape(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_different_dynamic_output_shape_weight_as_input(Model *model) {
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
-  OperandType type16(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type16(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
   OperandType type7(Type::TENSOR_INT32, {4});
@@ -403,13 +429,16 @@ void CreateModel_different_dynamic_output_shape_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_different_dynamic_output_shape_weight_as_input(int i) {
+bool is_ignored_different_dynamic_output_shape_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_nhwc(Model *model) {
-  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
   OperandType type7(Type::TENSOR_INT32, {4});
@@ -460,13 +489,16 @@ void CreateModel_layout_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_nhwc(int i) {
+bool is_ignored_layout_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_nhwc_weight_as_input(Model *model) {
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
   OperandType type7(Type::TENSOR_INT32, {4});
@@ -513,13 +545,16 @@ void CreateModel_layout_nhwc_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_nhwc_weight_as_input(int i) {
+bool is_ignored_layout_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_nchw(Model *model) {
-  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type18(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.5f, 128);
   OperandType type19(Type::TENSOR_QUANT8_ASYMM, {1, 4, 2, 2}, 1.0f, 128);
   OperandType type4(Type::INT32, {});
@@ -570,15 +605,18 @@ void CreateModel_layout_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_nchw(int i) {
+bool is_ignored_layout_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_nchw_weight_as_input(Model *model) {
   OperandType type18(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.5f, 128);
   OperandType type19(Type::TENSOR_QUANT8_ASYMM, {1, 4, 2, 2}, 1.0f, 128);
-  OperandType type20(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type20(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type7(Type::TENSOR_INT32, {4});
   OperandType type9(Type::BOOL, {});
@@ -623,13 +661,16 @@ void CreateModel_layout_nchw_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_nchw_weight_as_input(int i) {
+bool is_ignored_layout_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_dynamic_output_shape_nhwc(Model *model) {
-  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
@@ -680,14 +721,17 @@ void CreateModel_layout_dynamic_output_shape_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_dynamic_output_shape_nhwc(int i) {
+bool is_ignored_layout_dynamic_output_shape_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_dynamic_output_shape_nhwc_weight_as_input(Model *model) {
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type5(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.5f, 128);
   OperandType type7(Type::TENSOR_INT32, {4});
@@ -733,13 +777,16 @@ void CreateModel_layout_dynamic_output_shape_nhwc_weight_as_input(Model *model) 
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_dynamic_output_shape_nhwc_weight_as_input(int i) {
+bool is_ignored_layout_dynamic_output_shape_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_dynamic_output_shape_nchw(Model *model) {
-  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type10(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
   OperandType type18(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.5f, 128);
   OperandType type4(Type::INT32, {});
@@ -790,15 +837,18 @@ void CreateModel_layout_dynamic_output_shape_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_dynamic_output_shape_nchw(int i) {
+bool is_ignored_layout_dynamic_output_shape_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel
+namespace generated_tests::depthwise_conv2d_per_channel {
+
 void CreateModel_layout_dynamic_output_shape_nchw_weight_as_input(Model *model) {
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 1.0f, 128);
   OperandType type18(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.5f, 128);
-  OperandType type22(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, 0.0f, 0, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
+  OperandType type22(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {1, 2, 2, 4}, SymmPerChannelQuantParams({1.0f, 0.5f, 1.0f, 0.5f},3));
   OperandType type4(Type::INT32, {});
   OperandType type7(Type::TENSOR_INT32, {4});
   OperandType type9(Type::BOOL, {});
@@ -843,8 +893,9 @@ void CreateModel_layout_dynamic_output_shape_nchw_weight_as_input(Model *model) 
   assert(model->isValid());
 }
 
-inline bool is_ignored_layout_dynamic_output_shape_nchw_weight_as_input(int i) {
+bool is_ignored_layout_dynamic_output_shape_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::depthwise_conv2d_per_channel

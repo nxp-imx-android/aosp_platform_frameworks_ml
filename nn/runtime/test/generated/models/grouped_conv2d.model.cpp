@@ -1,5 +1,10 @@
+// Generated from grouped_conv2d.mod.py
+// DO NOT EDIT
 // clang-format off
-// Generated file (from: grouped_conv2d.mod.py). Do not edit
+#include "TestGenerated.h"
+
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nhwc_none(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type1(Type::TENSOR_FLOAT32, {1, 3, 3, 2});
@@ -52,10 +57,13 @@ void CreateModel_nhwc_none(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none(int i) {
+bool is_ignored_nhwc_none(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -105,10 +113,13 @@ void CreateModel_nhwc_none_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_weight_as_input(int i) {
+bool is_ignored_nhwc_none_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -164,10 +175,13 @@ void CreateModel_nhwc_none_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_relaxed(int i) {
+bool is_ignored_nhwc_none_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -219,10 +233,13 @@ void CreateModel_nhwc_none_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_relaxed_weight_as_input(int i) {
+bool is_ignored_nhwc_none_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -276,10 +293,13 @@ void CreateModel_nhwc_none_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_quant8(int i) {
+bool is_ignored_nhwc_none_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -329,10 +349,13 @@ void CreateModel_nhwc_none_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_quant8_weight_as_input(int i) {
+bool is_ignored_nhwc_none_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -386,10 +409,13 @@ void CreateModel_nhwc_none_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_quant8_2(int i) {
+bool is_ignored_nhwc_none_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -439,16 +465,19 @@ void CreateModel_nhwc_none_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_quant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_none_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -496,16 +525,19 @@ void CreateModel_nhwc_none_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_channelQuant8(int i) {
+bool is_ignored_nhwc_none_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type19(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type19(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type20(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -549,15 +581,18 @@ void CreateModel_nhwc_none_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nhwc_none_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nhwc_none_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -606,16 +641,19 @@ void CreateModel_nhwc_none_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_channelQuant8_2(int i) {
+bool is_ignored_nhwc_none_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
-  OperandType type24(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type24(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type25(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -659,10 +697,13 @@ void CreateModel_nhwc_none_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_none_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -716,10 +757,13 @@ void CreateModel_nhwc_none_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_float16(int i) {
+bool is_ignored_nhwc_none_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_none_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -769,10 +813,13 @@ void CreateModel_nhwc_none_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_none_float16_weight_as_input(int i) {
+bool is_ignored_nhwc_none_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -826,10 +873,13 @@ void CreateModel_nhwc_relu(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu(int i) {
+bool is_ignored_nhwc_relu(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -879,10 +929,13 @@ void CreateModel_nhwc_relu_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_weight_as_input(int i) {
+bool is_ignored_nhwc_relu_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -938,10 +991,13 @@ void CreateModel_nhwc_relu_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_relaxed(int i) {
+bool is_ignored_nhwc_relu_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -993,10 +1049,13 @@ void CreateModel_nhwc_relu_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_relaxed_weight_as_input(int i) {
+bool is_ignored_nhwc_relu_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1050,10 +1109,13 @@ void CreateModel_nhwc_relu_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_quant8(int i) {
+bool is_ignored_nhwc_relu_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1103,10 +1165,13 @@ void CreateModel_nhwc_relu_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_quant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1160,10 +1225,13 @@ void CreateModel_nhwc_relu_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_quant8_2(int i) {
+bool is_ignored_nhwc_relu_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1213,16 +1281,19 @@ void CreateModel_nhwc_relu_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_quant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -1270,16 +1341,19 @@ void CreateModel_nhwc_relu_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_channelQuant8(int i) {
+bool is_ignored_nhwc_relu_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type32(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type32(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type33(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -1323,15 +1397,18 @@ void CreateModel_nhwc_relu_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nhwc_relu_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -1380,16 +1457,19 @@ void CreateModel_nhwc_relu_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_channelQuant8_2(int i) {
+bool is_ignored_nhwc_relu_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
-  OperandType type34(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type34(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type35(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -1433,10 +1513,13 @@ void CreateModel_nhwc_relu_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1490,10 +1573,13 @@ void CreateModel_nhwc_relu_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_float16(int i) {
+bool is_ignored_nhwc_relu_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1543,10 +1629,13 @@ void CreateModel_nhwc_relu_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu_float16_weight_as_input(int i) {
+bool is_ignored_nhwc_relu_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1600,10 +1689,13 @@ void CreateModel_nhwc_relu1(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1(int i) {
+bool is_ignored_nhwc_relu1(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1653,10 +1745,13 @@ void CreateModel_nhwc_relu1_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_weight_as_input(int i) {
+bool is_ignored_nhwc_relu1_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1712,10 +1807,13 @@ void CreateModel_nhwc_relu1_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_relaxed(int i) {
+bool is_ignored_nhwc_relu1_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1767,10 +1865,13 @@ void CreateModel_nhwc_relu1_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_relaxed_weight_as_input(int i) {
+bool is_ignored_nhwc_relu1_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1824,10 +1925,13 @@ void CreateModel_nhwc_relu1_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_quant8(int i) {
+bool is_ignored_nhwc_relu1_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1877,10 +1981,13 @@ void CreateModel_nhwc_relu1_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_quant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu1_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1934,10 +2041,13 @@ void CreateModel_nhwc_relu1_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_quant8_2(int i) {
+bool is_ignored_nhwc_relu1_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -1987,16 +2097,19 @@ void CreateModel_nhwc_relu1_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_quant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu1_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -2044,16 +2157,19 @@ void CreateModel_nhwc_relu1_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_channelQuant8(int i) {
+bool is_ignored_nhwc_relu1_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type36(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type36(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type37(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -2097,15 +2213,18 @@ void CreateModel_nhwc_relu1_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu1_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nhwc_relu1_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -2154,16 +2273,19 @@ void CreateModel_nhwc_relu1_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_channelQuant8_2(int i) {
+bool is_ignored_nhwc_relu1_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
-  OperandType type38(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type38(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type39(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -2207,10 +2329,13 @@ void CreateModel_nhwc_relu1_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu1_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2264,10 +2389,13 @@ void CreateModel_nhwc_relu1_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_float16(int i) {
+bool is_ignored_nhwc_relu1_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu1_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2317,10 +2445,13 @@ void CreateModel_nhwc_relu1_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu1_float16_weight_as_input(int i) {
+bool is_ignored_nhwc_relu1_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2374,10 +2505,13 @@ void CreateModel_nhwc_relu6(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6(int i) {
+bool is_ignored_nhwc_relu6(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2427,10 +2561,13 @@ void CreateModel_nhwc_relu6_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_weight_as_input(int i) {
+bool is_ignored_nhwc_relu6_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2486,10 +2623,13 @@ void CreateModel_nhwc_relu6_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_relaxed(int i) {
+bool is_ignored_nhwc_relu6_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2541,10 +2681,13 @@ void CreateModel_nhwc_relu6_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_relaxed_weight_as_input(int i) {
+bool is_ignored_nhwc_relu6_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2598,10 +2741,13 @@ void CreateModel_nhwc_relu6_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_quant8(int i) {
+bool is_ignored_nhwc_relu6_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2651,10 +2797,13 @@ void CreateModel_nhwc_relu6_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_quant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu6_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2708,10 +2857,13 @@ void CreateModel_nhwc_relu6_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_quant8_2(int i) {
+bool is_ignored_nhwc_relu6_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -2761,16 +2913,19 @@ void CreateModel_nhwc_relu6_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_quant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu6_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -2818,17 +2973,20 @@ void CreateModel_nhwc_relu6_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_channelQuant8(int i) {
+bool is_ignored_nhwc_relu6_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
   OperandType type4(Type::INT32, {});
-  OperandType type40(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type40(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type41(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -2871,15 +3029,18 @@ void CreateModel_nhwc_relu6_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nhwc_relu6_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nhwc_relu6_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -2928,17 +3089,20 @@ void CreateModel_nhwc_relu6_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_channelQuant8_2(int i) {
+bool is_ignored_nhwc_relu6_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
-  OperandType type42(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type42(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type43(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -2981,10 +3145,13 @@ void CreateModel_nhwc_relu6_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nhwc_relu6_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3038,10 +3205,13 @@ void CreateModel_nhwc_relu6_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_float16(int i) {
+bool is_ignored_nhwc_relu6_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nhwc_relu6_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3091,10 +3261,13 @@ void CreateModel_nhwc_relu6_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nhwc_relu6_float16_weight_as_input(int i) {
+bool is_ignored_nhwc_relu6_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3148,10 +3321,13 @@ void CreateModel_nchw_none(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none(int i) {
+bool is_ignored_nchw_none(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3201,10 +3377,13 @@ void CreateModel_nchw_none_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_weight_as_input(int i) {
+bool is_ignored_nchw_none_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3260,10 +3439,13 @@ void CreateModel_nchw_none_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_relaxed(int i) {
+bool is_ignored_nchw_none_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3315,10 +3497,13 @@ void CreateModel_nchw_none_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_relaxed_weight_as_input(int i) {
+bool is_ignored_nchw_none_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3372,10 +3557,13 @@ void CreateModel_nchw_none_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_quant8(int i) {
+bool is_ignored_nchw_none_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3425,10 +3613,13 @@ void CreateModel_nchw_none_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_quant8_weight_as_input(int i) {
+bool is_ignored_nchw_none_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3482,10 +3673,13 @@ void CreateModel_nchw_none_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_quant8_2(int i) {
+bool is_ignored_nchw_none_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3535,15 +3729,18 @@ void CreateModel_nchw_none_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_quant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_none_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_none_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -3592,17 +3789,20 @@ void CreateModel_nchw_none_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_channelQuant8(int i) {
+bool is_ignored_nchw_none_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type46(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type46(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type47(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -3645,14 +3845,17 @@ void CreateModel_nchw_none_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nchw_none_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_none_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -3702,17 +3905,20 @@ void CreateModel_nchw_none_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_channelQuant8_2(int i) {
+bool is_ignored_nchw_none_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type48(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type48(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type49(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -3755,10 +3961,13 @@ void CreateModel_nchw_none_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_none_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3812,10 +4021,13 @@ void CreateModel_nchw_none_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_float16(int i) {
+bool is_ignored_nchw_none_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_none_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3865,10 +4077,13 @@ void CreateModel_nchw_none_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_none_float16_weight_as_input(int i) {
+bool is_ignored_nchw_none_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3922,10 +4137,13 @@ void CreateModel_nchw_relu(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu(int i) {
+bool is_ignored_nchw_relu(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -3975,10 +4193,13 @@ void CreateModel_nchw_relu_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_weight_as_input(int i) {
+bool is_ignored_nchw_relu_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4034,10 +4255,13 @@ void CreateModel_nchw_relu_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_relaxed(int i) {
+bool is_ignored_nchw_relu_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4089,10 +4313,13 @@ void CreateModel_nchw_relu_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_relaxed_weight_as_input(int i) {
+bool is_ignored_nchw_relu_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4146,10 +4373,13 @@ void CreateModel_nchw_relu_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_quant8(int i) {
+bool is_ignored_nchw_relu_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4199,10 +4429,13 @@ void CreateModel_nchw_relu_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_quant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4256,10 +4489,13 @@ void CreateModel_nchw_relu_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_quant8_2(int i) {
+bool is_ignored_nchw_relu_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4309,15 +4545,18 @@ void CreateModel_nchw_relu_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_quant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -4366,17 +4605,20 @@ void CreateModel_nchw_relu_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_channelQuant8(int i) {
+bool is_ignored_nchw_relu_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type51(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type51(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type52(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -4419,14 +4661,17 @@ void CreateModel_nchw_relu_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -4476,17 +4721,20 @@ void CreateModel_nchw_relu_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_channelQuant8_2(int i) {
+bool is_ignored_nchw_relu_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type53(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type53(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type54(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -4529,10 +4777,13 @@ void CreateModel_nchw_relu_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4586,10 +4837,13 @@ void CreateModel_nchw_relu_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_float16(int i) {
+bool is_ignored_nchw_relu_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4639,10 +4893,13 @@ void CreateModel_nchw_relu_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu_float16_weight_as_input(int i) {
+bool is_ignored_nchw_relu_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4696,10 +4953,13 @@ void CreateModel_nchw_relu1(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1(int i) {
+bool is_ignored_nchw_relu1(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4749,10 +5009,13 @@ void CreateModel_nchw_relu1_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_weight_as_input(int i) {
+bool is_ignored_nchw_relu1_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4808,10 +5071,13 @@ void CreateModel_nchw_relu1_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_relaxed(int i) {
+bool is_ignored_nchw_relu1_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4863,10 +5129,13 @@ void CreateModel_nchw_relu1_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_relaxed_weight_as_input(int i) {
+bool is_ignored_nchw_relu1_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4920,10 +5189,13 @@ void CreateModel_nchw_relu1_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_quant8(int i) {
+bool is_ignored_nchw_relu1_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -4973,10 +5245,13 @@ void CreateModel_nchw_relu1_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_quant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu1_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5030,10 +5305,13 @@ void CreateModel_nchw_relu1_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_quant8_2(int i) {
+bool is_ignored_nchw_relu1_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5083,15 +5361,18 @@ void CreateModel_nchw_relu1_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_quant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu1_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu1_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -5140,17 +5421,20 @@ void CreateModel_nchw_relu1_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_channelQuant8(int i) {
+bool is_ignored_nchw_relu1_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type55(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type55(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type56(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -5193,14 +5477,17 @@ void CreateModel_nchw_relu1_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu1_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu1_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -5250,17 +5537,20 @@ void CreateModel_nchw_relu1_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_channelQuant8_2(int i) {
+bool is_ignored_nchw_relu1_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type57(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type57(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type58(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -5303,10 +5593,13 @@ void CreateModel_nchw_relu1_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu1_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5360,10 +5653,13 @@ void CreateModel_nchw_relu1_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_float16(int i) {
+bool is_ignored_nchw_relu1_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu1_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5413,10 +5709,13 @@ void CreateModel_nchw_relu1_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu1_float16_weight_as_input(int i) {
+bool is_ignored_nchw_relu1_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5470,10 +5769,13 @@ void CreateModel_nchw_relu6(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6(int i) {
+bool is_ignored_nchw_relu6(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5523,10 +5825,13 @@ void CreateModel_nchw_relu6_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_weight_as_input(int i) {
+bool is_ignored_nchw_relu6_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5582,10 +5887,13 @@ void CreateModel_nchw_relu6_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_relaxed(int i) {
+bool is_ignored_nchw_relu6_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5637,10 +5945,13 @@ void CreateModel_nchw_relu6_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_relaxed_weight_as_input(int i) {
+bool is_ignored_nchw_relu6_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5694,10 +6005,13 @@ void CreateModel_nchw_relu6_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_quant8(int i) {
+bool is_ignored_nchw_relu6_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5747,10 +6061,13 @@ void CreateModel_nchw_relu6_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_quant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu6_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5804,10 +6121,13 @@ void CreateModel_nchw_relu6_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_quant8_2(int i) {
+bool is_ignored_nchw_relu6_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -5857,15 +6177,18 @@ void CreateModel_nchw_relu6_quant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_quant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu6_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu6_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -5914,17 +6237,20 @@ void CreateModel_nchw_relu6_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_channelQuant8(int i) {
+bool is_ignored_nchw_relu6_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type15(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.5f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type59(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type59(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type60(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -5967,14 +6293,17 @@ void CreateModel_nchw_relu6_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_channelQuant8_weight_as_input(int i) {
+bool is_ignored_nchw_relu6_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_nchw_relu6_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
@@ -6024,17 +6353,20 @@ void CreateModel_nchw_relu6_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_channelQuant8_2(int i) {
+bool is_ignored_nchw_relu6_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type23(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 2}, 0.1f, 80);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
-  OperandType type61(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type61(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type62(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -6077,10 +6409,13 @@ void CreateModel_nchw_relu6_channelQuant8_weight_as_input_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_nchw_relu6_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6134,10 +6469,13 @@ void CreateModel_nchw_relu6_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_float16(int i) {
+bool is_ignored_nchw_relu6_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_nchw_relu6_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6187,10 +6525,13 @@ void CreateModel_nchw_relu6_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_nchw_relu6_float16_weight_as_input(int i) {
+bool is_ignored_nchw_relu6_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6244,10 +6585,13 @@ void CreateModel_dynamic_output_shape_nhwc_none(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6297,10 +6641,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6356,10 +6703,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6411,10 +6761,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_relaxed_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6468,10 +6821,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6521,10 +6877,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_quant8_weight_as_input(Model *mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6578,10 +6937,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6631,15 +6993,18 @@ void CreateModel_dynamic_output_shape_nhwc_none_quant8_weight_as_input_2(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
@@ -6688,17 +7053,20 @@ void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type66(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type66(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type67(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -6741,15 +7109,18 @@ void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input(Mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
@@ -6798,17 +7169,20 @@ void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type69(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type69(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type70(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -6851,10 +7225,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input_2(
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6908,10 +7285,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_float16(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_none_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -6961,10 +7341,13 @@ void CreateModel_dynamic_output_shape_nhwc_none_float16_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_none_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_none_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7018,10 +7401,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7071,10 +7457,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7130,10 +7519,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7185,10 +7577,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_relaxed_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7242,10 +7637,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7295,10 +7693,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_quant8_weight_as_input(Model *mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7352,10 +7753,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7405,15 +7809,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu_quant8_weight_as_input_2(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
@@ -7462,17 +7869,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type72(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type72(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type73(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -7515,15 +7925,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input(Mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
@@ -7572,17 +7985,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type74(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type74(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type75(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -7625,10 +8041,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input_2(
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7682,10 +8101,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_float16(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7735,10 +8157,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu_float16_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7792,10 +8217,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7845,10 +8273,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7904,10 +8335,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -7959,10 +8393,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8016,10 +8453,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8069,10 +8509,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8126,10 +8569,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8179,15 +8625,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input_2(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
@@ -8236,17 +8685,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type76(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type76(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type77(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -8289,15 +8741,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
@@ -8346,17 +8801,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type78(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type78(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type79(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -8399,10 +8857,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input_2
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8456,10 +8917,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_float16(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu1_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8509,10 +8973,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu1_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu1_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu1_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8566,10 +9033,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8619,10 +9089,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8678,10 +9151,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8733,10 +9209,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8790,10 +9269,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8843,10 +9325,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8900,10 +9385,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -8953,15 +9441,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input_2(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
@@ -9010,17 +9501,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type80(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type80(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type81(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -9063,15 +9557,18 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
@@ -9120,17 +9617,20 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type12(Type::TENSOR_QUANT8_ASYMM, {1, 3, 3, 2}, 0.25f, 100);
   OperandType type4(Type::INT32, {});
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type82(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type82(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type83(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type12);
@@ -9173,10 +9673,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input_2
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9230,10 +9733,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_float16(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nhwc_relu6_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9283,10 +9789,13 @@ void CreateModel_dynamic_output_shape_nhwc_relu6_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nhwc_relu6_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nhwc_relu6_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9340,10 +9849,13 @@ void CreateModel_dynamic_output_shape_nchw_none(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9393,10 +9905,13 @@ void CreateModel_dynamic_output_shape_nchw_none_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9452,10 +9967,13 @@ void CreateModel_dynamic_output_shape_nchw_none_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9507,10 +10025,13 @@ void CreateModel_dynamic_output_shape_nchw_none_relaxed_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9564,10 +10085,13 @@ void CreateModel_dynamic_output_shape_nchw_none_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9617,10 +10141,13 @@ void CreateModel_dynamic_output_shape_nchw_none_quant8_weight_as_input(Model *mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9674,10 +10201,13 @@ void CreateModel_dynamic_output_shape_nchw_none_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -9727,14 +10257,17 @@ void CreateModel_dynamic_output_shape_nchw_none_quant8_weight_as_input_2(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_none_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -9784,17 +10317,20 @@ void CreateModel_dynamic_output_shape_nchw_none_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type84(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type84(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type85(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -9837,14 +10373,17 @@ void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input(Mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -9894,17 +10433,20 @@ void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type86(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type86(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type87(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -9947,10 +10489,13 @@ void CreateModel_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input_2(
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10004,10 +10549,13 @@ void CreateModel_dynamic_output_shape_nchw_none_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_float16(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_none_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10057,10 +10605,13 @@ void CreateModel_dynamic_output_shape_nchw_none_float16_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_none_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_none_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10114,10 +10665,13 @@ void CreateModel_dynamic_output_shape_nchw_relu(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10167,10 +10721,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10226,10 +10783,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10281,10 +10841,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_relaxed_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10338,10 +10901,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10391,10 +10957,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_quant8_weight_as_input(Model *mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10448,10 +11017,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10501,14 +11073,17 @@ void CreateModel_dynamic_output_shape_nchw_relu_quant8_weight_as_input_2(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -10558,17 +11133,20 @@ void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type88(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type88(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type89(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -10611,14 +11189,17 @@ void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input(Mo
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -10668,17 +11249,20 @@ void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type90(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type90(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type91(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -10721,10 +11305,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input_2(
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10778,10 +11365,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_float16(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10831,10 +11421,13 @@ void CreateModel_dynamic_output_shape_nchw_relu_float16_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10888,10 +11481,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -10941,10 +11537,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11000,10 +11599,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11055,10 +11657,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11112,10 +11717,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11165,10 +11773,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11222,10 +11833,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11275,14 +11889,17 @@ void CreateModel_dynamic_output_shape_nchw_relu1_quant8_weight_as_input_2(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -11332,17 +11949,20 @@ void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type92(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type92(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type93(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -11385,14 +12005,17 @@ void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -11442,17 +12065,20 @@ void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type94(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type94(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type95(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -11495,10 +12121,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input_2
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11552,10 +12181,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_float16(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu1_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11605,10 +12237,13 @@ void CreateModel_dynamic_output_shape_nchw_relu1_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu1_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu1_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11662,10 +12297,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11715,10 +12353,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11774,10 +12415,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_relaxed(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11829,10 +12473,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_relaxed_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11886,10 +12533,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_quant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11939,10 +12589,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_quant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -11996,10 +12649,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_quant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_quant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12049,14 +12705,17 @@ void CreateModel_dynamic_output_shape_nchw_relu6_quant8_weight_as_input_2(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_quant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type17(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type18(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -12106,17 +12765,20 @@ void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type64(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
-  OperandType type96(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type96(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type97(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -12159,14 +12821,17 @@ void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_2(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type21(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type22(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
@@ -12216,17 +12881,20 @@ void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_2(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input_2(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type4(Type::INT32, {});
   OperandType type45(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 3}, 0.25f, 100);
   OperandType type68(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.1f, 80);
-  OperandType type98(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.5f},0));
+  OperandType type98(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 2, 1}, SymmPerChannelQuantParams({0.25f, 0.5f},0));
   OperandType type99(Type::TENSOR_INT32, {2}, 0.0f, 0);
   // Phase 1, operands
   auto op1 = model->addOperand(&type45);
@@ -12269,10 +12937,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input_2
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input_2(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_channelQuant8_weight_as_input_2(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12326,10 +12997,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_float16(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_dynamic_output_shape_nchw_relu6_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12379,10 +13053,13 @@ void CreateModel_dynamic_output_shape_nchw_relu6_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_nchw_relu6_float16_weight_as_input(int i) {
+bool is_ignored_dynamic_output_shape_nchw_relu6_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12426,10 +13103,13 @@ void CreateModel_large_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc(int i) {
+bool is_ignored_large_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12469,10 +13149,13 @@ void CreateModel_large_nhwc_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_weight_as_input(int i) {
+bool is_ignored_large_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12518,10 +13201,13 @@ void CreateModel_large_nhwc_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_relaxed(int i) {
+bool is_ignored_large_nhwc_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12563,10 +13249,13 @@ void CreateModel_large_nhwc_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_relaxed_weight_as_input(int i) {
+bool is_ignored_large_nhwc_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12611,10 +13300,13 @@ void CreateModel_large_nhwc_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_quant8(int i) {
+bool is_ignored_large_nhwc_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12655,16 +13347,19 @@ void CreateModel_large_nhwc_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_quant8_weight_as_input(int i) {
+bool is_ignored_large_nhwc_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type100(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 0.25f, 128);
   OperandType type103(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 10.0f, 100);
-  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type105(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -12703,16 +13398,19 @@ void CreateModel_large_nhwc_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_channelQuant8(int i) {
+bool is_ignored_large_nhwc_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type100(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 0.25f, 128);
   OperandType type103(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 10.0f, 100);
-  OperandType type106(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type106(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type107(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -12747,10 +13445,13 @@ void CreateModel_large_nhwc_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_channelQuant8_weight_as_input(int i) {
+bool is_ignored_large_nhwc_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12794,10 +13495,13 @@ void CreateModel_large_nhwc_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_float16(int i) {
+bool is_ignored_large_nhwc_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nhwc_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12837,10 +13541,13 @@ void CreateModel_large_nhwc_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nhwc_float16_weight_as_input(int i) {
+bool is_ignored_large_nhwc_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12884,10 +13591,13 @@ void CreateModel_large_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw(int i) {
+bool is_ignored_large_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12927,10 +13637,13 @@ void CreateModel_large_nchw_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_weight_as_input(int i) {
+bool is_ignored_large_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -12976,10 +13689,13 @@ void CreateModel_large_nchw_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_relaxed(int i) {
+bool is_ignored_large_nchw_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13021,10 +13737,13 @@ void CreateModel_large_nchw_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_relaxed_weight_as_input(int i) {
+bool is_ignored_large_nchw_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13069,10 +13788,13 @@ void CreateModel_large_nchw_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_quant8(int i) {
+bool is_ignored_large_nchw_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13113,14 +13835,17 @@ void CreateModel_large_nchw_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_quant8_weight_as_input(int i) {
+bool is_ignored_large_nchw_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_large_nchw_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type105(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type112(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 0.25f, 128);
   OperandType type113(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 10.0f, 100);
@@ -13161,16 +13886,19 @@ void CreateModel_large_nchw_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_channelQuant8(int i) {
+bool is_ignored_large_nchw_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type112(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 0.25f, 128);
   OperandType type113(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 10.0f, 100);
-  OperandType type114(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type114(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type115(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -13205,10 +13933,13 @@ void CreateModel_large_nchw_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_channelQuant8_weight_as_input(int i) {
+bool is_ignored_large_nchw_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13252,10 +13983,13 @@ void CreateModel_large_nchw_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_float16(int i) {
+bool is_ignored_large_nchw_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_nchw_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13295,10 +14029,13 @@ void CreateModel_large_nchw_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_nchw_float16_weight_as_input(int i) {
+bool is_ignored_large_nchw_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13343,10 +14080,13 @@ void CreateModel_large_dynamic_output_shape_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13387,10 +14127,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13437,10 +14180,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_relaxed(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13483,10 +14229,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_relaxed_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13531,10 +14280,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_quant8(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13575,15 +14327,18 @@ void CreateModel_large_dynamic_output_shape_nhwc_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_quant8_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_large_dynamic_output_shape_nhwc_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type100(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 0.25f, 128);
-  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type105(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type117(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 10.0f, 100);
   OperandType type4(Type::INT32, {});
@@ -13623,16 +14378,19 @@ void CreateModel_large_dynamic_output_shape_nhwc_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_channelQuant8(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type100(Type::TENSOR_QUANT8_ASYMM, {1, 3, 2, 2}, 0.25f, 128);
   OperandType type117(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 10.0f, 100);
-  OperandType type118(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type118(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type119(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -13667,10 +14425,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13715,10 +14476,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_float16(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nhwc_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13759,10 +14523,13 @@ void CreateModel_large_dynamic_output_shape_nhwc_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nhwc_float16_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nhwc_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13807,10 +14574,13 @@ void CreateModel_large_dynamic_output_shape_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13851,10 +14621,13 @@ void CreateModel_large_dynamic_output_shape_nchw_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13901,10 +14674,13 @@ void CreateModel_large_dynamic_output_shape_nchw_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_relaxed(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13947,10 +14723,13 @@ void CreateModel_large_dynamic_output_shape_nchw_relaxed_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_relaxed_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -13995,10 +14774,13 @@ void CreateModel_large_dynamic_output_shape_nchw_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_quant8(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14039,14 +14821,17 @@ void CreateModel_large_dynamic_output_shape_nchw_quant8_weight_as_input(Model *m
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_quant8_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_large_dynamic_output_shape_nchw_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type104(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type105(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type112(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 0.25f, 128);
   OperandType type117(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 10.0f, 100);
@@ -14087,16 +14872,19 @@ void CreateModel_large_dynamic_output_shape_nchw_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_channelQuant8(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type112(Type::TENSOR_QUANT8_ASYMM, {1, 2, 3, 2}, 0.25f, 128);
   OperandType type117(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 10.0f, 100);
-  OperandType type120(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, 0.0f, 0, SymmPerChannelQuantParams({2.0f, 2.5f},0));
+  OperandType type120(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {2, 2, 3, 1}, SymmPerChannelQuantParams({2.0f, 2.5f},0));
   OperandType type121(Type::TENSOR_INT32, {2}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -14131,10 +14919,13 @@ void CreateModel_large_dynamic_output_shape_nchw_channelQuant8_weight_as_input(M
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_channelQuant8_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14179,10 +14970,13 @@ void CreateModel_large_dynamic_output_shape_nchw_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_float16(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_large_dynamic_output_shape_nchw_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14223,10 +15017,13 @@ void CreateModel_large_dynamic_output_shape_nchw_float16_weight_as_input(Model *
   assert(model->isValid());
 }
 
-inline bool is_ignored_large_dynamic_output_shape_nchw_float16_weight_as_input(int i) {
+bool is_ignored_large_dynamic_output_shape_nchw_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14271,10 +15068,13 @@ void CreateModel_channel_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc(int i) {
+bool is_ignored_channel_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14315,10 +15115,13 @@ void CreateModel_channel_nhwc_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_weight_as_input(int i) {
+bool is_ignored_channel_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14365,10 +15168,13 @@ void CreateModel_channel_nhwc_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_relaxed(int i) {
+bool is_ignored_channel_nhwc_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14411,10 +15217,13 @@ void CreateModel_channel_nhwc_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_relaxed_weight_as_input(int i) {
+bool is_ignored_channel_nhwc_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14459,10 +15268,13 @@ void CreateModel_channel_nhwc_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_quant8(int i) {
+bool is_ignored_channel_nhwc_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14503,16 +15315,19 @@ void CreateModel_channel_nhwc_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_quant8_weight_as_input(int i) {
+bool is_ignored_channel_nhwc_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type122(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 9}, 0.5f, 0);
   OperandType type125(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 6}, 2.0f, 60);
-  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type127(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -14551,16 +15366,19 @@ void CreateModel_channel_nhwc_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_channelQuant8(int i) {
+bool is_ignored_channel_nhwc_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type122(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 9}, 0.5f, 0);
   OperandType type125(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 6}, 2.0f, 60);
-  OperandType type128(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type128(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type129(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -14595,10 +15413,13 @@ void CreateModel_channel_nhwc_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_channelQuant8_weight_as_input(int i) {
+bool is_ignored_channel_nhwc_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14643,10 +15464,13 @@ void CreateModel_channel_nhwc_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_float16(int i) {
+bool is_ignored_channel_nhwc_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nhwc_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14687,10 +15511,13 @@ void CreateModel_channel_nhwc_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nhwc_float16_weight_as_input(int i) {
+bool is_ignored_channel_nhwc_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14735,10 +15562,13 @@ void CreateModel_channel_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw(int i) {
+bool is_ignored_channel_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14779,10 +15609,13 @@ void CreateModel_channel_nchw_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_weight_as_input(int i) {
+bool is_ignored_channel_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14829,10 +15662,13 @@ void CreateModel_channel_nchw_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_relaxed(int i) {
+bool is_ignored_channel_nchw_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14875,10 +15711,13 @@ void CreateModel_channel_nchw_relaxed_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_relaxed_weight_as_input(int i) {
+bool is_ignored_channel_nchw_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14923,10 +15762,13 @@ void CreateModel_channel_nchw_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_quant8(int i) {
+bool is_ignored_channel_nchw_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -14967,14 +15809,17 @@ void CreateModel_channel_nchw_quant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_quant8_weight_as_input(int i) {
+bool is_ignored_channel_nchw_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_channel_nchw_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type127(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type138(Type::TENSOR_QUANT8_ASYMM, {1, 9, 2, 2}, 0.5f, 0);
   OperandType type139(Type::TENSOR_QUANT8_ASYMM, {1, 6, 2, 2}, 2.0f, 60);
@@ -15015,16 +15860,19 @@ void CreateModel_channel_nchw_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_channelQuant8(int i) {
+bool is_ignored_channel_nchw_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type138(Type::TENSOR_QUANT8_ASYMM, {1, 9, 2, 2}, 0.5f, 0);
   OperandType type139(Type::TENSOR_QUANT8_ASYMM, {1, 6, 2, 2}, 2.0f, 60);
-  OperandType type140(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type140(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type141(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -15059,10 +15907,13 @@ void CreateModel_channel_nchw_channelQuant8_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_channelQuant8_weight_as_input(int i) {
+bool is_ignored_channel_nchw_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15107,10 +15958,13 @@ void CreateModel_channel_nchw_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_float16(int i) {
+bool is_ignored_channel_nchw_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_nchw_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15151,10 +16005,13 @@ void CreateModel_channel_nchw_float16_weight_as_input(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_nchw_float16_weight_as_input(int i) {
+bool is_ignored_channel_nchw_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15199,10 +16056,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15243,10 +16103,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_weight_as_input(Model *model)
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15293,10 +16156,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_relaxed(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15339,10 +16205,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_relaxed_weight_as_input(Model
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_relaxed_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15387,10 +16256,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_quant8(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15431,15 +16303,18 @@ void CreateModel_channel_dynamic_output_shape_nhwc_quant8_weight_as_input(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_quant8_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_channel_dynamic_output_shape_nhwc_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type122(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 9}, 0.5f, 0);
-  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type127(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type144(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 2.0f, 60);
   OperandType type4(Type::INT32, {});
@@ -15479,16 +16354,19 @@ void CreateModel_channel_dynamic_output_shape_nhwc_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_channelQuant8(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type122(Type::TENSOR_QUANT8_ASYMM, {1, 2, 2, 9}, 0.5f, 0);
   OperandType type144(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 2.0f, 60);
-  OperandType type145(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type145(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type146(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -15523,10 +16401,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_channelQuant8_weight_as_input
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15571,10 +16452,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_float16(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nhwc_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15615,10 +16499,13 @@ void CreateModel_channel_dynamic_output_shape_nhwc_float16_weight_as_input(Model
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nhwc_float16_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nhwc_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15663,10 +16550,13 @@ void CreateModel_channel_dynamic_output_shape_nchw(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15707,10 +16597,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_weight_as_input(Model *model)
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_relaxed(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15757,10 +16650,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_relaxed(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_relaxed(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_relaxed(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_relaxed_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15803,10 +16699,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_relaxed_weight_as_input(Model
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_relaxed_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_relaxed_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15851,10 +16750,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_quant8(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_quant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -15895,14 +16797,17 @@ void CreateModel_channel_dynamic_output_shape_nchw_quant8_weight_as_input(Model 
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_quant8_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_quant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
+
 void CreateModel_channel_dynamic_output_shape_nchw_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
-  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type126(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type127(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type138(Type::TENSOR_QUANT8_ASYMM, {1, 9, 2, 2}, 0.5f, 0);
   OperandType type144(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 2.0f, 60);
@@ -15943,16 +16848,19 @@ void CreateModel_channel_dynamic_output_shape_nchw_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_channelQuant8(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_channelQuant8_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type138(Type::TENSOR_QUANT8_ASYMM, {1, 9, 2, 2}, 0.5f, 0);
   OperandType type144(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 2.0f, 60);
-  OperandType type147(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, 0.0f, 0, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
+  OperandType type147(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {6, 1, 1, 3}, SymmPerChannelQuantParams({0.25f, 0.3f, 0.25f, 0.3f, 0.25f, 0.3f},0));
   OperandType type148(Type::TENSOR_INT32, {6}, 0.0f, 0);
   OperandType type4(Type::INT32, {});
   // Phase 1, operands
@@ -15987,10 +16895,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_channelQuant8_weight_as_input
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_channelQuant8_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_channelQuant8_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_float16(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -16035,10 +16946,13 @@ void CreateModel_channel_dynamic_output_shape_nchw_float16(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_float16(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_float16(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::grouped_conv2d
+namespace generated_tests::grouped_conv2d {
 
 void CreateModel_channel_dynamic_output_shape_nchw_float16_weight_as_input(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -16079,8 +16993,9 @@ void CreateModel_channel_dynamic_output_shape_nchw_float16_weight_as_input(Model
   assert(model->isValid());
 }
 
-inline bool is_ignored_channel_dynamic_output_shape_nchw_float16_weight_as_input(int i) {
+bool is_ignored_channel_dynamic_output_shape_nchw_float16_weight_as_input(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::grouped_conv2d
