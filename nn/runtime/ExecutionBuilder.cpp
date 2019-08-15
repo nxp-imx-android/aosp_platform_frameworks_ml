@@ -36,6 +36,8 @@
 namespace android {
 namespace nn {
 
+using namespace hal;
+
 using HidlToken = hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
 
 const Timing kNoTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
@@ -818,30 +820,6 @@ int StepExecutor::startComputeOnDevice(
 
     *synchronizationCallback = nullptr;
 
-    // TODO: Remove the mPreparedModel == nullptr case once we've fully integrated
-    // ExecutionPlan with the compilation and execution phases of the NN API
-    if (mPreparedModel == nullptr) {
-        Model model;
-        mModel->setHidlModel(&model);
-
-        // TODO(butlermichael): Propagate user preference to this point instead of
-        // using default value of ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER, or
-        // remove this entire block of code since it is a stale path that is only
-        // encountered on an #if-removed code.
-        ExecutionPreference preference =
-                static_cast<ExecutionPreference>(ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER);
-
-        ErrorStatus status = ErrorStatus::GENERAL_FAILURE;
-        std::tie(status, mPreparedModel) =
-                mDevice->getInterface()->prepareModel(model, preference, {}, {}, {});
-        if (status != ErrorStatus::NONE) {
-            return convertErrorStatusToResultCode(status);
-        }
-        if (mPreparedModel == nullptr) {
-            return ANEURALNETWORKS_OP_FAILED;
-        }
-    }
-
     NNTRACE_RT(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "StepExecutor::startComputeOnDevice");
     // We separate the input & output pools so that we reduce the copying done if we
     // do an eventual remoting (hidl_memory->update()).  We could also use it to set
@@ -1008,8 +986,7 @@ int StepExecutor::startComputeOnCpu(sp<ExecutionCallback>* synchronizationCallba
     // TODO(mikie): this could have NNTRACE so we could measure the overhead of
     //              spinning up a new thread.
 
-    Model model;
-    mModel->setHidlModel(&model);
+    const Model model = mModel->makeHidlModel();
 
     // Prepare the callback for asynchronous execution. sp<ExecutionCallback>
     // object is returned when the execution has been successfully launched,

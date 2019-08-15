@@ -1,5 +1,10 @@
+// Generated from transpose_conv2d_large.mod.py
+// DO NOT EDIT
 // clang-format off
-// Generated file (from: transpose_conv2d_large.mod.py). Do not edit
+#include "TestGenerated.h"
+
+namespace generated_tests::transpose_conv2d_large {
+
 void CreateModel_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type10(Type::TENSOR_QUANT8_ASYMM, {25, 32, 32, 16}, 0.5f, 0);
@@ -44,15 +49,18 @@ void CreateModel_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_quant8(int i) {
+bool is_ignored_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::transpose_conv2d_large
+namespace generated_tests::transpose_conv2d_large {
+
 void CreateModel_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type11(Type::TENSOR_QUANT8_ASYMM, {25, 1, 1, 1}, 0.25f, 100);
-  OperandType type12(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {16, 1, 1, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f},0));
+  OperandType type12(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {16, 1, 1, 1}, SymmPerChannelQuantParams({0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f},0));
   OperandType type13(Type::TENSOR_INT32, {16}, 0.0f, 0);
   OperandType type14(Type::TENSOR_QUANT8_ASYMM, {25, 32, 32, 16}, 0.5f, 80);
   OperandType type4(Type::TENSOR_INT32, {4});
@@ -93,10 +101,13 @@ void CreateModel_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_channelQuant8(int i) {
+bool is_ignored_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
+
+} // namespace generated_tests::transpose_conv2d_large
+namespace generated_tests::transpose_conv2d_large {
 
 void CreateModel_dynamic_output_shape_quant8(Model *model) {
   OperandType type0(Type::BOOL, {});
@@ -142,15 +153,18 @@ void CreateModel_dynamic_output_shape_quant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_quant8(int i) {
+bool is_ignored_dynamic_output_shape_quant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::transpose_conv2d_large
+namespace generated_tests::transpose_conv2d_large {
+
 void CreateModel_dynamic_output_shape_channelQuant8(Model *model) {
   OperandType type0(Type::BOOL, {});
   OperandType type11(Type::TENSOR_QUANT8_ASYMM, {25, 1, 1, 1}, 0.25f, 100);
-  OperandType type12(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {16, 1, 1, 1}, 0.0f, 0, SymmPerChannelQuantParams({0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f},0));
+  OperandType type12(Type::TENSOR_QUANT8_SYMM_PER_CHANNEL, {16, 1, 1, 1}, SymmPerChannelQuantParams({0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f},0));
   OperandType type13(Type::TENSOR_INT32, {16}, 0.0f, 0);
   OperandType type16(Type::TENSOR_QUANT8_ASYMM, {0, 0, 0, 0}, 0.5f, 80);
   OperandType type4(Type::TENSOR_INT32, {4});
@@ -191,8 +205,9 @@ void CreateModel_dynamic_output_shape_channelQuant8(Model *model) {
   assert(model->isValid());
 }
 
-inline bool is_ignored_dynamic_output_shape_channelQuant8(int i) {
+bool is_ignored_dynamic_output_shape_channelQuant8(int i) {
   static std::set<int> ignore = {};
   return ignore.find(i) != ignore.end();
 }
 
+} // namespace generated_tests::transpose_conv2d_large

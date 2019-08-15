@@ -31,7 +31,6 @@ import numpy as np
 import os
 import re
 import struct
-import sys
 import contextlib
 import pprint
 
@@ -61,8 +60,12 @@ from test_generator import SmartOpen
 from test_generator import SymmPerChannelQuantParams
 
 # Dumping methods that shared with CTS generator
-from cts_generator import DumpCtsExample
 from cts_generator import DumpCtsIsIgnored
+
+
+# TODO: Make this part of tg.Configuration?
+target_hal_version = None
+
 
 # Take a model from command line
 def ParseCmdLine():
@@ -71,12 +74,18 @@ def ParseCmdLine():
     parser.add_argument(
         "-m", "--model", help="the output model file", default="-")
     parser.add_argument(
-        "-e", "--example", help="the output example file", default="-")
-    parser.add_argument(
         "-t", "--test", help="the output test file", default="-")
+    parser.add_argument(
+        "--target_hal_version",
+        help="the HAL version of the output",
+        required=True,
+        choices=["V1_0", "V1_1", "V1_2"])
     args = parser.parse_args()
+    example = "-"  # VTS generator does not generate examples. See cts_generator.py.
     tg.FileNames.InitializeFileLists(
-        args.spec, args.model, args.example, args.test)
+        args.spec, args.model, example, args.test)
+    global target_hal_version
+    target_hal_version = args.target_hal_version
 
 # Generate operands in VTS format
 def generate_vts_operands(model):
@@ -194,11 +203,11 @@ def generate_vts_model(model, model_file):
 
     // Allocate segment of android shared memory, wrapped in hidl_memory.
     // This object will be automatically freed when sharedMemory is destroyed.
-    hidl_memory sharedMemory = allocateSharedMemory(sizeof(data));
+    hidl_memory sharedMemory = ::android::nn::allocateSharedMemory(sizeof(data));
 
     // Mmap ashmem into usable address and hold it within the mappedMemory object.
     // MappedMemory will automatically munmap the memory when it is destroyed.
-    sp<IMemory> mappedMemory = mapMemory(sharedMemory);
+    sp<::android::hidl::memory::V1_0::IMemory> mappedMemory = mapMemory(sharedMemory);
 
     if (mappedMemory != nullptr) {{
         // Retrieve the mmapped pointer.
@@ -251,6 +260,7 @@ Model {create_test_model_name}() {{
 }}
 """
   model_dict = {
+      "hal_version": target_hal_version,
       "create_test_model_name": str(model.createTestFunctionName),
       "operations": generate_vts_operations(model),
       "operand_decls": generate_vts_operands(model),
@@ -263,72 +273,89 @@ Model {create_test_model_name}() {{
   print(model_fmt.format(**model_dict), file = model_file)
 
 def generate_vts(model, model_file):
-  assert model.compiled
-  generate_vts_model(model, model_file)
-  DumpCtsIsIgnored(model, model_file)
+    assert model.compiled
+    # Do not generate DynamicOutputShapeTest for pre-1.2 VTS.
+    if model.hasDynamicOutputShape and target_hal_version < "V1_2":
+        return
+    namespace = "android::hardware::neuralnetworks::{hal_version}::generated_tests::{spec_name}".format(spec_name=tg.FileNames.specName, hal_version=target_hal_version)
+    print("namespace {namespace} {{\n".format(namespace=namespace), file=model_file)
+    generate_vts_model(model, model_file)
+    DumpCtsIsIgnored(model, model_file)
+    print("}} // namespace {namespace}".format(namespace=namespace), file=model_file)
 
 def generate_vts_test(example, test_file):
-    testTemplate = """\
-TEST_F({test_case_name}, {test_name}) {{
-  generated_tests::Execute(device,
-                           {namespace}::{create_model_name},
-                           {namespace}::{is_ignored_name},
-                           {namespace}::get_{examples_name}(){test_dynamic_output_shape});\n}}
+    # Do not generate DynamicOutputShapeTest for pre-1.2 VTS.
+    if example.model.hasDynamicOutputShape and target_hal_version < "V1_2":
+        return
 
-TEST_F(ValidationTest, {test_name}) {{
-  const Model model = {namespace}::{create_model_name}();
-  const std::vector<Request> requests = createRequests({namespace}::get_{examples_name}());
-  validateEverything(model, requests);
-}}\n
+    generated_vts_namespace = "android::hardware::neuralnetworks::{hal_version}::generated_tests::{spec_name}".format(spec_name=tg.FileNames.specName, hal_version=target_hal_version)
+    generated_cts_namespace = "generated_tests::{spec_name}".format(spec_name=tg.FileNames.specName)
+    testTemplate = """\
+namespace {generated_cts_namespace} {{
+
+std::vector<::test_helper::MixedTypedExample>& get_{examples_name}();
+
+}} // namespace {generated_cts_namespace}
+
+namespace {generated_vts_namespace} {{
+
+Model {create_model_name}();
+bool {is_ignored_name}(int);
 """
-    if example.model.hasDynamicOutputShape:
-        print("#ifdef NN_TEST_DYNAMIC_OUTPUT_SHAPE", file=test_fd)
+
+    if not example.expectFailure:
+        testTemplate += """
+TEST_F({test_case_name}, {test_name}) {{
+  Execute(device,
+          {create_model_name},
+          {is_ignored_name},
+          ::{generated_cts_namespace}::get_{examples_name}(){test_dynamic_output_shape});
+}}
+"""
+
+    testTemplate += """
+TEST_F(ValidationTest, {test_name}) {{
+  const Model model = {create_model_name}();
+  const std::vector<Request> requests = createRequests(::{generated_cts_namespace}::get_{examples_name}());
+  validateEverything(model, requests);
+}}
+
+}} // namespace {generated_vts_namespace}
+"""
+
     print(testTemplate.format(
             test_case_name="DynamicOutputShapeTest" if example.model.hasDynamicOutputShape \
                            else "NeuralnetworksHidlTest",
             test_name=str(example.testName),
-            namespace=tg.FileNames.specName,
+            generated_vts_namespace=generated_vts_namespace,
+            generated_cts_namespace=generated_cts_namespace,
+            hal_version=target_hal_version,
             create_model_name=str(example.model.createTestFunctionName),
             is_ignored_name=str(example.model.isIgnoredFunctionName),
             examples_name=str(example.examplesName),
-            test_dynamic_output_shape=", true" if example.model.hasDynamicOutputShape else ""
+            test_dynamic_output_shape=", true" if example.model.hasDynamicOutputShape else "",
+            validation_method="validateFailure" if example.expectFailure else "validateEverything",
         ), file=test_fd)
-    if example.model.hasDynamicOutputShape:
-        print("#endif", file=test_fd)
 
-def InitializeFiles(model_fd, example_fd, test_fd):
-    fileHeader = "// clang-format off\n// Generated file (from: {spec_file}). Do not edit"
-    testFileHeader = """\
-// Generated from: {spec_file}.
-namespace {spec_name} {{
-// Generated {spec_name} test
-#include "{example_file}"
-// Generated model constructor
-#include "{model_file}"
-}} // namespace {spec_name}\n"""
-    # This regex is to remove prefix and get relative path for #include
-    pathRegex = r".*frameworks/ml/nn/(runtime/test/generated/)?"
+def InitializeFiles(model_fd, test_fd):
     specFileBase = os.path.basename(tg.FileNames.specFile)
-    print(fileHeader.format(spec_file=specFileBase), file=model_fd)
-    print(fileHeader.format(spec_file=specFileBase), file=example_fd)
-    print(testFileHeader.format(
-        spec_file=specFileBase,
-        model_file=re.sub(pathRegex, "", tg.FileNames.modelFile),
-        example_file=re.sub(pathRegex, "", tg.FileNames.exampleFile),
-        spec_name=tg.FileNames.specName), file=test_fd)
+    fileHeader = """\
+// Generated from {spec_file}
+// DO NOT EDIT
+// clang-format off
+#include "GeneratedTests.h"
+""".format(spec_file=specFileBase)
+    print(fileHeader, file=model_fd)
+    print(fileHeader, file=test_fd)
 
 if __name__ == "__main__":
     ParseCmdLine()
     while tg.FileNames.NextFile():
-        print("Generating test(s) from spec: %s" % tg.FileNames.specFile, file=sys.stderr)
+        print("Generating VTS tests from %s" % tg.FileNames.specFile)
         exec (open(tg.FileNames.specFile, "r").read())
-        print("Output VTS model: %s" % tg.FileNames.modelFile, file=sys.stderr)
-        print("Output example:" + tg.FileNames.exampleFile, file=sys.stderr)
         with SmartOpen(tg.FileNames.modelFile) as model_fd, \
-             SmartOpen(tg.FileNames.exampleFile) as example_fd, \
-             SmartOpen(tg.FileNames.testFile, mode="a") as test_fd:
-            InitializeFiles(model_fd, example_fd, test_fd)
+             SmartOpen(tg.FileNames.testFile) as test_fd:
+            InitializeFiles(model_fd, test_fd)
             Example.DumpAllExamples(
                 DumpModel=generate_vts, model_fd=model_fd,
-                DumpExample=DumpCtsExample, example_fd=example_fd,
                 DumpTest=generate_vts_test, test_fd=test_fd)

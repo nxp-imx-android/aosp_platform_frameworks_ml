@@ -23,8 +23,8 @@
  * @file NeuralNetworks.h
  */
 
-#ifndef ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_H
-#define ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
 
 /******************************************************************
  *
@@ -228,12 +228,16 @@ typedef enum {
      * * 0: A tensor.
      * * 1: A tensor of the same {@link OperandCode}, and compatible dimensions
      *      as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scales and zeroPoint can be different from input0 scale and zeroPoint.
      * * 2: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
      *      {@link FuseCode} values. Specifies the activation to
      *      invoke on the result.
      *
      * Outputs:
      * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 27.
      */
@@ -316,6 +320,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -348,6 +354,9 @@ typedef enum {
      * Outputs:
      * * 0: The output, a tensor of the same {@link OperandCode} as the input
      *      tensors. The output shape is [D0, D1, ..., sum(Daxis(i)), ..., Dm].
+     *      Since API level 29, for a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint values can be different from
+     *      input tensors. Before API level 29 they have to be the same as for the input tensors.
      *
      * Available since API level 27.
      */
@@ -405,7 +414,7 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
-     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
+     *      dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
@@ -453,7 +462,7 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
-     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
+     *      dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
@@ -553,7 +562,7 @@ typedef enum {
      * * 1: A 4-D tensor, of shape [1, filter_height, filter_width, depth_out],
      *      specifying the filter. For tensor of type
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
-     *      dimension (extraParams.channelQuant.channelDim) must be set to 3.
+     *      dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim) must be set to 3.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias must be of the same
@@ -685,6 +694,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape [batch, height*block_size,
      *      width*block_size, depth/(block_size*block_size)].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -755,6 +766,8 @@ typedef enum {
      * * 0: A n-D tensor with the same rank and shape as the Values
      *      tensor, except for the first dimension which has the same size
      *      as Lookups' only dimension.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input1.
      *
      * Available since API level 27.
      */
@@ -874,6 +887,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: Output. A tensor with shape [ k …].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input2.
      * * 1: Hits. A boolean tensor with shape [ k ] indicates whether the lookup
      *      hits (True) or not (False).
      *      Stored as {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} with offset 0
@@ -1440,6 +1455,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1509,6 +1526,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: The output tensor of same shape as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1533,7 +1552,9 @@ typedef enum {
      *      be zero-sized.
      *
      * Outputs:
-     * * 0: The output tensor of same shape as input0.
+     * * 0: The output tensor of the same shape as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1559,6 +1580,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: The output tensor of same shape as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1590,6 +1613,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: The output tensor, of shape specified by the input shape.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1647,6 +1672,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, new_height, new_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1789,6 +1816,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape [batches, height/block_size,
      *      width/block_size, depth_in*block_size*block_size].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 27.
      */
@@ -1902,7 +1931,6 @@ typedef enum {
 
     // Operations below are available since API level 28.
 
-    // TODO: make the description easier to understand.
     /**
      * BatchToSpace for N-dimensional tensors.
      *
@@ -1934,6 +1962,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 28.
      */
@@ -2015,6 +2045,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be same as input0.
      *
      * Available since API level 28.
      */
@@ -2051,6 +2083,8 @@ typedef enum {
      *      of the padding:
      *          output0.dimension[i] =
      *              padding[i, 0] + input0.dimension[i] + padding[i, 1]
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      *      NOTE: Before API level 29, the pad value for
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} is undefined.
@@ -2060,7 +2094,6 @@ typedef enum {
      */
     ANEURALNETWORKS_PAD = 32,
 
-    // TODO: make the description easier to understand.
     /**
      * SpaceToBatch for N-Dimensional tensors.
      *
@@ -2102,6 +2135,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      *      NOTE: Before API level 29, the pad value for
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} is undefined.
@@ -2138,6 +2173,8 @@ typedef enum {
      * * 0: A tensor of the same {@link OperandCode} as input0. Contains the
      *      same data as input, but has one or more dimensions of size 1
      *      removed.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 28.
      */
@@ -2185,6 +2222,8 @@ typedef enum {
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0 and rank (n - k),
      *      where k is the number of bits set in shrink_axis_mask.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 28.
      */
@@ -2231,6 +2270,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 28.
      */
@@ -2260,6 +2301,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 28.
      */
@@ -2377,6 +2420,8 @@ typedef enum {
      * * 0: A tensor of the same {@link OperandCode} as input0, with shape
      *      [num_rois, num_classes * 4], specifying the coordinates of each
      *      output bounding box for each class, with format [x1, y1, x2, y2].
+     *      For type of {@link ANEURALNETWORKS_TENSOR_QUANT16_ASYMM}, the
+     *      scale must be 0.125 and the zero point must be 0.
      *
      * Available since API level 29.
      */
@@ -2836,6 +2881,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} and same shape as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -2992,6 +3039,8 @@ typedef enum {
      * Outputs:
      * * 0: An (n + 1)-D tensor with the same {@link OperandCode} and data as
      *      input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -3030,6 +3079,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: An (n + k - 1)-D tensor with the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -3296,6 +3347,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth_out].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -3338,10 +3391,14 @@ typedef enum {
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0, with shape
      *      [num_boxes, num_keypoints], specifying score of the keypoints.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from input0 scale and zeroPoint.
      * * 1: A tensor of the same {@link OperandCode} as input1, with shape
      *      [num_boxes, num_keypoints, 2], specifying the location of
      *      the keypoints, the second dimension is organized as
      *      [keypoint_x, keypoint_y].
+     *      For type of {@link ANEURALNETWORKS_TENSOR_QUANT16_ASYMM}, the
+     *      scale must be 0.125 and the zero point must be 0.
      *
      * Available since API level 29.
      */
@@ -3581,9 +3638,13 @@ typedef enum {
      * * 0: A tensor.
      * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
      *      with input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scales and zeroPoint can be different from input0 scale and zeroPoint.
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -3604,9 +3665,13 @@ typedef enum {
      * * 0: A tensor.
      * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
      *      with input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scales and zeroPoint can be different from input0 scale and zeroPoint.
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -3695,6 +3760,8 @@ typedef enum {
      *      of the padding:
      *          output0.dimension[i] =
      *              padding[i, 0] + input0.dimension[i] + padding[i, 1]
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -3766,6 +3833,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be diffent from the input0 scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -4000,6 +4069,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4029,6 +4100,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4143,6 +4216,8 @@ typedef enum {
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0. The output
      *      shape is [num_rois, out_height, out_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from the input0 scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -4194,6 +4269,8 @@ typedef enum {
      * Outputs:
      * * 0: A tensor of the same {@link OperandCode} as input0. The output
      *      shape is [num_rois, out_height, out_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4239,9 +4316,13 @@ typedef enum {
      *      true) or input2 (if false).
      * * 1: An input tensor of the same shape as input0.
      * * 2: An input tensor of the same shape and type as input1.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scales and zeroPoint can be different from input1 scale and zeroPoint.
      *
      * Outputs:
      * * 0: A tensor of the same type and shape as input1 and input2.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      */
     ANEURALNETWORKS_SELECT = 84,
@@ -4294,6 +4375,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: An n-D tensor of the same type as the input containing the slice.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      its scale and zeroPoint has to be same as the input0 scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -4319,6 +4402,8 @@ typedef enum {
      *
      * Outputs:
      * * 0 ~ (num_splits - 1): Resulting subtensors.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4367,6 +4452,8 @@ typedef enum {
      *
      * Outputs:
      * * 0: A tiled tensor of the same {@link OperandCode} and rank as `input`.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4394,6 +4481,8 @@ typedef enum {
      * Outputs:
      * * 0: An n-D tensor of the same type as the input, containing the k
      *      largest elements along each last dimensional slice.
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      * * 1: An n-D tensor of type {@link ANEURALNETWORKS_TENSOR_INT32}
      *      containing the indices of values within the last dimension of input.
      *
@@ -4444,7 +4533,7 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
-     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
+     *      dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
@@ -4482,7 +4571,7 @@ typedef enum {
      *      [depth_out, filter_height, filter_width, depth_in], specifying the
      *      filter. For tensor of type
      *      {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL} the channel
-     *      dimension (extraParams.channelQuant.channelDim) must be set to 0.
+     *      dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim) must be set to 0.
      * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
      *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
      *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
@@ -4512,6 +4601,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, out_height, out_width, depth_out].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint can be different from inputs' scale and zeroPoint.
      *
      * Available since API level 29.
      */
@@ -4735,6 +4826,8 @@ typedef enum {
      * Outputs:
      * * 0: The output 4-D tensor, of shape
      *      [batches, new_height, new_width, depth].
+     *      For a {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM} tensor,
+     *      the scale and zeroPoint must be the same as input0.
      *
      * Available since API level 29.
      */
@@ -4774,10 +4867,11 @@ typedef enum {
      * the same; for odd number of padding, padding to the ending is bigger
      * than the padding to the beginning by 1.
      *
-     * total_padding is a function of input, stride and filter size.
+     * total_padding is a function of input, stride, dilation and filter size.
      * It could be computed as follows:
-     *    out_size = (input + stride - 1) / stride;
-     *    needed_input = (out_size - 1) * stride + filter_size
+     *    out_size = (input + stride - 1) / stride
+     *    effective_filter_size = (filter_size - 1) * dilation + 1
+     *    needed_input = (out_size - 1) * stride + effective_filter_size
      *    total_padding = max(0, needed_input - input_size)
      *  The computation is the same for the horizontal and vertical directions.
      */
@@ -4973,9 +5067,10 @@ typedef struct ANeuralNetworksMemory ANeuralNetworksMemory;
  * modifies a model at a given time. It is however safe for more than one
  * thread to use the model once {@link ANeuralNetworksModel_finish} has returned.</p>
  *
- * <p>It is also the application's responsibility to ensure that there are no other
- * uses of the model after calling {@link ANeuralNetworksModel_free}.
- * This includes any compilation or execution object created using the model.</p>
+ * <p>It is also the application's responsibility to ensure that there are no
+ * other uses of the model after calling {@link ANeuralNetworksModel_free}.
+ * This includes any compilation, execution object or burst object created using
+ * the model.</p>
  *
  * Available since API level 27.
  */
@@ -5013,7 +5108,7 @@ typedef struct ANeuralNetworksModel ANeuralNetworksModel;
  *
  * <p>It is also the application's responsibility to ensure that there are no other
  * uses of the compilation after calling {@link ANeuralNetworksCompilation_free}.
- * This includes any execution object created using the compilation.</p>
+ * This includes any execution object or burst object created using the compilation.</p>
  *
  * Available since API level 27.
  */
@@ -5048,10 +5143,12 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * ({@link ANeuralNetworksModel_setOperandValueFromMemory}).</p>
  *
  * <p>An execution cannot be modified once
+ * {@link ANeuralNetworksExecution_burstCompute},
  * {@link ANeuralNetworksExecution_compute} or
  * {@link ANeuralNetworksExecution_startCompute} has been called on it.</p>
  *
  * <p>An execution can be applied to a model with
+ * {@link ANeuralNetworksExecution_burstCompute},
  * {@link ANeuralNetworksExecution_compute} or
  * {@link ANeuralNetworksExecution_startCompute} only once. Create new
  * executions to do new evaluations of the model.</p>
@@ -5064,16 +5161,18 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * uses of the execution after calling {@link ANeuralNetworksExecution_free}.</p>
  *
  * <p>Multiple executions can be scheduled and evaluated concurrently, either by
- * means of {@link ANeuralNetworksExecution_compute} (which is synchronous) in
- * different threads or by means of
- * {@link ANeuralNetworksExecution_startCompute} (which is asynchronous). The
- * runtime makes no guarantee on the ordering of completion of executions. If
- * it's important to the application, the application should enforce the
- * ordering by ensuring that one execution completes before the next is
- * scheduled (for example, by scheduling all executions synchronously within a
- * single thread, or by scheduling all executions asynchronously and using
- * {@link ANeuralNetworksEvent_wait} between calls to
- * {@link ANeuralNetworksExecution_startCompute}).</p>
+ * means of {@link ANeuralNetworksExecution_compute} or
+ * {@link ANeuralNetworksExecution_burstCompute} (which are synchronous) in
+ * different threads, or by means of
+ * {@link ANeuralNetworksExecution_startCompute} (which is asynchronous).
+ * (Concurrent uses of {@link ANeuralNetworksExecution_burstCompute} must be on
+ * different burst objects.) The runtime makes no guarantee on the ordering of
+ * completion of executions. If it's important to the application, the
+ * application should enforce the ordering by ensuring that one execution
+ * completes before the next is scheduled (for example, by scheduling all
+ * executions synchronously within a single thread, or by scheduling all
+ * executions asynchronously and using {@link ANeuralNetworksEvent_wait} between
+ * calls to {@link ANeuralNetworksExecution_startCompute}).</p>
  *
  * Available since API level 27.
  */
@@ -5396,7 +5495,7 @@ int ANeuralNetworksCompilation_createForDevices(ANeuralNetworksModel* model,
  *                 data. It is recommended to use the code cache directory provided
  *                 by the Android runtime. If not using the code cache directory, the
  *                 user should choose a directory local to the application, and is
- *                 responsible to managing the cache entries.
+ *                 responsible for managing the cache entries.
  * @param token The token provided by the user to specify a model must be of length
  *              ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN. The user should ensure that
  *              the token is unique to a model within the application. The NNAPI
@@ -5556,8 +5655,6 @@ int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
  * Calling {@link ANeuralNetworksModel_setOperandValueFromMemory} with shared memory
  * backed by an AHardwareBuffer of a format other than AHARDWAREBUFFER_FORMAT_BLOB is
  * disallowed.
- *
- * TODO(miaowang): add documentation about intended usage with introspection API.
  *
  * Available since API level 29.
  *
@@ -5720,8 +5817,8 @@ void ANeuralNetworksModel_free(ANeuralNetworksModel* model) __INTRODUCED_IN(27);
  * calling {@link ANeuralNetworksCompilation_create} and
  * {@link ANeuralNetworksCompilation_createForDevices}.
  *
- * An application is responsible to make sure that no other thread uses
- * the model at the same time.
+ * An application must ensure that no other thread uses the model at the same
+ * time.
  *
  * This function must only be called once for a given model.
  *
@@ -5795,11 +5892,13 @@ int ANeuralNetworksModel_addOperand(ANeuralNetworksModel* model,
  * {@link ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES}
  * are immediately copied into the model.
  *
- * For values of length greater than {@link ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES},
- * a pointer to the buffer is stored within the model. The application is responsible
- * for not changing the content of this region until all executions using this model
- * have completed. As the data may be copied during processing, modifying the data
- * after this call yields undefined results.
+ * For values of length greater than
+ * {@link ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES}, a pointer to
+ * the buffer is stored within the model. The application must not change the
+ * content of this region until all executions using this model have
+ * completed. As the data may be copied during processing, modifying the data
+ * after this call yields undefined results. The provided buffer must outlive
+ * this model.
  *
  * For large tensors, using {@link ANeuralNetworksModel_setOperandValueFromMemory}
  * is likely to be more efficient.
@@ -5855,10 +5954,12 @@ int ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
  * Sets an operand to a value stored in a memory object.
  *
  * The content of the memory is not copied. A reference to that memory is stored
- * inside the model. The application is responsible for not changing the content
- * of the memory region until all executions using this model have completed.
- * As the data may be copied during processing, modifying the data after this call
- * yields undefined results.
+ * inside the model. The application must not change the content of the memory
+ * region until all executions using this model have completed.  As the data may
+ * be copied during processing, modifying the data after this call yields
+ * undefined results.
+ *
+ * <p>The provided memory must outlive this model.</p>
  *
  * To indicate that an optional operand should be considered missing,
  * use {@link ANeuralNetworksModel_setOperandValue} instead, passing nullptr for buffer.
@@ -6042,8 +6143,8 @@ int ANeuralNetworksCompilation_setPreference(ANeuralNetworksCompilation* compila
  * Indicate that we have finished modifying a compilation. Required before
  * calling {@link ANeuralNetworksExecution_create}.
  *
- * An application is responsible to make sure that no other thread uses
- * the compilation at the same time.
+ * An application must ensure that no other thread uses the compilation at the
+ * same time.
  *
  * This function must only be called once for a given compilation.
  *
@@ -6100,7 +6201,10 @@ void ANeuralNetworksExecution_free(ANeuralNetworksExecution* execution) __INTROD
 /**
  * Associate a user buffer with an input of the model of the
  * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
- * been scheduled.
+ * been scheduled. Once evaluation of the execution has been scheduled, the
+ * application must not change the content of the buffer until the execution has
+ * completed. Evaluation of the execution will not change the content of the
+ * buffer.
  *
  * <p>The provided buffer must outlive the execution.</p>
  *
@@ -6138,9 +6242,12 @@ int ANeuralNetworksExecution_setInput(ANeuralNetworksExecution* execution, int32
                                       size_t length) __INTRODUCED_IN(27);
 
 /**
- * Associate part of a memory object with an input of the model of the
+ * Associate a region of a memory object with an input of the model of the
  * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
- * been scheduled.
+ * been scheduled. Once evaluation of the execution has been scheduled, the
+ * application must not change the content of the region until the execution has
+ * completed. Evaluation of the execution will not change the content of the
+ * region.
  *
  * <p>The provided memory must outlive the execution.</p>
  *
@@ -6184,7 +6291,9 @@ int ANeuralNetworksExecution_setInputFromMemory(ANeuralNetworksExecution* execut
 /**
  * Associate a user buffer with an output of the model of the
  * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
- * been scheduled.
+ * been scheduled. Once evaluation of the execution has been scheduled, the
+ * application must not change the content of the buffer until the execution has
+ * completed.
  *
  * If the output is optional, you can indicate that it is omitted by
  * passing nullptr for buffer and 0 for length.
@@ -6227,9 +6336,11 @@ int ANeuralNetworksExecution_setOutput(ANeuralNetworksExecution* execution, int3
                                        size_t length) __INTRODUCED_IN(27);
 
 /**
- * Associate part of a memory object with an output of the model of the
+ * Associate a region of a memory object with an output of the model of the
  * {@link ANeuralNetworksExecution}. Evaluation of the execution must not have
- * been scheduled.
+ * been scheduled. Once evaluation of the execution has been scheduled, the
+ * application must not change the content of the region until the execution has
+ * completed.
  *
  * If the output is optional, you can indicate that it is omitted by
  * using {@link ANeuralNetworksExecution_setOutput} instead, passing nullptr for
@@ -6333,6 +6444,6 @@ void ANeuralNetworksEvent_free(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
 
 __END_DECLS
 
-#endif  // ANDROID_ML_NN_RUNTIME_NEURAL_NETWORKS_H
+#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_NEURAL_NETWORKS_H
 
 /** @} */
