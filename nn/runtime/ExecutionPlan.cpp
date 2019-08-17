@@ -634,7 +634,9 @@ ExecutionPlan::Controller::Controller(
       mSubModelInputsAndOutputs(subModelInputsAndOutputs),
       mNextStepIndex(0) {
     if (totalSizeOfTemporaries) {
-        if (mTemporaries.create(totalSizeOfTemporaries) != ANEURALNETWORKS_NO_ERROR) {
+        int n;
+        std::tie(n, mTemporaries) = MemoryAshmem::create(totalSizeOfTemporaries);
+        if (n != ANEURALNETWORKS_NO_ERROR) {
             LOG(ERROR) << "ExecutionPlan::Controller failed to allocate temporaries";
             mNextStepIndex = kBadStepIndex;
         }
@@ -664,7 +666,7 @@ std::vector<std::shared_ptr<ExecutionBurstController>> ExecutionPlan::makeBursts
         // single burst object for the simple case
         case SIMPLE: {
             std::vector<std::shared_ptr<ExecutionBurstController>> burst;
-            auto simpleBody = static_cast<const SimpleBody*>(mBody);
+            auto simpleBody = simple();
             if (const auto preparedModel = simpleBody->mPreparedModel) {
                 burst.push_back(preparedModel->configureExecutionBurst(/*blocking=*/true));
             } else {
@@ -780,7 +782,7 @@ int ExecutionPlan::next(std::shared_ptr<Controller> controller,
     if (mState == SIMPLE) {
         if (controller->mNextStepIndex == 0) {
             // First (and only) step.
-            auto simpleBody = static_cast<const SimpleBody*>(mBody);
+            auto simpleBody = simple();
             *executor = std::make_shared<StepExecutor>(controller->mExecutionBuilder,
                                                        simpleBody->mModel, simpleBody->mDevice,
                                                        simpleBody->mPreparedModel);
@@ -831,7 +833,7 @@ int ExecutionPlan::next(std::shared_ptr<Controller> controller,
                 const uint32_t offsetOfTemporary =
                         controller->mSubModelInputsAndOutputs->at(fromModelOperandIndex);
                 int n = (*executor)->setOutputFromTemporaryMemory(firstSubModelOutputIndex + idx,
-                                                                  &controller->mTemporaries,
+                                                                  controller->mTemporaries.get(),
                                                                   offsetOfTemporary);
                 if (n != ANEURALNETWORKS_NO_ERROR) {
                     controller->mNextStepIndex = Controller::kBadStepIndex;
@@ -851,7 +853,7 @@ int ExecutionPlan::next(std::shared_ptr<Controller> controller,
                 const uint32_t offsetOfTemporary =
                         controller->mSubModelInputsAndOutputs->at(fromModelOperandIndex);
                 int n = (*executor)->setInputFromTemporaryMemory(firstSubModelInputIndex + idx,
-                                                                 &controller->mTemporaries,
+                                                                 controller->mTemporaries.get(),
                                                                  offsetOfTemporary);
                 if (n != ANEURALNETWORKS_NO_ERROR) {
                     controller->mNextStepIndex = Controller::kBadStepIndex;
@@ -912,6 +914,10 @@ void ExecutionPlan::reset() {
     mState = EMPTY;
 }
 
+bool ExecutionPlan::isSimpleCpu() const {
+    return isSimple() && simple()->mDevice == DeviceManager::getCpuDevice();
+}
+
 ExecutionPlan::Kind ExecutionPlan::forTest_getKind() const {
     switch (mState) {
         case EMPTY:
@@ -929,8 +935,7 @@ ExecutionPlan::Kind ExecutionPlan::forTest_getKind() const {
 }
 
 std::shared_ptr<const Device> ExecutionPlan::forTest_simpleGetDevice() const {
-    nnAssert(mState == SIMPLE);
-    return static_cast<const SimpleBody*>(mBody)->mDevice;
+    return simple()->mDevice;
 }
 
 const std::vector<std::shared_ptr<ExecutionStep>>& ExecutionPlan::forTest_compoundGetSteps() const {
@@ -942,9 +947,7 @@ bool ExecutionPlan::forTest_hasSubModelOutputsOfUnknownSize() const {
 }
 
 const uint8_t* ExecutionPlan::forTest_simpleGetCacheToken() const {
-    CHECK(mState == SIMPLE)
-            << "Calling forTest_simpleGetCacheToken from execution plan with a non-SIMPLE body";
-    return static_cast<const SimpleBody*>(mBody)->mToken.getCacheToken();
+    return simple()->mToken.getCacheToken();
 }
 
 void ExecutionPlan::SimpleBody::dump() const {
