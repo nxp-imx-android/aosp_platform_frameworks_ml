@@ -419,10 +419,20 @@ const AccuracyCriteria kMediumCriteria = {
 
 // This is for operations that involve sophisticated computations on buffer values, either a single
 // but complex transformation, e.g. LOGISTIC, or multiple transformations with accumulated errors,
-// e.g. CONV_2D, REDUCE_*.
+// e.g. L2_NORMALIZATION, REDUCE_*.
 const AccuracyCriteria kRelaxedCriteria = {
-        .float32 = {.atol = 1e-3f, .rtol = 1e-3f, .bias = 2e-5f, .mse = 1e-7f},
+        .float32 = {.atol = 1e-3f, .rtol = 1e-3f, .bias = 3e-5f, .mse = 1e-6f},
         .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-3f, .mse = 1e-3f},
+        .int32 = {.atol = 1},
+        .quant8Asymm = {.atol = 10, .bias = 1.5, .mse = 1.5},
+        .quant8Symm = {.atol = 10, .bias = 1.5, .mse = 1.5},
+        .quant16Asymm = {.atol = 10, .bias = 1.5, .mse = 1.5},
+        .quant16Symm = {.atol = 10, .bias = 1.5, .mse = 1.5}};
+
+// This is for convolution operations with potentially large kernel size.
+const AccuracyCriteria kConvCriteria = {
+        .float32 = {.atol = 2e-2f, .rtol = 2e-2f, .bias = 4e-4f, .mse = 1e-5f},
+        .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-2f, .mse = 1e-2f},
         .int32 = {.atol = 1},
         .quant8Asymm = {.atol = 10, .bias = 1.5, .mse = 1.5},
         .quant8Symm = {.atol = 10, .bias = 1.5, .mse = 1.5},
@@ -451,8 +461,8 @@ TEST_SINGLE_OPERATION(LOCAL_RESPONSE_NORMALIZATION, V1_0, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(AVERAGE_POOL_2D, V1_0, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(L2_POOL_2D, V1_0, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(MAX_POOL_2D, V1_0, kRelaxedCriteria);
-TEST_SINGLE_OPERATION(CONV_2D, V1_0, kRelaxedCriteria);
-TEST_SINGLE_OPERATION(DEPTHWISE_CONV_2D, V1_0, kRelaxedCriteria);
+TEST_SINGLE_OPERATION(CONV_2D, V1_0, kConvCriteria);
+TEST_SINGLE_OPERATION(DEPTHWISE_CONV_2D, V1_0, kConvCriteria);
 TEST_SINGLE_OPERATION(CONCATENATION, V1_0, kMediumCriteria);
 TEST_SINGLE_OPERATION(RESIZE_BILINEAR, V1_0, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(DEPTH_TO_SPACE, V1_0, kStrictCriteria);
@@ -497,8 +507,8 @@ TEST_SINGLE_OPERATION(RESHAPE, V1_2, kStrictCriteria);
 TEST_SINGLE_OPERATION(MEAN, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(PAD, V1_2, kStrictCriteria);
 TEST_SINGLE_OPERATION(TRANSPOSE, V1_2, kStrictCriteria);
-TEST_SINGLE_OPERATION(CONV_2D, V1_2, kRelaxedCriteria);
-TEST_SINGLE_OPERATION(DEPTHWISE_CONV_2D, V1_2, kRelaxedCriteria);
+TEST_SINGLE_OPERATION(CONV_2D, V1_2, kConvCriteria);
+TEST_SINGLE_OPERATION(DEPTHWISE_CONV_2D, V1_2, kConvCriteria);
 TEST_SINGLE_OPERATION(AVERAGE_POOL_2D, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(L2_POOL_2D, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(MAX_POOL_2D, V1_2, kRelaxedCriteria);
@@ -555,8 +565,8 @@ TEST_SINGLE_OPERATION(REDUCE_SUM, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(CHANNEL_SHUFFLE, V1_2, kStrictCriteria);
 TEST_SINGLE_OPERATION(INSTANCE_NORMALIZATION, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(LOG_SOFTMAX, V1_2, kRelaxedCriteria);
-TEST_SINGLE_OPERATION(GROUPED_CONV_2D, V1_2, kRelaxedCriteria);
-TEST_SINGLE_OPERATION(TRANSPOSE_CONV_2D, V1_2, kRelaxedCriteria);
+TEST_SINGLE_OPERATION(GROUPED_CONV_2D, V1_2, kConvCriteria);
+TEST_SINGLE_OPERATION(TRANSPOSE_CONV_2D, V1_2, kConvCriteria);
 TEST_SINGLE_OPERATION(RESIZE_NEAREST_NEIGHBOR, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(PAD_V2, V1_2, kStrictCriteria);
 TEST_SINGLE_OPERATION(QUANTIZE, V1_2, kMediumCriteria);
@@ -573,8 +583,8 @@ TEST_SINGLE_OPERATION(ROI_POOLING, V1_2, kRelaxedCriteria);
 TEST_SINGLE_OPERATION(HEATMAP_MAX_KEYPOINT, V1_2, kRelaxedCriteria);
 
 const AccuracyCriteria kSmallGraphCriteria = {
-        .float32 = {.atol = 1e-2f, .rtol = 1e-2f, .bias = 2e-5f, .mse = 1e-7f},
-        .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-3f, .mse = 1e-4f},
+        .float32 = {.atol = 1e-2f, .rtol = 1e-2f, .bias = 4e-4f, .mse = 1e-5f},
+        .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-2f, .mse = 1e-2f},
         .int32 = {.atol = 1},
         .quant8Asymm = {.atol = 12, .bias = 2, .mse = 2},
         .quant8Symm = {.atol = 12, .bias = 2, .mse = 2},
