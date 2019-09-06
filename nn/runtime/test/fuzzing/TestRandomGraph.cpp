@@ -410,17 +410,17 @@ const AccuracyCriteria kMediumCriteria = {
         .float32 = {.atol = 1e-5f, .rtol = 1e-5f, .bias = 1e-6f, .mse = 1e-8f},
         .float16 = {.atol = 1e-2f, .rtol = 1e-2f, .bias = 1e-3f, .mse = 1e-6f},
         .int32 = {.atol = 1},
-        .quant8Asymm = {.atol = 2, .bias = 0.5f, .mse = 0.5f},
-        .quant8Symm = {.atol = 2, .bias = 0.5f, .mse = 0.5f},
-        .quant16Asymm = {.atol = 2, .bias = 0.5f, .mse = 0.5f},
-        .quant16Symm = {.atol = 2, .bias = 0.5f, .mse = 0.5f}};
+        .quant8Asymm = {.atol = 2, .bias = 1.2, .mse = 1.2},
+        .quant8Symm = {.atol = 2, .bias = 1.2, .mse = 1.2},
+        .quant16Asymm = {.atol = 2, .bias = 1.2, .mse = 1.2},
+        .quant16Symm = {.atol = 2, .bias = 1.2, .mse = 1.2}};
 
 // This is for operations that involve sophisticated computations on buffer values, either a single
 // but complex transformation, e.g. LOGISTIC, or multiple transformations with accumulated errors,
 // e.g. CONV_2D, REDUCE_*.
 const AccuracyCriteria kRelaxedCriteria = {
         .float32 = {.atol = 1e-3f, .rtol = 1e-3f, .bias = 2e-5f, .mse = 1e-7f},
-        .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-3f, .mse = 1e-4f},
+        .float16 = {.atol = 1.0f, .rtol = 1.0f, .bias = 5e-3f, .mse = 1e-3f},
         .int32 = {.atol = 1},
         .quant8Asymm = {.atol = 10, .bias = 1.5, .mse = 1.5},
         .quant8Symm = {.atol = 10, .bias = 1.5, .mse = 1.5},
