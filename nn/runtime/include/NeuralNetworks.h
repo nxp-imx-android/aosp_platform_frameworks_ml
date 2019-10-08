@@ -644,6 +644,7 @@ typedef enum {
      *      cells between each filter element on height dimension. If this input is set,
      *      input 9 (dilation factor for width) must be specified as well.
      *      Available since API level 29.
+
      *
      * Outputs:
      * * 0: The output 4-D tensor, of shape
@@ -2622,6 +2623,10 @@ typedef enum {
      *        If batch-major: [batch_size, max_time, bw_output_size]
      *
      * Available since API level 29.
+     *
+     * Important: As of API level 29, there is no way to get the output state tensors out and NNAPI
+     * does not maintain internal states. This operator does not support the usage pattern in which
+     * multiple cells are chained and state tensors are propagated.
      */
     ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_LSTM = 42,
 
@@ -2741,6 +2746,10 @@ typedef enum {
      *      [batchSize, maxTime, bwNumUnits].
      *
      * Available since API level 29.
+     *
+     * Important: As of API level 29, there is no way to get the output state tensors out and NNAPI
+     * does not maintain internal states. This operator does not support the usage pattern in which
+     * multiple cells are chained and state tensors are propagated.
      */
     ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_RNN = 43,
 
@@ -4716,6 +4725,10 @@ typedef enum {
      *        If batch-major: [batch_size, max_time, output_size]
      *
      * Available since API level 29.
+     *
+     * Important: As of API level 29, there is no way to get the output state tensors out and NNAPI
+     * does not maintain internal states. This operator does not support the usage pattern in which
+     * multiple cells are chained and state tensors are propagated.
      */
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_LSTM = 92,
 
@@ -4773,6 +4786,10 @@ typedef enum {
      *      numUnits].
      *
      * Available since API level 29.
+     *
+     * Important: As of API level 29, there is no way to get the output state tensors out and NNAPI
+     * does not maintain internal states. This operator does not support the usage pattern in which
+     * multiple cells are chained and state tensors are propagated.
      */
     ANEURALNETWORKS_UNIDIRECTIONAL_SEQUENCE_RNN = 93,
 
@@ -5665,12 +5682,14 @@ int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
  * offset and length must be set to zero and the entire memory region will be
  * associated with the specified input or output operand. There is no guarantee
  * that an arbitrary AHardwareBuffer_Format and AHardwareBuffer_UsageFlags combination
- * can be used by arbitrary devices. The execution will fail if selected set of devices
- * cannot consume the buffer.
+ * can be used by arbitrary devices. The execution will fail if the selected set of
+ * devices cannot consume the buffer.
  *
  * Calling {@link ANeuralNetworksModel_setOperandValueFromMemory} with shared memory
  * backed by an AHardwareBuffer of a format other than AHARDWAREBUFFER_FORMAT_BLOB is
  * disallowed.
+ *
+ * The provided AHardwareBuffer must outlive the ANeuralNetworksMemory object.
  *
  * Available since API level 29.
  *
@@ -5988,7 +6007,7 @@ int ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
  * called will return an error.
  *
  * See {@link ANeuralNetworksModel} for information on multithreaded usage.
- * See {@link ANeuralNetworksMemory_createFromAHardwarBuffer} for information on
+ * See {@link ANeuralNetworksMemory_createFromAHardwareBuffer} for information on
  * AHardwareBuffer usage.
  *
  * Available since API level 27.
@@ -6276,7 +6295,7 @@ int ANeuralNetworksExecution_setInput(ANeuralNetworksExecution* execution, int32
  * buffer and 0 for length.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
- * See {@link ANeuralNetworksMemory_createFromAHardwarBuffer} for information on
+ * See {@link ANeuralNetworksMemory_createFromAHardwareBuffer} for information on
  * AHardwareBuffer usage.
  *
  * Available since API level 27.
@@ -6369,7 +6388,7 @@ int ANeuralNetworksExecution_setOutput(ANeuralNetworksExecution* execution, int3
  * <p>The provided memory must outlive the execution.</p>
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
- * See {@link ANeuralNetworksMemory_createFromAHardwarBuffer} for information on
+ * See {@link ANeuralNetworksMemory_createFromAHardwareBuffer} for information on
  * AHardwareBuffer usage.
  *
  * Available since API level 27.

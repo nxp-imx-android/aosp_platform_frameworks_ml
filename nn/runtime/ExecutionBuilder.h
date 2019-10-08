@@ -17,59 +17,35 @@
 #ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
 #define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
 
+#include <atomic>
+#include <memory>
+#include <vector>
+
 #include "Callbacks.h"
 #include "HalInterfaces.h"
 #include "Memory.h"
+#include "ModelArgumentInfo.h"
 #include "ModelBuilder.h"
 #include "NeuralNetworks.h"
-#include "VersionedInterfaces.h"
-
-#include <atomic>
-#include <unordered_map>
-#include <vector>
 
 namespace android {
 namespace nn {
 
 class BurstBuilder;
 class CompilationBuilder;
-class ExecutionPlan;
+class Device;
 class ExecutionBurstController;
+class ExecutionPlan;
 class ExecutionStep;
 class Memory;
 class ModelBuilder;
+class PreparedModel;
 class StepExecutor;
-class Device;
-
-// TODO move length out of DataLocation
-struct ModelArgumentInfo {
-    // Whether the argument was specified as being in a Memory, as a pointer,
-    // has no value, or has not been specified.
-    // If POINTER then:
-    //   locationAndLength.length is valid.
-    //   dimensions is valid.
-    //   buffer is valid
-    // If MEMORY then:
-    //   locationAndLength.{poolIndex, offset, length} is valid.
-    //   dimensions is valid.
-    enum { POINTER, MEMORY, HAS_NO_VALUE, UNSPECIFIED } state = UNSPECIFIED;
-    hal::DataLocation locationAndLength;
-    std::vector<uint32_t> dimensions;
-    void* buffer;
-    bool isSufficient = true;
-
-    int setFromPointer(const hal::Operand& operand, const ANeuralNetworksOperandType* type,
-                       void* buffer, uint32_t length);
-    int setFromMemory(const hal::Operand& operand, const ANeuralNetworksOperandType* type,
-                      uint32_t poolIndex, uint32_t offset, uint32_t length);
-    int setFromTemporaryMemory(const hal::Operand& operand, uint32_t poolIndex, uint32_t offset,
-                               uint32_t length);
-    int updateDimensionInfo(const hal::Operand& operand, const ANeuralNetworksOperandType* newType);
-};
 
 class ExecutionBuilder {
     friend class StepExecutor;
-public:
+
+   public:
     ExecutionBuilder(const CompilationBuilder* compilation);
 
     int setInput(uint32_t index, const ANeuralNetworksOperandType* type, const void* buffer,
@@ -177,8 +153,7 @@ class StepExecutor {
     //     model to execute on that device.  (Both are nullptr in the
     //     case of CPU.)
     StepExecutor(ExecutionBuilder* executionBuilder, const ModelBuilder* model,
-                 std::shared_ptr<Device> device,
-                 std::shared_ptr<VersionedIPreparedModel> preparedModel);
+                 std::shared_ptr<Device> device, std::shared_ptr<PreparedModel> preparedModel);
 
     // Map inputs and outputs from ExecutionBuilder to StepExecutor,
     // in the case where we have a single-"step" execution (i.e., the executor
@@ -199,30 +174,27 @@ class StepExecutor {
         mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex], &mOutputs[executorIndex]);
     }
     void mapOutputToInput(uint32_t builderIndex, uint32_t executorIndex) {
-        mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex],
-                         &mInputs[executorIndex]);
+        mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex], &mInputs[executorIndex]);
     }
 
     // The input or output is assumed to have the size of the
     // corresponding operand.
     int setInputFromTemporaryMemory(uint32_t inputIndex, const Memory* memory, uint32_t offset) {
-        return setInputOrOutputFromTemporaryMemory(mModel->getInputOperand(inputIndex),
-                                                   memory, offset,
-                                                   &mInputs.at(inputIndex));
+        return setInputOrOutputFromTemporaryMemory(mModel->getInputOperand(inputIndex), memory,
+                                                   offset, &mInputs.at(inputIndex));
     }
     int setOutputFromTemporaryMemory(uint32_t outputIndex, const Memory* memory, uint32_t offset) {
-        return setInputOrOutputFromTemporaryMemory(mModel->getOutputOperand(outputIndex),
-                                                   memory, offset,
-                                                   &mOutputs.at(outputIndex));
+        return setInputOrOutputFromTemporaryMemory(mModel->getOutputOperand(outputIndex), memory,
+                                                   offset, &mOutputs.at(outputIndex));
     }
 
     // Executes using the (driver, preparedModel) specified at construction time.
     int startCompute(sp<ExecutionCallback>* synchronizationCallback,
                      const std::shared_ptr<ExecutionBurstController>& burstController = nullptr);
 
-    // Executes using the CPU, regardless of the (driver,
+    // Re-compiles and executes using the CPU, regardless of the (driver,
     // preparedModel) specified at construction time.
-    int startComputeOnCpu(sp<ExecutionCallback>* synchronizationCallback);
+    int startComputeOnCpuFallback(sp<ExecutionCallback>* synchronizationCallback);
 
     bool isCpu() const;
 
@@ -232,10 +204,6 @@ class StepExecutor {
     }
 
    private:
-    int allocatePointerArgumentsToPool(std::vector<ModelArgumentInfo>* args, Memory* memory);
-    int startComputeOnDevice(sp<ExecutionCallback>* synchronizationCallback,
-                             const std::shared_ptr<ExecutionBurstController>& burstController);
-
     void mapInputOrOutput(const ModelArgumentInfo& builderInputOrOutput,
                           ModelArgumentInfo* executorInputOrOutput);
 
@@ -253,8 +221,7 @@ class StepExecutor {
     // compiled forms; and device on which to execute it
     const ModelBuilder* mModel;
     std::shared_ptr<Device> mDevice;
-    std::shared_ptr<VersionedIPreparedModel>
-            mPreparedModel;  // nullptr if CPU execution or if bypassing ExecutionPlan
+    std::shared_ptr<PreparedModel> mPreparedModel;
 
     // The information we'll send to the driver about the inputs and outputs.
     // Note that we build this in two steps:
@@ -271,7 +238,7 @@ class StepExecutor {
     MemoryTracker mMemories;
 };
 
-} // namespace nn
-} // namespace android
+}  // namespace nn
+}  // namespace android
 
 #endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
