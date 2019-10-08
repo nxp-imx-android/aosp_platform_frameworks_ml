@@ -20,10 +20,13 @@
 #ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MODEL_BUILDER_H
 #define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MODEL_BUILDER_H
 
+#include <memory>
 #include "HalInterfaces.h"
 #include "Memory.h"
 #include "NeuralNetworks.h"
 #include "Utils.h"
+
+#include <vector>
 
 namespace android {
 namespace nn {
@@ -141,6 +144,8 @@ class ModelBuilder {
     bool mHasExtensionOperation = false;
     // The description of the operands of the graph.
     std::vector<hal::Operand> mOperands;
+    // Is at least one of those operands an OEM operand?
+    bool mHasOEMOperand = false;
     // Specifies where to find the list of indexes identifying
     // the inputs and outputs of the model.  The offset is into
     // the mOperandIndexes table.
@@ -160,7 +165,7 @@ class ModelBuilder {
     // Operand index and buffer pointer for all the large operand values of this model.
     std::vector<LargeValue> mLargeOperandValues;
     // The shared memory region that will contain the large values.
-    Memory mLargeValueMemory;
+    std::unique_ptr<MemoryAshmem> mLargeValueMemory;
 
     // Once the model has been finished, we should not allow further
     // modifications to the model.
@@ -169,7 +174,6 @@ class ModelBuilder {
     // Any invalid manipulation of the model will mark the model invalid.
     // No further modifications are allowed to the model.
     bool mInvalidModel = false;
-
 
     // 'true' indicates TENSOR_FLOAT32 may be calculated with range and/or
     // precision as low as that of the IEEE 754 16-bit floating-point format.

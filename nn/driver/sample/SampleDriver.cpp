@@ -187,14 +187,14 @@ Return<ErrorStatus> SampleDriver::prepareModel_1_1(
 
 Return<ErrorStatus> SampleDriver::prepareModel_1_2(
         const V1_2::Model& model, ExecutionPreference preference, const hidl_vec<hidl_handle>&,
-        const hidl_vec<hidl_handle>&, const HidlToken&,
+        const hidl_vec<hidl_handle>&, const CacheToken&,
         const sp<V1_2::IPreparedModelCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION, "SampleDriver::prepareModel_1_2");
     return prepareModelBase(model, this, preference, callback);
 }
 
 Return<ErrorStatus> SampleDriver::prepareModelFromCache(
-        const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const HidlToken&,
+        const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const CacheToken&,
         const sp<V1_2::IPreparedModelCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION,
                  "SampleDriver::prepareModelFromCache");
@@ -203,8 +203,7 @@ Return<ErrorStatus> SampleDriver::prepareModelFromCache(
 }
 
 Return<DeviceStatus> SampleDriver::getStatus() {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_UNSPECIFIED,
-                 "SampleDriver::getStatus");
+    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_UNSPECIFIED, "SampleDriver::getStatus");
     VLOG(DRIVER) << "getStatus()";
     return DeviceStatus::AVAILABLE;
 }
@@ -298,8 +297,7 @@ Return<ErrorStatus> executeBase(const Request& request, MeasureTiming measure, c
     // is expected to live forever.
     std::thread([&model, &driver, &poolInfos, request, measure, driverStart, callback] {
         asyncExecute(request, measure, driverStart, model, driver, poolInfos, callback);
-    })
-            .detach();
+    }).detach();
 
     return ErrorStatus::NONE;
 }
@@ -469,6 +467,6 @@ Return<void> SamplePreparedModel::configureExecutionBurst(
     return Void();
 }
 
-} // namespace sample_driver
-} // namespace nn
-} // namespace android
+}  // namespace sample_driver
+}  // namespace nn
+}  // namespace android

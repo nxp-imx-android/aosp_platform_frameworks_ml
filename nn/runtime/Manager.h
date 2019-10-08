@@ -17,39 +17,66 @@
 #ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
 #define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H
 
-#include "HalInterfaces.h"
-#include "Utils.h"
-#include "VersionedInterfaces.h"
-
 #include <android-base/macros.h>
+
 #include <map>
+#include <memory>
+#include <string>
+#include <tuple>
 #include <unordered_set>
+#include <utility>
 #include <vector>
+
+#include "Callbacks.h"
+#include "HalInterfaces.h"
+#include "Memory.h"
+#include "Utils.h"
 
 namespace android {
 namespace nn {
 
 // Forward declaration
 class MetaModel;
+class ExecutionBurstController;
+struct ModelArgumentInfo;
+
+// A unified interface for actual driver prepared model as well as the CPU.
+class PreparedModel {
+    DISALLOW_COPY_AND_ASSIGN(PreparedModel);
+
+   public:
+    PreparedModel() = default;
+    virtual ~PreparedModel() = default;
+
+    // Perform computation with given input/output argument info and memory pools.
+    virtual std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
+            const std::vector<ModelArgumentInfo>& inputs,
+            const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
+            const std::shared_ptr<ExecutionBurstController>& burstController,
+            hal::MeasureTiming measure) const = 0;
+
+    virtual std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
+            bool blocking) const = 0;
+};
 
 // A unified interface for actual driver devices as well as the CPU
 class Device {
-   public:
-    virtual ~Device() {}
+    DISALLOW_COPY_AND_ASSIGN(Device);
 
-    // Get the handle of underlying VersionedIDevice, if any
-    virtual VersionedIDevice* getInterface() = 0;
+   public:
+    Device() = default;
+    virtual ~Device() = default;
 
     // Introspection methods returning device information
     virtual const char* getName() const = 0;
     virtual const char* getVersionString() const = 0;
-    virtual int64_t getFeatureLevel() = 0;
+    virtual int64_t getFeatureLevel() const = 0;
     virtual int32_t getType() const = 0;
     virtual hal::hidl_vec<hal::Extension> getSupportedExtensions() const = 0;
 
     // See the MetaModel class in MetaModel.h for more details.
     virtual void getSupportedOperations(const MetaModel& metaModel,
-                                        hal::hidl_vec<bool>* supportedOperations) = 0;
+                                        hal::hidl_vec<bool>* supportedOperations) const = 0;
 
     virtual hal::PerformanceInfo getPerformance(hal::OperandType type) const = 0;
     virtual hal::PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const = 0;
@@ -57,17 +84,15 @@ class Device {
     virtual std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const = 0;
     bool isCachingSupported() const;
 
-    virtual int prepareModel(
+    virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
             const hal::Model& hidlModel, hal::ExecutionPreference executionPreference,
             const hal::hidl_vec<hal::hidl_handle>& modelCache,
             const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
-            std::shared_ptr<VersionedIPreparedModel>* preparedModel) = 0;
-    virtual int prepareModelFromCache(
+            const hal::CacheToken& token) const = 0;
+    virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModelFromCache(
             const hal::hidl_vec<hal::hidl_handle>& modelCache,
             const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
-            std::shared_ptr<VersionedIPreparedModel>* preparedModel) = 0;
+            const hal::CacheToken& token) const = 0;
 };
 
 // Manages the NN HAL devices.  Only one instance of this class will exist.
@@ -98,11 +123,7 @@ class DeviceManager {
     // 1 - Do graph partitioning; but fall back to non-partitioned
     //     execution if there is a partitioning failure.
     // 2 - Do graph partitioning, and rely on it; there is no fallback.
-    enum {
-        kPartitioningNo              = 0,
-        kPartitioningWithFallback    = 1,
-        kPartitioningWithoutFallback = 2
-    };
+    enum { kPartitioningNo = 0, kPartitioningWithFallback = 1, kPartitioningWithoutFallback = 2 };
     uint32_t getPartitioning() const { return mPartitioning; }
     static bool partitioningAllowsFallback(uint32_t partitioning) {
         return partitioning == kPartitioningWithFallback;
@@ -180,7 +201,7 @@ class DeviceManager {
     bool mStrictSlicing = false;
 };
 
-} // namespace nn
-} // namespace android
+}  // namespace nn
+}  // namespace android
 
 #endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H

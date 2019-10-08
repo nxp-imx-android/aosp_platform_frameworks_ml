@@ -18,15 +18,19 @@
 
 #include "ModelBuilder.h"
 
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
+
 #include "CompilationBuilder.h"
 #include "GraphDump.h"
 #include "Manager.h"
 #include "TypeManager.h"
 #include "Utils.h"
 #include "ValidateHal.h"
-
-#include <map>
-#include <utility>
 
 namespace android {
 namespace nn {
@@ -66,7 +70,9 @@ int ModelBuilder::addOperand(const ANeuralNetworksOperandType& type) {
         LOG(ERROR) << "Extensions are not supported for this process.";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    if (operandType == OperandType::OEM || operandType == OperandType::TENSOR_OEM_BYTE) {
+    bool isOemOperand =
+            operandType == OperandType::OEM || operandType == OperandType::TENSOR_OEM_BYTE;
+    if (isOemOperand && !mHasOEMOperand) {
         LOG(WARNING) << "OEM data type is deprecated. Use Extensions instead.";
     }
 
@@ -94,6 +100,7 @@ int ModelBuilder::addOperand(const ANeuralNetworksOperandType& type) {
             .location = {.poolIndex = 0, .offset = 0, .length = 0},
             .extraParams = Operand::ExtraParams(),
     });
+    mHasOEMOperand |= isOemOperand;
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -253,17 +260,12 @@ int ModelBuilder::copyLargeValuesToSharedMemory() {
             poolSize += operand.location.length;
         }
 
-        // Allocated the shared memory.
-        int n = mLargeValueMemory.create(poolSize);
-        if (n != ANEURALNETWORKS_NO_ERROR) {
-            return n;
-        }
-        uint8_t* memoryPointer = nullptr;
-        n = mLargeValueMemory.getPointer(&memoryPointer);
-        if (n != ANEURALNETWORKS_NO_ERROR) {
-            return n;
-        }
-        uint32_t poolIndex = mMemories.add(&mLargeValueMemory);
+        // Allocate the shared memory.
+        int n;
+        std::tie(n, mLargeValueMemory) = MemoryAshmem::create(poolSize);
+        NN_RETURN_IF_ERROR(n);
+        uint8_t* memoryPointer = mLargeValueMemory->getPointer();
+        uint32_t poolIndex = mMemories.add(mLargeValueMemory.get());
         VLOG(MODEL) << "Allocated large value pool of size " << poolSize << " at index "
                     << poolIndex;
 
@@ -330,7 +332,7 @@ int ModelBuilder::addOperation(ANeuralNetworksOperationType type, uint32_t input
         LOG(ERROR) << "Extensions are not supported for this process.";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    if (operationType == OperationType::OEM_OPERATION) {
+    if (operationType == OperationType::OEM_OPERATION && !mHasOEMOperation) {
         LOG(WARNING) << "OEM_OPERATION is deprecated. Use Extensions instead.";
     }
 
@@ -541,7 +543,7 @@ Model ModelBuilder::makeHidlModel() const {
 
     uint32_t count = mMemories.size();
     model.pools.resize(count);
-    std::transform(mMemories.cbegin(), mMemories.cend(), model.pools.begin(),
+    std::transform(mMemories.begin(), mMemories.end(), model.pools.begin(),
                    [](const Memory* m) { return m->getHidlMemory(); });
 
     return model;
