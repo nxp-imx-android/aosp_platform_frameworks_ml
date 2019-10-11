@@ -205,6 +205,8 @@ class RandomGraphTest : public ::testing::TestWithParam<uint32_t> {
             if (op.opType == ANEURALNETWORKS_BATCH_TO_SPACE_ND &&
                 op.inputs[0]->dimensions[0].getValue() == 1)
                 return true;
+            // We have a bug in the reference implementation of INSTANCE_NORMALIZATION.
+            if (op.opType == ANEURALNETWORKS_INSTANCE_NORMALIZATION) return true;
         }
         return false;
     }
