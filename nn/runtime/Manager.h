@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -47,15 +48,12 @@ class PreparedModel {
     PreparedModel() = default;
     virtual ~PreparedModel() = default;
 
-    // Start computation with given input/output argument info and memory pools.
-    //
-    // When executed on an actual driver device, this method may append new memory pools to
-    // "memories" for inputs and outputs specified via pointers, and the data location for
-    // "inputs" and "outputs" may get updated.
-    virtual int execute(const std::shared_ptr<ExecutionBurstController>& burstController,
-                        MeasureTiming measure, std::vector<ModelArgumentInfo>* inputs,
-                        std::vector<ModelArgumentInfo>* outputs, MemoryTracker* memories,
-                        sp<ExecutionCallback>* synchronizationCallback) const = 0;
+    // Perform computation with given input/output argument info and memory pools.
+    virtual std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
+            const std::vector<ModelArgumentInfo>& inputs,
+            const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
+            const std::shared_ptr<ExecutionBurstController>& burstController,
+            hal::MeasureTiming measure) const = 0;
 
     virtual std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
             bool blocking) const = 0;
@@ -86,17 +84,15 @@ class Device {
     virtual std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const = 0;
     bool isCachingSupported() const;
 
-    virtual int prepareModel(
+    virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
             const hal::Model& hidlModel, hal::ExecutionPreference executionPreference,
             const hal::hidl_vec<hal::hidl_handle>& modelCache,
             const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
-            std::shared_ptr<PreparedModel>* preparedModel) const = 0;
-    virtual int prepareModelFromCache(
+            const hal::CacheToken& token) const = 0;
+    virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModelFromCache(
             const hal::hidl_vec<hal::hidl_handle>& modelCache,
             const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>& token,
-            std::shared_ptr<PreparedModel>* preparedModel) const = 0;
+            const hal::CacheToken& token) const = 0;
 };
 
 // Manages the NN HAL devices.  Only one instance of this class will exist.
@@ -127,11 +123,7 @@ class DeviceManager {
     // 1 - Do graph partitioning; but fall back to non-partitioned
     //     execution if there is a partitioning failure.
     // 2 - Do graph partitioning, and rely on it; there is no fallback.
-    enum {
-        kPartitioningNo              = 0,
-        kPartitioningWithFallback    = 1,
-        kPartitioningWithoutFallback = 2
-    };
+    enum { kPartitioningNo = 0, kPartitioningWithFallback = 1, kPartitioningWithoutFallback = 2 };
     uint32_t getPartitioning() const { return mPartitioning; }
     static bool partitioningAllowsFallback(uint32_t partitioning) {
         return partitioning == kPartitioningWithFallback;
@@ -209,7 +201,7 @@ class DeviceManager {
     bool mStrictSlicing = false;
 };
 
-} // namespace nn
-} // namespace android
+}  // namespace nn
+}  // namespace android
 
 #endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MANAGER_H

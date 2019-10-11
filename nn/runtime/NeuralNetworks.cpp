@@ -823,12 +823,10 @@ int ANeuralNetworksExecution_burstCompute(ANeuralNetworksExecution* execution,
 int ANeuralNetworksMemory_createFromFd(size_t size, int prot, int fd, size_t offset,
                                        ANeuralNetworksMemory** memory) {
     NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksMemory_createFromFd");
-    *memory = nullptr;
-    std::unique_ptr<MemoryFd> m = std::make_unique<MemoryFd>();
-    if (m == nullptr) {
-        return ANEURALNETWORKS_OUT_OF_MEMORY;
-    }
-    int n = m->set(size, prot, fd, offset);
+    *memory = nullptr;  // WARNING: b/138965390
+    int n = ANEURALNETWORKS_NO_ERROR;
+    std::unique_ptr<MemoryFd> m;
+    std::tie(n, m) = MemoryFd::create(size, prot, fd, offset);
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return n;
     }
@@ -839,12 +837,10 @@ int ANeuralNetworksMemory_createFromFd(size_t size, int prot, int fd, size_t off
 int ANeuralNetworksMemory_createFromAHardwareBuffer(const AHardwareBuffer* ahwb,
                                                     ANeuralNetworksMemory** memory) {
     NNTRACE_RT(NNTRACE_PHASE_PREPARATION, "ANeuralNetworksMemory_createFromAHardwareBuffer");
-    *memory = nullptr;
-    std::unique_ptr<MemoryAHWB> m = std::make_unique<MemoryAHWB>();
-    if (m == nullptr) {
-        return ANEURALNETWORKS_OUT_OF_MEMORY;
-    }
-    int n = m->set(ahwb);
+    *memory = nullptr;  // WARNING: b/138965390
+    int n = ANEURALNETWORKS_NO_ERROR;
+    std::unique_ptr<MemoryAHWB> m;
+    std::tie(n, m) = MemoryAHWB::create(*ahwb);
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return n;
     }
@@ -993,7 +989,6 @@ int ANeuralNetworksCompilation_create(ANeuralNetworksModel* model,
 void ANeuralNetworksCompilation_free(ANeuralNetworksCompilation* compilation) {
     NNTRACE_RT(NNTRACE_PHASE_TERMINATION, "ANeuralNetworksCompilation_free");
     // No validation.  Free of nullptr is valid.
-    // TODO specification says that a compilation-in-flight can be deleted
     CompilationBuilder* c = reinterpret_cast<CompilationBuilder*>(compilation);
     delete c;
 }
@@ -1047,9 +1042,13 @@ int ANeuralNetworksExecution_create(ANeuralNetworksCompilation* compilation,
 
 void ANeuralNetworksExecution_free(ANeuralNetworksExecution* execution) {
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "ANeuralNetworksExecution_free");
-    // TODO specification says that an execution-in-flight can be deleted
-    // No validation.  Free of nullptr is valid.
+    // Free of nullptr is valid.
     ExecutionBuilder* r = reinterpret_cast<ExecutionBuilder*>(execution);
+    if (r && r->inFlight()) {
+        LOG(ERROR) << "ANeuralNetworksExecution_free passed an in-flight ANeuralNetworksExecution"
+                   << " and is therefore ignored";
+        return;
+    }
     delete r;
 }
 

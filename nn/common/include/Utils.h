@@ -50,22 +50,14 @@ const int kOEMCodeBase = 10000;
  * forget to update the corresponding 'tags' table in
  * the initVlogMask() function implemented in Utils.cpp.
  */
-enum VLogFlags {
-    MODEL = 0,
-    COMPILATION,
-    EXECUTION,
-    CPUEXE,
-    MANAGER,
-    DRIVER
-};
+enum VLogFlags { MODEL = 0, COMPILATION, EXECUTION, CPUEXE, MANAGER, DRIVER };
 
-#define VLOG_IS_ON(TAG) \
-    ((vLogMask & (1 << (TAG))) != 0)
+#define VLOG_IS_ON(TAG) ((vLogMask & (1 << (TAG))) != 0)
 
-#define VLOG(TAG)         \
+#define VLOG(TAG)                 \
     if (LIKELY(!VLOG_IS_ON(TAG))) \
-        ;                 \
-    else                  \
+        ;                         \
+    else                          \
         LOG(INFO)
 
 extern int vLogMask;
@@ -306,6 +298,12 @@ hal::ErrorStatus convertResultCodeToErrorStatus(int resultCode);
 // Convert ErrorStatus to ANEURALNETWORKS_* result code.
 // Not guaranteed to be a 1-to-1 mapping.
 int convertErrorStatusToResultCode(hal::ErrorStatus status);
+
+// Convert execution results to runtime format. Additionally checks that the
+// returned results abide by the HAL specification, and logs an error if the
+// result violates the specification.
+std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> getExecutionResult(
+        hal::ErrorStatus status, std::vector<hal::OutputShape> outputShapes, hal::Timing timing);
 
 // Versioning
 

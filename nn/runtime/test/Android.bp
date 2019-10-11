@@ -21,31 +21,30 @@ cc_defaults {
     // b/109953668, disable OpenMP
     // openmp: true,
     shared_libs: [
-        "android.hardware.neuralnetworks@1.0",
-        "android.hardware.neuralnetworks@1.1",
-        "android.hardware.neuralnetworks@1.2",
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
         "libandroid",
         "libbase",
-        "libbinder",
         "libcutils",
         "libfmq",
         "libhidlbase",
         "libhidlmemory",
-        "libhidltransport",
         "liblog",
         "libnativewindow",
+        "libneuralnetworks_packageinfo",
         "libtextclassifier_hash",
         "libui",
         "libutils",
     ],
     static_libs: [
+        "android.hardware.neuralnetworks@1.0",
+        "android.hardware.neuralnetworks@1.1",
+        "android.hardware.neuralnetworks@1.2",
         "libc++fs",
-        "libcrypto",
+        "libneuralnetworks_generated_test_harness",
     ],
-    header_libs: [
-        "libneuralnetworks_generated_test_harness_headers",
+    whole_static_libs: [
+        "libcrypto_static",
     ],
 }
 
@@ -55,10 +54,13 @@ cc_defaults {
     srcs: [
         // Subset of tests that rely only on public functionality.
         //
-        // Changes to this list must be reflected in cts/tests/tests/neuralnetworks/Android.mk
-        // to ensure CTS tests coverage.
+        // Changes to this list must be reflected in the "CtsNNAPITests_static"
+        // library to ensure CTS tests coverage.
+        "TestAssertions.cpp",
+        "TestFree.cpp",
         "TestGenerated.cpp",
         "TestMemory.cpp",
+        "TestNeuralNetworksWrapper.cpp",
         "TestOperandExtraParams.cpp",
         "TestTrivialModel.cpp",
         "TestUnknownDimensions.cpp",
@@ -67,14 +69,14 @@ cc_defaults {
         "TestValidateOperations.cpp",
         "TestValidation.cpp",
         "TestWrapper.cpp",
-        "generated/examples/*.cpp",
-        "generated/models/*.cpp",
-        "generated/tests/*.cpp",
-
-        "TestNeuralNetworksWrapper.cpp",
     ],
     static_libs: [
         "libgmock",
+    ],
+    whole_static_libs: [
+        "neuralnetworks_generated_V1_0_example",
+        "neuralnetworks_generated_V1_1_example",
+        "neuralnetworks_generated_V1_2_example",
     ],
     cflags: [
         "-UNDEBUG",
@@ -131,16 +133,16 @@ cc_defaults {
     ],
     header_libs: [
         "libneuralnetworks_private_headers",
-        "neuralnetworks_test_vendor_fibonacci_extension",
-    ],
-    test_suites: [
-        "general-tests",
+        "neuralnetworks_example_fibonacci_extension",
     ],
 }
 
 cc_test {
     name: "NeuralNetworksTest_static",
     defaults: ["NeuralNetworksTest_static_defaults"],
+    test_suites: [
+        "general-tests",
+    ],
 }
 
 cc_test {
@@ -166,17 +168,44 @@ cc_test {
     ],
 }
 
+// Temporarily disabled due to b/139889855.
 cc_test {
     name: "NeuralNetworksTest_static_asan",
     defaults: ["NeuralNetworksTest_static_defaults"],
+    enabled: false,
     sanitize: {
         address: true,
     },
+    // Declare explicit library dependency for continuous builds
+    target: {
+        android_arm: {
+            required: [
+                "libclang_rt.asan-arm-android",
+            ],
+        },
+        android_arm64: {
+            required: [
+                "libclang_rt.asan-aarch64-android",
+            ],
+        },
+        android_x86: {
+            required: [
+                "libclang_rt.asan-i686-android",
+            ],
+        },
+        android_x86_64: {
+            required: [
+                "libclang_rt.asan-x86_64-android",
+            ],
+        },
+    },
 }
 
+// Temporarily disabled due to b/139889855.
 cc_test {
     name: "NeuralNetworksTest_static_ubsan",
     defaults: ["NeuralNetworksTest_static_defaults"],
+    enabled: false,
     sanitize: {
         undefined: true,
         all_undefined: true,
@@ -193,9 +222,6 @@ cc_defaults {
         "TestGenerated.cpp",
         "TestMain.cpp",
         "TestNeuralNetworksWrapper.cpp",
-        "generated/examples/*.cpp",
-        "generated/models/*.cpp",
-        "generated/tests/*.cpp",
     ],
     cflags: [
         "-DNNTEST_MULTITHREADED",
@@ -205,6 +231,11 @@ cc_defaults {
         "libgmock",
         "libneuralnetworks",
         "libneuralnetworks_common",
+    ],
+    whole_static_libs: [
+        "neuralnetworks_generated_V1_0_example",
+        "neuralnetworks_generated_V1_1_example",
+        "neuralnetworks_generated_V1_2_example",
     ],
     shared_libs: [
         "libcutils",
@@ -219,10 +250,12 @@ cc_test {
     defaults: ["NeuralNetworksTest_mt_defaults"],
 }
 
+// Temporarily disabled due to b/139889855.
 cc_test {
     // Note: tsan not supported on Android (yet)
     name: "NeuralNetworksTest_mt_static_asan",
     defaults: ["NeuralNetworksTest_mt_defaults"],
+    enabled: false,
     sanitize: {
         address: true,
     },
@@ -231,6 +264,8 @@ cc_test {
 cc_library_static {
     name: "CtsNNAPITests_static",
     srcs: [
+        ":libneuralnetworks_generated_test_harness_for_cts",
+        "TestFree.cpp",
         "TestGenerated.cpp",
         "TestMemory.cpp",
         "TestNeuralNetworksWrapper.cpp",
@@ -246,15 +281,13 @@ cc_library_static {
         "fuzzing/RandomVariable.cpp",
         "fuzzing/TestRandomGraph.cpp",
         "fuzzing/operation_signatures/*.cpp",
-        "generated/examples/*.cpp",
-        "generated/models/*.cpp",
-        "generated/tests/*.cpp",
+        "generated/spec_V1_*/*.example.cpp",
     ],
     include_dirs: [
         "frameworks/ml/nn/common/include",
         "frameworks/ml/nn/runtime/",
         "frameworks/ml/nn/runtime/include/",
-        "frameworks/ml/nn/tools/test_generator/include",
+        "frameworks/ml/nn/tools/test_generator/test_harness/include",
     ],
     cflags: [
         "-DNNTEST_CTS",
@@ -268,6 +301,7 @@ cc_library_static {
         "libneuralnetworks",
     ],
     static_libs: [
+        "libbase_ndk",
         "libgmock_ndk",
         "libgtest_ndk_c++",
     ],
@@ -275,65 +309,20 @@ cc_library_static {
     stl: "c++_static",
 }
 
-filegroup {
-    name: "VtsHalNeuralNetworksV1_0_all_generated_V1_0_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_0/models/V1_0/*.cpp",
-        "generated/vts/V1_0/tests/V1_0/*.cpp",
-    ],
+cc_library_static {
+    name: "neuralnetworks_generated_V1_0_example",
+    srcs: ["generated/spec_V1_0/*.example.cpp"],
+    static_libs: ["libneuralnetworks_generated_test_harness"],
 }
 
-filegroup {
-    name: "VtsHalNeuralNetworksV1_1_all_generated_V1_0_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_1/models/V1_0/*.cpp",
-        "generated/vts/V1_1/tests/V1_0/*.cpp",
-    ],
+cc_library_static {
+    name: "neuralnetworks_generated_V1_1_example",
+    srcs: ["generated/spec_V1_1/*.example.cpp"],
+    static_libs: ["libneuralnetworks_generated_test_harness"],
 }
 
-filegroup {
-    name: "VtsHalNeuralNetworksV1_1_all_generated_V1_1_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_1/models/V1_1/*.cpp",
-        "generated/vts/V1_1/tests/V1_1/*.cpp",
-    ],
-}
-
-filegroup {
-    name: "VtsHalNeuralNetworksV1_2_all_generated_V1_0_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_2/models/V1_0/*.cpp",
-        "generated/vts/V1_2/tests/V1_0/*.cpp",
-    ],
-}
-
-filegroup {
-    name: "VtsHalNeuralNetworksV1_2_all_generated_V1_1_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_2/models/V1_1/*.cpp",
-        "generated/vts/V1_2/tests/V1_1/*.cpp",
-    ],
-}
-
-filegroup {
-    name: "VtsHalNeuralNetworksV1_2_all_generated_V1_2_tests",
-    srcs: [
-        "generated/examples/*.cpp",
-        "generated/vts/V1_2/models/V1_2/*.cpp",
-        "generated/vts/V1_2/tests/V1_2/*.cpp",
-    ],
-}
-
-// CompilationCachingTests in VtsHalNeuralnetworksV1_2TargetTest depend on MobileNets.
-filegroup {
-    name: "VtsHalNeuralNetworksV1_2_mobilenets",
-    srcs: [
-        "generated/vts/V1_2/models/V1_0/mobilenet_224_gender_basic_fixed.model.cpp",
-        "generated/vts/V1_2/models/V1_0/mobilenet_quantized.model.cpp",
-    ],
+cc_library_static {
+    name: "neuralnetworks_generated_V1_2_example",
+    srcs: ["generated/spec_V1_2/*.example.cpp"],
+    static_libs: ["libneuralnetworks_generated_test_harness"],
 }

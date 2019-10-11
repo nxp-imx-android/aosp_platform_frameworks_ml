@@ -25,7 +25,7 @@ Model().Operation("CONV_2D", i1, f1, b1, 0, 0, 0, 0, 1, 1, 0).To(o1)
 Example({
     i1: [138, 138, 138, 138, 138, 138],
     o1: [137, 141, 145, 137, 141, 145, 137, 141, 145]
-}).AddInput(f1, b1)
+})
 
 # TEST 2: layout param, NHWC/NCHW layouts
 layout = BoolScalar("layout", False) # NHWC
@@ -40,7 +40,7 @@ Model("layouts").Operation("CONV_2D", i2, f2, b2, 0, 0, 0, 0, 1, 1, 0, layout).T
 Example({
     i2: [138, 108, 138, 108, 138, 108],
     o2: [121, 118, 115, 121, 118, 115, 121, 118, 115]
-}).AddNchw(i2, o2, layout).AddInput(f2, b2)
+}).AddNchw(i2, o2, layout)
 
 # TEST 3: zero-sized input
 
@@ -65,10 +65,9 @@ b = Parameter("bias", "TENSOR_INT32", "{3}", [4, 4, 4])
 o3 = Output("out", "TENSOR_QUANT8_ASYMM", "{0, 2, 2, 3}, 1.f, 128") # out
 model = model.Operation("CONV_2D", zero_sized, w, b, 0, 0, 0, 0, 1, 1, 0, layout).To(o3)
 
-# Create test case with dummy values.
 Example({
     i1: [130, 130],
-    o1: [0],
-    o2: [0],
-    o3: [0],
+    o1: [],
+    o2: [],
+    o3: [],
 }).AddNchw(i1, zero_sized, o3, layout)
