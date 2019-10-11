@@ -19,9 +19,11 @@
 #include "ExecutionBurstController.h"
 
 #include <android-base/logging.h>
+#include <cstring>
 #include <limits>
 #include <string>
 #include "Tracing.h"
+#include "Utils.h"
 
 namespace android::nn {
 namespace {
@@ -291,7 +293,7 @@ std::optional<std::vector<FmqResultDatum>> ResultChannelReceiver::getPacketBlock
     // are also available.
     const size_t count = mFmqResultChannel->availableToRead();
     std::vector<FmqResultDatum> packet(count + 1);
-    packet.front() = datum;
+    std::memcpy(&packet.front(), &datum, sizeof(datum));
     success &= mFmqResultChannel->read(packet.data() + 1, count);
 
     if (!mValid) {
@@ -304,7 +306,7 @@ std::optional<std::vector<FmqResultDatum>> ResultChannelReceiver::getPacketBlock
         return std::nullopt;
     }
 
-    return packet;
+    return std::make_optional(std::move(packet));
 }
 
 std::pair<std::unique_ptr<RequestChannelSender>, const FmqRequestDescriptor*>
@@ -534,16 +536,22 @@ ExecutionBurstController::~ExecutionBurstController() {
     }
 }
 
+static std::tuple<int, std::vector<OutputShape>, Timing, bool> getExecutionResult(
+        ErrorStatus status, std::vector<OutputShape> outputShapes, Timing timing, bool fallback) {
+    auto [n, checkedOutputShapes, checkedTiming] =
+            getExecutionResult(status, std::move(outputShapes), timing);
+    return {n, std::move(checkedOutputShapes), checkedTiming, fallback};
+}
+
 std::tuple<ErrorStatus, std::vector<OutputShape>, Timing> ExecutionBurstController::compute(
         const Request& request, MeasureTiming measure, const std::vector<intptr_t>& memoryIds) {
     auto [status, outputShapes, timing, fallback] = tryCompute(request, measure, memoryIds);
     (void)fallback;  // ignore fallback field
-    return {status, std::move(outputShapes), timing};
+    return {convertResultCodeToErrorStatus(status), std::move(outputShapes), timing};
 }
 
-std::tuple<ErrorStatus, std::vector<OutputShape>, Timing, bool>
-ExecutionBurstController::tryCompute(const Request& request, MeasureTiming measure,
-                                     const std::vector<intptr_t>& memoryIds) {
+std::tuple<int, std::vector<OutputShape>, Timing, bool> ExecutionBurstController::tryCompute(
+        const Request& request, MeasureTiming measure, const std::vector<intptr_t>& memoryIds) {
     NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_EXECUTION, "ExecutionBurstController::compute");
 
     std::lock_guard<std::mutex> guard(mMutex);
@@ -554,7 +562,7 @@ ExecutionBurstController::tryCompute(const Request& request, MeasureTiming measu
     if (!success) {
         LOG(ERROR) << "Error sending FMQ packet";
         // only use fallback execution path if the packet could not be sent
-        return {ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/true};
+        return getExecutionResult(ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/true);
     }
 
     // get result packet
@@ -562,13 +570,13 @@ ExecutionBurstController::tryCompute(const Request& request, MeasureTiming measu
     if (!result) {
         LOG(ERROR) << "Error retrieving FMQ packet";
         // only use fallback execution path if the packet could not be sent
-        return {ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/false};
+        return getExecutionResult(ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/false);
     }
 
     // unpack results and return (only use fallback execution path if the
     // packet could not be sent)
     auto [status, outputShapes, timing] = std::move(*result);
-    return {status, std::move(outputShapes), timing, /*fallback=*/false};
+    return getExecutionResult(status, std::move(outputShapes), timing, /*fallback=*/false);
 }
 
 void ExecutionBurstController::freeMemory(intptr_t key) {

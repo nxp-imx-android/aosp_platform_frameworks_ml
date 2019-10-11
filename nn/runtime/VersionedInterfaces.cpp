@@ -18,17 +18,79 @@
 
 #include "VersionedInterfaces.h"
 
+#include <android-base/logging.h>
+#include <android-base/scopeguard.h>
+#include <android-base/thread_annotations.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "Callbacks.h"
 #include "ExecutionBurstController.h"
 #include "MetaModel.h"
 #include "Tracing.h"
 #include "Utils.h"
 
-#include <android-base/logging.h>
-#include <android-base/scopeguard.h>
-#include <android-base/thread_annotations.h>
-#include <functional>
-#include <type_traits>
+/*
+ * Some notes about HIDL interface objects and lifetimes across processes:
+ *
+ * All HIDL interface objects inherit from IBase, which itself inherits from
+ * ::android::RefBase. As such, all HIDL interface objects are reference counted
+ * and must be owned through ::android::sp (or referenced through ::android::wp).
+ * Allocating RefBase objects on the stack will log errors and may result in
+ * crashes, and deleting a RefBase object through another means (e.g., "delete",
+ * "free", or RAII-cleanup through std::unique_ptr or some equivalent) will
+ * result in double-free and/or use-after-free undefined behavior.
+ *
+ * HIDL/Binder manages the reference count of HIDL interface objects
+ * automatically across processes. If a process that references (but did not
+ * create) the HIDL interface object dies, HIDL/Binder ensures any reference
+ * count it held is properly released. (Caveat: it might be possible that
+ * HIDL/Binder behave strangely with ::android::wp references.)
+ *
+ * If the process which created the HIDL interface object dies, any call on this
+ * object from another process will result in a HIDL transport error with the
+ * code DEAD_OBJECT.
+ */
+
+/*
+ * Some notes about asynchronous calls across HIDL:
+ *
+ * For synchronous calls across HIDL, if an error occurs after the function was
+ * called but before it returns, HIDL will return a transport error. For
+ * example, if the message cannot be delivered to the server process or if the
+ * server process dies before returning a result, HIDL will return from the
+ * function with the appropriate transport error in the Return<> object which
+ * can be queried with Return<>::isOk(), Return<>::isDeadObject(),
+ * Return<>::description(), etc.
+ *
+ * However, HIDL offers no such error management in the case of asynchronous
+ * calls. By default, if the client launches an asynchronous task and the server
+ * fails to return a result through the callback, the client will be left
+ * waiting indefinitely for a result it will never receive.
+ *
+ * In the NNAPI, IDevice::prepareModel* and IPreparedModel::execute* (but not
+ * IPreparedModel::executeSynchronously) are asynchronous calls across HIDL.
+ * Specifically, these asynchronous functions are called with a HIDL interface
+ * callback object (IPrepareModelCallback for IDevice::prepareModel* and
+ * IExecutionCallback for IPreparedModel::execute*) and are expected to quickly
+ * return, and the results are returned at a later time through these callback
+ * objects.
+ *
+ * To protect against the case when the server dies after the asynchronous task
+ * was called successfully but before the results could be returned, HIDL
+ * provides an object called a "hidl_death_recipient", which can be used to
+ * detect when an interface object (and more generally, the server process) has
+ * died. VersionedInterfaces uses hidl_death_recipients to detect when the
+ * driver process has died, and VersionedInterfaces will unblock any thread
+ * waiting on the results of a callback object that may otherwise not be
+ * signaled.
+ */
 
 namespace android {
 namespace nn {
@@ -38,9 +100,7 @@ namespace {
 
 using namespace hal;
 
-using HidlToken = hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>;
-
-const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
+const Timing kNoTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 void sendFailureMessage(const sp<IPreparedModelCallback>& cb) {
     cb->notify(ErrorStatus::GENERAL_FAILURE, nullptr);
@@ -52,10 +112,6 @@ void sendFailureMessage(const sp<PreparedModelCallback>& cb) {
 
 void sendFailureMessage(const sp<IExecutionCallback>& cb) {
     cb->notify(ErrorStatus::GENERAL_FAILURE);
-}
-
-void sendFailureMessage(const sp<ExecutionCallback>& cb) {
-    sendFailureMessage(static_cast<sp<IExecutionCallback>>(cb));
 }
 
 // This class is thread safe
@@ -76,7 +132,8 @@ class DeathHandler : public hidl_death_recipient {
                 [this, callback] { unregisterCallback(callback); });
     }
 
-    private : void registerCallback(const sp<ICallback>& callback) {
+   private:
+    void registerCallback(const sp<ICallback>& callback) {
         std::lock_guard<std::mutex> hold(mMutex);
         mCallbacks.push_back(callback);
     }
@@ -99,17 +156,13 @@ class IPreparedModelDeathHandler : public DeathHandler<IExecutionCallback> {};
 static std::shared_ptr<VersionedIPreparedModel> makeVersionedIPreparedModel(
         sp<V1_0::IPreparedModel> preparedModel) {
     // verify input
-    if (!preparedModel) {
-        LOG(ERROR) << "makeVersionedIPreparedModel -- passed invalid preparedModel object.";
+    if (preparedModel == nullptr) {
+        LOG(ERROR) << "makeVersionedIPreparedModel passed invalid preparedModel object.";
         return nullptr;
     }
 
     // create death handler object
-    sp<IPreparedModelDeathHandler> deathHandler = new (std::nothrow) IPreparedModelDeathHandler();
-    if (!deathHandler) {
-        LOG(ERROR) << "makeVersionedIPreparedModel -- Failed to create IPreparedModelDeathHandler.";
-        return nullptr;
-    }
+    sp<IPreparedModelDeathHandler> deathHandler = new IPreparedModelDeathHandler();
 
     // linkToDeath registers a callback that will be invoked on service death to
     // proactively handle service crashes. If the linkToDeath call fails,
@@ -117,7 +170,7 @@ static std::shared_ptr<VersionedIPreparedModel> makeVersionedIPreparedModel(
     // providing the response.
     const Return<bool> ret = preparedModel->linkToDeath(deathHandler, 0);
     if (!ret.isOk() || ret != true) {
-        LOG(ERROR) << "makeVersionedIPreparedModel -- Failed to register a death recipient for the "
+        LOG(ERROR) << "makeVersionedIPreparedModel failed to register a death recipient for the "
                       "IPreparedModel object.";
         return nullptr;
     }
@@ -141,99 +194,101 @@ VersionedIPreparedModel::~VersionedIPreparedModel() {
     mPreparedModelV1_0->unlinkToDeath(mDeathHandler).isOk();
 }
 
-ErrorStatus VersionedIPreparedModel::execute(const Request& request, MeasureTiming measure,
-                                             const sp<ExecutionCallback>& callback) {
+std::tuple<int, std::vector<OutputShape>, Timing> VersionedIPreparedModel::executeAsynchronously(
+        const Request& request, MeasureTiming measure) const {
+    const auto failWithStatus = [](ErrorStatus status) {
+        return getExecutionResult(status, {}, kNoTiming);
+    };
+    const auto getResults = [](const ExecutionCallback& cb) {
+        return getExecutionResult(cb.getStatus(), cb.getOutputShapes(), cb.getTiming());
+    };
+
+    const sp<ExecutionCallback> callback = new ExecutionCallback();
     const auto scoped = mDeathHandler->protectCallback(callback);
 
+    // version 1.2+ HAL
     if (mPreparedModelV1_2 != nullptr) {
         Return<ErrorStatus> ret = mPreparedModelV1_2->execute_1_2(request, measure, callback);
         if (!ret.isOk()) {
-            sendFailureMessage(callback);
             LOG(ERROR) << "execute_1_2 failure: " << ret.description();
-            return ErrorStatus::GENERAL_FAILURE;
+            return failWithStatus(ErrorStatus::GENERAL_FAILURE);
         }
         if (ret != ErrorStatus::NONE) {
-            sendFailureMessage(callback);
             LOG(ERROR) << "execute_1_2 returned " << toString(static_cast<ErrorStatus>(ret));
-            return static_cast<ErrorStatus>(ret);
+            return failWithStatus(ret);
         }
         callback->wait();
-        return static_cast<ErrorStatus>(ret);
-    } else if (mPreparedModelV1_0 != nullptr) {
+        return getResults(*callback);
+    }
+
+    // version 1.0+ HAL
+    if (mPreparedModelV1_0 != nullptr) {
         Return<ErrorStatus> ret = mPreparedModelV1_0->execute(request, callback);
         if (!ret.isOk()) {
-            sendFailureMessage(callback);
             LOG(ERROR) << "execute failure: " << ret.description();
-            return ErrorStatus::GENERAL_FAILURE;
+            return failWithStatus(ErrorStatus::GENERAL_FAILURE);
         }
         if (ret != ErrorStatus::NONE) {
-            sendFailureMessage(callback);
             LOG(ERROR) << "execute returned " << toString(static_cast<ErrorStatus>(ret));
-            return static_cast<ErrorStatus>(ret);
+            return failWithStatus(ret);
         }
         callback->wait();
-        return static_cast<ErrorStatus>(ret);
-    } else {
-        sendFailureMessage(callback);
-        LOG(ERROR) << "execute called with no preparedModel";
-        return ErrorStatus::GENERAL_FAILURE;
+        return getResults(*callback);
     }
+
+    // No prepared model available
+    LOG(ERROR) << "executeAsynchronously called with no preparedModel";
+    return failWithStatus(ErrorStatus::GENERAL_FAILURE);
 }
 
-std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing>
-VersionedIPreparedModel::executeSynchronously(const Request& request, MeasureTiming measure) {
-    const std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> kFailure = {
-            ErrorStatus::GENERAL_FAILURE, {}, kBadTiming};
+std::tuple<int, std::vector<OutputShape>, Timing> VersionedIPreparedModel::executeSynchronously(
+        const Request& request, MeasureTiming measure) const {
+    const auto kFailure = getExecutionResult(ErrorStatus::GENERAL_FAILURE, {}, kNoTiming);
 
+    // version 1.2+ HAL
     if (mPreparedModelV1_2 != nullptr) {
-        std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> result;
+        std::tuple<int, std::vector<OutputShape>, Timing> result;
         Return<void> ret = mPreparedModelV1_2->executeSynchronously(
                 request, measure,
                 [&result](ErrorStatus error, const hidl_vec<OutputShape>& outputShapes,
                           const Timing& timing) {
-                    result = std::make_tuple(error, outputShapes, timing);
+                    result = getExecutionResult(error, outputShapes, timing);
                 });
         if (!ret.isOk()) {
             LOG(ERROR) << "executeSynchronously failure: " << ret.description();
             return kFailure;
         }
         return result;
-    } else {
-        // Simulate synchronous execution.
-        sp<ExecutionCallback> callback = new ExecutionCallback();
-        ErrorStatus ret = execute(request, measure, callback);
-        if (ret != ErrorStatus::NONE) {
-            return {ret, {}, kBadTiming};
-        }
-        callback->wait();
-        // callback->getOutputShapes() will always return an empty hidl vector.
-        // callback->getTiming() will always return values indicating no measurement.
-        return {callback->getStatus(), callback->getOutputShapes(), callback->getTiming()};
     }
+
+    // Fallback to asynchronous execution.
+    return executeAsynchronously(request, measure);
+}
+
+std::tuple<int, std::vector<OutputShape>, Timing> VersionedIPreparedModel::execute(
+        const Request& request, MeasureTiming measure, bool preferSynchronous) const {
+    if (preferSynchronous) {
+        VLOG(EXECUTION) << "Before executeSynchronously() " << SHOW_IF_DEBUG(toString(request));
+        return executeSynchronously(request, measure);
+    }
+
+    VLOG(EXECUTION) << "Before executeAsynchronously() " << SHOW_IF_DEBUG(toString(request));
+    return executeAsynchronously(request, measure);
 }
 
 std::shared_ptr<ExecutionBurstController> VersionedIPreparedModel::configureExecutionBurst(
         bool blocking) const {
-    if (mPreparedModelV1_2 != nullptr) {
-        return ExecutionBurstController::create(mPreparedModelV1_2, blocking);
-    } else {
+    if (mPreparedModelV1_2 == nullptr) {
         return nullptr;
     }
-}
-
-bool VersionedIPreparedModel::operator==(nullptr_t) const {
-    return mPreparedModelV1_0 == nullptr;
-}
-
-bool VersionedIPreparedModel::operator!=(nullptr_t) const {
-    return mPreparedModelV1_0 != nullptr;
+    return ExecutionBurstController::create(mPreparedModelV1_2, blocking);
 }
 
 std::shared_ptr<VersionedIDevice> VersionedIDevice::create(std::string serviceName,
                                                            sp<V1_0::IDevice> device) {
     auto core = Core::create(std::move(device));
     if (!core.has_value()) {
-        LOG(ERROR) << "VersionedIDevice::create -- Failed to create Core.";
+        LOG(ERROR) << "VersionedIDevice::create failed to create Core.";
         return nullptr;
     }
 
@@ -246,17 +301,10 @@ VersionedIDevice::VersionedIDevice(std::string serviceName, Core core)
 
 std::optional<VersionedIDevice::Core> VersionedIDevice::Core::create(sp<V1_0::IDevice> device) {
     // verify input
-    if (!device) {
-        LOG(ERROR) << "VersionedIDevice::Core::create -- passed invalid device object.";
-        return {};
-    }
+    CHECK(device != nullptr) << "VersionedIDevice::Core::create passed invalid device object.";
 
     // create death handler object
-    sp<IDeviceDeathHandler> deathHandler = new (std::nothrow) IDeviceDeathHandler();
-    if (!deathHandler) {
-        LOG(ERROR) << "VersionedIDevice::Core::create -- Failed to create IDeviceDeathHandler.";
-        return {};
-    }
+    sp<IDeviceDeathHandler> deathHandler = new IDeviceDeathHandler();
 
     // linkToDeath registers a callback that will be invoked on service death to
     // proactively handle service crashes. If the linkToDeath call fails,
@@ -264,9 +312,8 @@ std::optional<VersionedIDevice::Core> VersionedIDevice::Core::create(sp<V1_0::ID
     // providing the response.
     const Return<bool> ret = device->linkToDeath(deathHandler, 0);
     if (!ret.isOk() || ret != true) {
-        LOG(ERROR)
-                << "VersionedIDevice::Core::create -- Failed to register a death recipient for the "
-                   "IDevice object.";
+        LOG(ERROR) << "VersionedIDevice::Core::create failed to register a death recipient for the "
+                      "IDevice object.";
         return {};
     }
 
@@ -389,7 +436,7 @@ Return<T_Return> VersionedIDevice::recoverable(
 
                 auto core = Core::create(std::move(recoveredDevice));
                 if (!core.has_value()) {
-                    LOG(ERROR) << "VersionedIDevice::recoverable -- Failed to create Core.";
+                    LOG(ERROR) << "VersionedIDevice::recoverable failed to create Core.";
                     return ret;
                 }
 
@@ -410,10 +457,11 @@ Return<T_Return> VersionedIDevice::recoverable(
     return ret;
 }
 
-std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() {
+std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() const {
     const std::pair<ErrorStatus, Capabilities> kFailure = {ErrorStatus::GENERAL_FAILURE, {}};
     std::pair<ErrorStatus, Capabilities> result;
 
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
         NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_INITIALIZATION, "getCapabilities_1_2");
         Return<void> ret = recoverable<void, V1_2::IDevice>(
@@ -427,7 +475,11 @@ std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() {
             LOG(ERROR) << "getCapabilities_1_2 failure: " << ret.description();
             return {ErrorStatus::GENERAL_FAILURE, {}};
         }
-    } else if (getDevice<V1_1::IDevice>() != nullptr) {
+        return result;
+    }
+
+    // version 1.1 HAL
+    if (getDevice<V1_1::IDevice>() != nullptr) {
         NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_INITIALIZATION, "getCapabilities_1_1");
         Return<void> ret = recoverable<void, V1_1::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_1::IDevice>& device) {
@@ -441,7 +493,11 @@ std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() {
             LOG(ERROR) << "getCapabilities_1_1 failure: " << ret.description();
             return kFailure;
         }
-    } else if (getDevice<V1_0::IDevice>() != nullptr) {
+        return result;
+    }
+
+    // version 1.0 HAL
+    if (getDevice<V1_0::IDevice>() != nullptr) {
         NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_INITIALIZATION, "getCapabilities");
         Return<void> ret = recoverable<void, V1_0::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_0::IDevice>& device) {
@@ -455,18 +511,20 @@ std::pair<ErrorStatus, Capabilities> VersionedIDevice::getCapabilities() {
             LOG(ERROR) << "getCapabilities failure: " << ret.description();
             return kFailure;
         }
-    } else {
-        LOG(ERROR) << "Device not available!";
-        return {ErrorStatus::DEVICE_UNAVAILABLE, {}};
+        return result;
     }
 
-    return result;
+    // No device available
+    LOG(ERROR) << "Device not available!";
+    return {ErrorStatus::DEVICE_UNAVAILABLE, {}};
 }
 
-std::pair<ErrorStatus, hidl_vec<Extension>> VersionedIDevice::getSupportedExtensions() {
+std::pair<ErrorStatus, hidl_vec<Extension>> VersionedIDevice::getSupportedExtensions() const {
     const std::pair<ErrorStatus, hidl_vec<Extension>> kFailure = {ErrorStatus::GENERAL_FAILURE, {}};
-    NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_COMPILATION, "getSupportedExtensions");
+
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
+        NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_INITIALIZATION, "getSupportedExtensions");
         std::pair<ErrorStatus, hidl_vec<Extension>> result;
         Return<void> ret = recoverable<void, V1_2::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_2::IDevice>& device) {
@@ -480,16 +538,20 @@ std::pair<ErrorStatus, hidl_vec<Extension>> VersionedIDevice::getSupportedExtens
             return kFailure;
         }
         return result;
-    } else if (getDevice<V1_0::IDevice>() != nullptr) {
-        return {ErrorStatus::NONE, {/* No extensions. */}};
-    } else {
-        LOG(ERROR) << "Device not available!";
-        return {ErrorStatus::DEVICE_UNAVAILABLE, {}};
     }
+
+    // version too low
+    if (getDevice<V1_0::IDevice>() != nullptr) {
+        return {ErrorStatus::NONE, {/* No extensions. */}};
+    }
+
+    // No device available
+    LOG(ERROR) << "Device not available!";
+    return {ErrorStatus::DEVICE_UNAVAILABLE, {}};
 }
 
 std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(
-        const MetaModel& metaModel) {
+        const MetaModel& metaModel) const {
     const std::pair<ErrorStatus, hidl_vec<bool>> kFailure = {ErrorStatus::GENERAL_FAILURE, {}};
     std::pair<ErrorStatus, hidl_vec<bool>> result;
 
@@ -516,6 +578,7 @@ std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(
         return std::make_pair(status, std::move(remappedSupported));
     };
 
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
         NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_COMPILATION, "getSupportedOperations_1_2");
         Return<void> ret = recoverable<void, V1_2::IDevice>(
@@ -532,6 +595,7 @@ std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(
         return result;
     }
 
+    // version 1.1 HAL
     if (getDevice<V1_1::IDevice>() != nullptr) {
         const bool compliant = compliantWithV1_1(model);
         V1_1::Model model11;
@@ -563,6 +627,7 @@ std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(
         return result;
     }
 
+    // version 1.0 HAL
     if (getDevice<V1_0::IDevice>() != nullptr) {
         const bool compliant = compliantWithV1_0(model);
         V1_0::Model model10;
@@ -594,20 +659,18 @@ std::pair<ErrorStatus, hidl_vec<bool>> VersionedIDevice::getSupportedOperations(
         return result;
     }
 
+    // No device available
+    LOG(ERROR) << "Device not available!";
     return kFailure;
 }
 
 std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> VersionedIDevice::prepareModel(
         const Model& model, ExecutionPreference preference, const hidl_vec<hidl_handle>& modelCache,
-        const hidl_vec<hidl_handle>& dataCache, const HidlToken& token) {
+        const hidl_vec<hidl_handle>& dataCache, const CacheToken& token) const {
     const std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> kFailure = {
             ErrorStatus::GENERAL_FAILURE, nullptr};
 
-    const sp<PreparedModelCallback> callback = new (std::nothrow) PreparedModelCallback();
-    if (callback == nullptr) {
-        LOG(ERROR) << "prepareModel failed to create callback object";
-        return kFailure;
-    }
+    const sp<PreparedModelCallback> callback = new PreparedModelCallback();
 
     // If 1.2 device, try preparing model
     if (getDevice<V1_2::IDevice>() != nullptr) {
@@ -718,17 +781,13 @@ std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> VersionedIDevic
 std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>>
 VersionedIDevice::prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
                                         const hidl_vec<hidl_handle>& dataCache,
-                                        const HidlToken& token) {
+                                        const CacheToken& token) const {
     const std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> kFailure = {
             ErrorStatus::GENERAL_FAILURE, nullptr};
 
-    const sp<PreparedModelCallback> callback = new (std::nothrow) PreparedModelCallback();
-    if (callback == nullptr) {
-        LOG(ERROR) << "prepareModelFromCache failed to create callback object";
-        return kFailure;
-    }
-
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
+        const sp<PreparedModelCallback> callback = new PreparedModelCallback();
         const Return<ErrorStatus> ret = recoverable<ErrorStatus, V1_2::IDevice>(
                 __FUNCTION__,
                 [&modelCache, &dataCache, &token, &callback](const sp<V1_2::IDevice>& device) {
@@ -748,32 +807,36 @@ VersionedIDevice::prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
         return {callback->getStatus(), makeVersionedIPreparedModel(callback->getPreparedModel())};
     }
 
-    if (getDevice<V1_1::IDevice>() != nullptr || getDevice<V1_0::IDevice>() != nullptr) {
+    // version too low
+    if (getDevice<V1_0::IDevice>() != nullptr) {
         LOG(ERROR) << "prepareModelFromCache called on V1_1 or V1_0 device";
         return kFailure;
     }
 
+    // No device available
     LOG(ERROR) << "prepareModelFromCache called with no device";
     return kFailure;
 }
 
-DeviceStatus VersionedIDevice::getStatus() {
-    if (getDevice<V1_0::IDevice>() == nullptr) {
-        LOG(ERROR) << "Device not available!";
-        return DeviceStatus::UNKNOWN;
+DeviceStatus VersionedIDevice::getStatus() const {
+    // version 1.0+ HAL
+    if (getDevice<V1_0::IDevice>() != nullptr) {
+        Return<DeviceStatus> ret = recoverable<DeviceStatus, V1_0::IDevice>(
+                __FUNCTION__, [](const sp<V1_0::IDevice>& device) { return device->getStatus(); });
+
+        if (!ret.isOk()) {
+            LOG(ERROR) << "getStatus failure: " << ret.description();
+            return DeviceStatus::UNKNOWN;
+        }
+        return static_cast<DeviceStatus>(ret);
     }
 
-    Return<DeviceStatus> ret = recoverable<DeviceStatus, V1_0::IDevice>(
-            __FUNCTION__, [](const sp<V1_0::IDevice>& device) { return device->getStatus(); });
-
-    if (!ret.isOk()) {
-        LOG(ERROR) << "getStatus failure: " << ret.description();
-        return DeviceStatus::UNKNOWN;
-    }
-    return static_cast<DeviceStatus>(ret);
+    // No device available
+    LOG(ERROR) << "Device not available!";
+    return DeviceStatus::UNKNOWN;
 }
 
-int64_t VersionedIDevice::getFeatureLevel() {
+int64_t VersionedIDevice::getFeatureLevel() const {
     constexpr int64_t kFailure = -1;
 
     if (getDevice<V1_2::IDevice>() != nullptr) {
@@ -790,31 +853,36 @@ int64_t VersionedIDevice::getFeatureLevel() {
 
 int32_t VersionedIDevice::getType() const {
     constexpr int32_t kFailure = -1;
-    std::pair<ErrorStatus, DeviceType> result;
 
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
+        int32_t result = kFailure;
         Return<void> ret = recoverable<void, V1_2::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_2::IDevice>& device) {
                     return device->getType([&result](ErrorStatus error, DeviceType deviceType) {
-                        result = std::make_pair(error, deviceType);
+                        if (error == ErrorStatus::NONE) {
+                            result = static_cast<int32_t>(deviceType);
+                        }
                     });
                 });
         if (!ret.isOk()) {
             LOG(ERROR) << "getType failure: " << ret.description();
             return kFailure;
         }
-        return static_cast<int32_t>(result.second);
-    } else {
-        LOG(INFO) << "Unknown NNAPI device type.";
-        return ANEURALNETWORKS_DEVICE_UNKNOWN;
+        return result;
     }
+
+    // version too low or no device available
+    LOG(INFO) << "Unknown NNAPI device type.";
+    return ANEURALNETWORKS_DEVICE_UNKNOWN;
 }
 
-std::pair<ErrorStatus, hidl_string> VersionedIDevice::getVersionString() {
+std::pair<ErrorStatus, hidl_string> VersionedIDevice::getVersionString() const {
     const std::pair<ErrorStatus, hidl_string> kFailure = {ErrorStatus::GENERAL_FAILURE, ""};
-    std::pair<ErrorStatus, hidl_string> result;
 
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
+        std::pair<ErrorStatus, hidl_string> result;
         Return<void> ret = recoverable<void, V1_2::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_2::IDevice>& device) {
                     return device->getVersionString(
@@ -827,20 +895,25 @@ std::pair<ErrorStatus, hidl_string> VersionedIDevice::getVersionString() {
             return kFailure;
         }
         return result;
-    } else if (getDevice<V1_1::IDevice>() != nullptr || getDevice<V1_0::IDevice>() != nullptr) {
-        return {ErrorStatus::NONE, "UNKNOWN"};
-    } else {
-        LOG(ERROR) << "Could not handle getVersionString";
-        return kFailure;
     }
+
+    // version too low
+    if (getDevice<V1_0::IDevice>() != nullptr) {
+        return {ErrorStatus::NONE, "UNKNOWN"};
+    }
+
+    // No device available
+    LOG(ERROR) << "Could not handle getVersionString";
+    return kFailure;
 }
 
-std::tuple<ErrorStatus, uint32_t, uint32_t> VersionedIDevice::getNumberOfCacheFilesNeeded() {
+std::tuple<ErrorStatus, uint32_t, uint32_t> VersionedIDevice::getNumberOfCacheFilesNeeded() const {
     constexpr std::tuple<ErrorStatus, uint32_t, uint32_t> kFailure = {ErrorStatus::GENERAL_FAILURE,
                                                                       0, 0};
-    std::tuple<ErrorStatus, uint32_t, uint32_t> result;
 
+    // version 1.2+ HAL
     if (getDevice<V1_2::IDevice>() != nullptr) {
+        std::tuple<ErrorStatus, uint32_t, uint32_t> result;
         Return<void> ret = recoverable<void, V1_2::IDevice>(
                 __FUNCTION__, [&result](const sp<V1_2::IDevice>& device) {
                     return device->getNumberOfCacheFilesNeeded([&result](ErrorStatus error,
@@ -854,20 +927,16 @@ std::tuple<ErrorStatus, uint32_t, uint32_t> VersionedIDevice::getNumberOfCacheFi
             return kFailure;
         }
         return result;
-    } else if (getDevice<V1_1::IDevice>() != nullptr || getDevice<V1_0::IDevice>() != nullptr) {
-        return {ErrorStatus::NONE, 0, 0};
-    } else {
-        LOG(ERROR) << "Could not handle getNumberOfCacheFilesNeeded";
-        return kFailure;
     }
-}
 
-bool VersionedIDevice::operator==(nullptr_t) const {
-    return getDevice<V1_0::IDevice>() == nullptr;
-}
+    // version too low
+    if (getDevice<V1_0::IDevice>() != nullptr) {
+        return {ErrorStatus::NONE, 0, 0};
+    }
 
-bool VersionedIDevice::operator!=(nullptr_t) const {
-    return getDevice<V1_0::IDevice>() != nullptr;
+    // No device available
+    LOG(ERROR) << "Could not handle getNumberOfCacheFilesNeeded";
+    return kFailure;
 }
 
 }  // namespace nn

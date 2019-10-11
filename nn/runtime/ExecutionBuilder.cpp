@@ -43,8 +43,6 @@ namespace nn {
 
 using namespace hal;
 
-using HidlToken = hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
-
 const Timing kNoTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 static MeasureTiming measureTiming(const ExecutionBuilder* execution) {
@@ -308,6 +306,8 @@ int ExecutionBuilder::getOutputOperandRank(uint32_t index, uint32_t* rank) {
 //         with an explicit device list.  See CompilationBuilder::mExplicitDeviceList.
 static void cpuFallbackFull(ExecutionBuilder* executionBuilder,
                             const sp<ExecutionCallback>& executionCallback) {
+    CHECK(executionBuilder != nullptr);
+    CHECK(executionCallback != nullptr);
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "cpuFallbackFull");
     VLOG(EXECUTION) << "cpuFallbackFull";
     StepExecutor executor(executionBuilder, executionBuilder->getModel(),
@@ -327,8 +327,8 @@ static void cpuFallbackFull(ExecutionBuilder* executionBuilder,
 // Attempt synchronous execution on CPU.
 // (1) First, attempt to execute this step on CPU.  If successful,
 //     return true.  (Do not call executionCallback->notify().)
-// (2) If unsuccessful, attempt to execute the full model on CPU,
-//     ensure that executionCallback->notify() is called, and return
+// (2) If unsuccessful, and the ExecutionPlan is compound, attempt to execute the
+//     full model on CPU, ensure that executionCallback->notify() is called, and return
 //     false.
 // TODO: How should we handle timing in this case?
 //       For Q this is irrelevant: We only support timing in conjunction
@@ -338,6 +338,10 @@ static bool cpuFallbackPartial(ExecutionBuilder* executionBuilder, const Executi
                                std::shared_ptr<ExecutionPlan::Controller> controller,
                                const sp<ExecutionCallback>& executionCallback,
                                std::vector<OutputShape>* outputShapes) {
+    CHECK(executionBuilder != nullptr);
+    CHECK(plan != nullptr);
+    CHECK(executionCallback != nullptr);
+    CHECK(outputShapes != nullptr);
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "cpuFallbackPartial");
     VLOG(EXECUTION) << "cpuFallbackPartial";
     std::shared_ptr<StepExecutor> executor;
@@ -358,8 +362,9 @@ static bool cpuFallbackPartial(ExecutionBuilder* executionBuilder, const Executi
         status = ErrorStatus::GENERAL_FAILURE;
     }
     if (status != ErrorStatus::NONE) {
+        // Do not fallback twice if the ExecutionPlan is simple.
         // OUTPUT_INSUFFICIENT_SIZE is not recoverable
-        if (status == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
+        if (plan->isSimple() || status == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
             executionCallback->notify(status, *outputShapes, kNoTiming);
         } else {
             cpuFallbackFull(executionBuilder, executionCallback);
@@ -374,9 +379,13 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
                                          std::shared_ptr<ExecutionPlan::Controller> controller,
                                          bool allowFallback,
                                          const sp<ExecutionCallback>& executionCallback) {
+    CHECK(executionBuilder != nullptr);
+    CHECK(plan != nullptr);
     VLOG(EXECUTION) << "ExecutionBuilder::compute (from plan, iteratively)";
     std::vector<OutputShape> outputShapes;
     Timing timing = kNoTiming;
+    // Disallow fallback when the ExecutionPlan is simple on CPU.
+    allowFallback &= !plan->isSimpleCpu();
     executionBuilder->initializeOutputShapes(&outputShapes);
     while (true) {
         std::shared_ptr<StepExecutor> executor;
@@ -507,6 +516,8 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         return convertErrorStatusToResultCode(localSynchronizationCallback->getStatus());
     } else /* asynchronous */ {
         // TODO: use a thread pool
+        // TODO(mikie): this could have NNTRACE so we could measure the overhead
+        //              of spinning up a new thread.
 
         // Prepare the callback for asynchronous execution.
         // sp<ExecutionCallback> object is returned when the
@@ -681,22 +692,27 @@ bool StepExecutor::isCpu() const {
 
 int StepExecutor::startCompute(sp<ExecutionCallback>* synchronizationCallback,
                                const std::shared_ptr<ExecutionBurstController>& burstController) {
+    CHECK(mPreparedModel != nullptr);
+    CHECK(synchronizationCallback != nullptr);
+    *synchronizationCallback = nullptr;
+
     if (VLOG_IS_ON(EXECUTION)) {
         logArguments("input", mInputs);
         logArguments("output", mOutputs);
     }
 
-    // Initialize timing information in case we take an error path to exit.
-    mExecutionBuilder->reportTiming(kNoTiming);
+    const MeasureTiming measure = measureTiming(mExecutionBuilder);
+    const auto [n, outputShapes, timing] =
+            mPreparedModel->execute(mInputs, mOutputs, mMemories, burstController, measure);
+    mExecutionBuilder->reportTiming(timing);
 
-    CHECK(mPreparedModel != nullptr);
-    NN_RETURN_IF_ERROR(mPreparedModel->execute(burstController, measureTiming(mExecutionBuilder),
-                                               &mInputs, &mOutputs, &mMemories,
-                                               synchronizationCallback));
-
-    if (*synchronizationCallback != nullptr) {
-        mExecutionBuilder->reportTiming((*synchronizationCallback)->getTiming());
+    if (n != ANEURALNETWORKS_NO_ERROR && n != ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE) {
+        return n;
     }
+
+    const ErrorStatus status = convertResultCodeToErrorStatus(n);
+    *synchronizationCallback = new ExecutionCallback();
+    (*synchronizationCallback)->notify_1_2(status, outputShapes, timing);
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -709,9 +725,11 @@ int StepExecutor::startComputeOnCpuFallback(sp<ExecutionCallback>* synchronizati
     mPreparedModel = nullptr;
     // TODO: Propagate user preference to this point instead of using default value of
     // ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER.
-    ExecutionPreference preference =
+    const ExecutionPreference preference =
             static_cast<ExecutionPreference>(ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER);
-    NN_RETURN_IF_ERROR(mDevice->prepareModel(model, preference, {}, {}, {}, &mPreparedModel));
+    const auto [n, preparedModel] = mDevice->prepareModel(model, preference, {}, {}, {});
+    mPreparedModel = preparedModel;
+    NN_RETURN_IF_ERROR(n);
     return startCompute(synchronizationCallback, /*burstController=*/nullptr);
 }
 
