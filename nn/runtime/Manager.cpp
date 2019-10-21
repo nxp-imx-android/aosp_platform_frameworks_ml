@@ -57,30 +57,33 @@ class DriverDevice : public Device {
     static std::shared_ptr<DriverDevice> create(std::string name, sp<V1_0::IDevice> device);
 
     // Prefer using DriverDevice::create
-    DriverDevice(std::string name, std::string versionString,
-                 std::shared_ptr<VersionedIDevice> device, Capabilities capabilities,
-                 std::vector<Extension> supportedExtensions,
-                 std::pair<uint32_t, uint32_t> numCacheFiles);
+    DriverDevice(std::shared_ptr<VersionedIDevice> device);
 
-    const std::string& getName() const override { return kName; }
-    const std::string& getVersionString() const override { return kVersionString; }
+    const std::string& getName() const override { return kInterface->getName(); }
+    const std::string& getVersionString() const override { return kInterface->getVersionString(); }
     int64_t getFeatureLevel() const override { return kInterface->getFeatureLevel(); }
     int32_t getType() const override { return kInterface->getType(); }
     const std::vector<Extension>& getSupportedExtensions() const override {
-        return kSupportedExtensions;
+        return kInterface->getSupportedExtensions();
     }
-    void getSupportedOperations(const MetaModel& metaModel,
-                                hidl_vec<bool>* supportedOperations) const override;
-    PerformanceInfo getPerformance(OperandType type) const override;
+    std::vector<bool> getSupportedOperations(const MetaModel& metaModel) const override;
+    PerformanceInfo getPerformance(OperandType type) const override {
+        const auto& capabilities = kInterface->getCapabilities();
+        return lookup(capabilities.operandPerformance, type);
+    }
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const override {
-        return kCapabilities.relaxedFloat32toFloat16PerformanceScalar;
+        const auto& capabilities = kInterface->getCapabilities();
+        return capabilities.relaxedFloat32toFloat16PerformanceScalar;
     }
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceTensor() const override {
-        return kCapabilities.relaxedFloat32toFloat16PerformanceTensor;
+        const auto& capabilities = kInterface->getCapabilities();
+        return capabilities.relaxedFloat32toFloat16PerformanceTensor;
     }
     bool isCachingSupported() const override {
         // Caching is supported if either of numModelCache or numDataCache is greater than 0.
-        return kNumCacheFiles.first > 0 || kNumCacheFiles.second > 0;
+        const auto [numModelCacheFiles, numDataCacheFiles] =
+                kInterface->getNumberOfCacheFilesNeeded();
+        return numModelCacheFiles > 0 || numDataCacheFiles > 0;
     }
 
     std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
@@ -95,12 +98,7 @@ class DriverDevice : public Device {
     std::pair<int, std::shared_ptr<PreparedModel>> prepareModelFromCacheInternal(
             const std::string& cacheDir, const CacheToken& token) const;
 
-    const std::string kName;
-    const std::string kVersionString;
     const std::shared_ptr<VersionedIDevice> kInterface;
-    const Capabilities kCapabilities;
-    const std::vector<Extension> kSupportedExtensions;
-    const std::pair<uint32_t, uint32_t> kNumCacheFiles;
 
 #ifdef NN_DEBUGGABLE
     // For debugging: behavior of IDevice::getSupportedOperations for SampleDriver.
@@ -131,19 +129,11 @@ class DriverPreparedModel : public PreparedModel {
     const std::shared_ptr<VersionedIPreparedModel> mPreparedModel;
 };
 
-DriverDevice::DriverDevice(std::string name, std::string versionString,
-                           std::shared_ptr<VersionedIDevice> device, Capabilities capabilities,
-                           std::vector<Extension> supportedExtensions,
-                           std::pair<uint32_t, uint32_t> numCacheFiles)
-    : kName(std::move(name)),
-      kVersionString(std::move(versionString)),
-      kInterface(std::move(device)),
-      kCapabilities(std::move(capabilities)),
-      kSupportedExtensions(std::move(supportedExtensions)),
-      kNumCacheFiles(numCacheFiles) {
+DriverDevice::DriverDevice(std::shared_ptr<VersionedIDevice> device)
+    : kInterface(std::move(device)) {
 #ifdef NN_DEBUGGABLE
     static const char samplePrefix[] = "sample";
-    if (kName.substr(0, sizeof(samplePrefix) - 1) == samplePrefix) {
+    if (getName().substr(0, sizeof(samplePrefix) - 1) == samplePrefix) {
         mSupported = getProp("debug.nn.sample.supported");
     }
 #endif  // NN_DEBUGGABLE
@@ -159,89 +149,37 @@ std::shared_ptr<DriverDevice> DriverDevice::create(std::string name, sp<V1_0::ID
         return nullptr;
     }
 
-    auto [capabilitiesStatus, capabilities] = versionedDevice->getCapabilities();
-    if (capabilitiesStatus != ErrorStatus::NONE) {
-        LOG(ERROR) << "IDevice::getCapabilities returned the error "
-                   << toString(capabilitiesStatus);
-        return nullptr;
-    }
-    VLOG(MANAGER) << "Capab " << toString(capabilities);
-
-    const auto [versionStatus, versionString] = versionedDevice->getVersionString();
-    // TODO(miaowang): add a validation test case for in case of error.
-    if (versionStatus != ErrorStatus::NONE) {
-        LOG(ERROR) << "IDevice::getVersionString returned the error " << toString(versionStatus);
-        return nullptr;
-    }
-
-    const auto [extensionsStatus, supportedExtensions] = versionedDevice->getSupportedExtensions();
-    if (extensionsStatus != ErrorStatus::NONE) {
-        LOG(ERROR) << "IDevice::getSupportedExtensions returned the error "
-                   << toString(extensionsStatus);
-        return nullptr;
-    }
-
-    const auto [cacheFilesStatus, numModelCacheFiles, numDataCacheFiles] =
-            versionedDevice->getNumberOfCacheFilesNeeded();
-    if (cacheFilesStatus != ErrorStatus::NONE) {
-        LOG(ERROR) << "IDevice::getNumberOfCacheFilesNeeded returned the error "
-                   << toString(cacheFilesStatus);
-        return nullptr;
-    }
-
-    // The following limit is enforced by VTS
-    constexpr uint32_t maxNumCacheFiles =
-            static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES);
-    if (numModelCacheFiles > maxNumCacheFiles || numDataCacheFiles > maxNumCacheFiles) {
-        LOG(ERROR)
-                << "IDevice::getNumberOfCacheFilesNeeded returned invalid number of cache files: "
-                   "numModelCacheFiles = "
-                << numModelCacheFiles << ", numDataCacheFiles = " << numDataCacheFiles
-                << ", maxNumCacheFiles = " << maxNumCacheFiles;
-        return nullptr;
-    }
-
-    return std::make_shared<DriverDevice>(
-            std::move(name), versionString, std::move(versionedDevice), std::move(capabilities),
-            supportedExtensions, std::make_pair(numModelCacheFiles, numDataCacheFiles));
+    return std::make_shared<DriverDevice>(std::move(versionedDevice));
 }
 
-void DriverDevice::getSupportedOperations(const MetaModel& metaModel,
-                                          hidl_vec<bool>* outSupportedOperations) const {
+std::vector<bool> DriverDevice::getSupportedOperations(const MetaModel& metaModel) const {
     // Query the driver for what it can do.
     ErrorStatus status = ErrorStatus::GENERAL_FAILURE;
-    hidl_vec<bool> supportedOperations;
+    std::vector<bool> supportedOperations;
     std::tie(status, supportedOperations) = kInterface->getSupportedOperations(metaModel);
 
     const Model& hidlModel = metaModel.getModel();
     if (status != ErrorStatus::NONE) {
         LOG(ERROR) << "IDevice::getSupportedOperations returned the error " << toString(status);
         // Set the supported operation vectors to all false, so we won't use this driver.
-        outSupportedOperations->resize(hidlModel.operations.size());
-        std::fill(outSupportedOperations->begin(), outSupportedOperations->end(), false);
-        return;
+        return std::vector<bool>(hidlModel.operations.size(), false);
     }
     if (supportedOperations.size() != hidlModel.operations.size()) {
         LOG(ERROR) << "IDevice::getSupportedOperations returned a vector of length "
                    << supportedOperations.size() << " when expecting "
                    << hidlModel.operations.size();
         // Set the supported operation vectors to all false, so we won't use this driver.
-        outSupportedOperations->resize(hidlModel.operations.size());
-        std::fill(outSupportedOperations->begin(), outSupportedOperations->end(), false);
-        return;
+        return std::vector<bool>(hidlModel.operations.size(), false);
     }
-
-    *outSupportedOperations = std::move(supportedOperations);
 
 #ifdef NN_DEBUGGABLE
     if (mSupported != 1) {
-        return;
+        return supportedOperations;
     }
 
-    const uint32_t baseAccumulator = std::hash<std::string>{}(kName);
-    for (size_t operationIndex = 0; operationIndex < outSupportedOperations->size();
-         operationIndex++) {
-        if (!(*outSupportedOperations)[operationIndex]) {
+    const uint32_t baseAccumulator = std::hash<std::string>{}(getName());
+    for (size_t operationIndex = 0; operationIndex < supportedOperations.size(); operationIndex++) {
+        if (!supportedOperations[operationIndex]) {
             continue;
         }
 
@@ -265,14 +203,12 @@ void DriverDevice::getSupportedOperations(const MetaModel& metaModel,
         accumulateOperands(operation.inputs);
         accumulateOperands(operation.outputs);
         if (accumulator & 1) {
-            (*outSupportedOperations)[operationIndex] = false;
+            supportedOperations[operationIndex] = false;
         }
     }
 #endif  // NN_DEBUGGABLE
-}
 
-PerformanceInfo DriverDevice::getPerformance(OperandType type) const {
-    return lookup(kCapabilities.operandPerformance, type);
+    return supportedOperations;
 }
 
 // Opens cache file by filename and sets the handle to the opened fd. Returns false on fail. The
@@ -364,7 +300,7 @@ std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModelInterna
 
     hidl_vec<hidl_handle> modelCache, dataCache;
     if (!maybeToken.has_value() ||
-        !getCacheHandles(cacheDir, *maybeToken, kNumCacheFiles,
+        !getCacheHandles(cacheDir, *maybeToken, kInterface->getNumberOfCacheFilesNeeded(),
                          /*createIfNotExist=*/true, &modelCache, &dataCache)) {
         modelCache.resize(0);
         dataCache.resize(0);
@@ -375,7 +311,7 @@ std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModelInterna
     const auto [status, preparedModel] =
             kInterface->prepareModel(model, preference, modelCache, dataCache, token);
 
-    return prepareModelCheck(status, preparedModel, "prepareModel", kName);
+    return prepareModelCheck(status, preparedModel, "prepareModel", getName());
 }
 
 std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModelFromCacheInternal(
@@ -385,7 +321,7 @@ std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModelFromCac
     VLOG(COMPILATION) << "prepareModelFromCache";
 
     hidl_vec<hidl_handle> modelCache, dataCache;
-    if (!getCacheHandles(cacheDir, token, kNumCacheFiles,
+    if (!getCacheHandles(cacheDir, token, kInterface->getNumberOfCacheFilesNeeded(),
                          /*createIfNotExist=*/false, &modelCache, &dataCache)) {
         return {ANEURALNETWORKS_OP_FAILED, nullptr};
     }
@@ -393,7 +329,7 @@ std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModelFromCac
     const auto [status, preparedModel] =
             kInterface->prepareModelFromCache(modelCache, dataCache, token);
 
-    return prepareModelCheck(status, preparedModel, "prepareModelFromCache", kName);
+    return prepareModelCheck(status, preparedModel, "prepareModelFromCache", getName());
 }
 
 std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModel(
@@ -598,8 +534,7 @@ class CpuDevice : public Device {
     const std::vector<Extension>& getSupportedExtensions() const override {
         return kSupportedExtensions;
     }
-    void getSupportedOperations(const MetaModel& metaModel,
-                                hidl_vec<bool>* supportedOperations) const override;
+    std::vector<bool> getSupportedOperations(const MetaModel& metaModel) const override;
     PerformanceInfo getPerformance(OperandType) const override { return kPerformance; }
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const override {
         return kPerformance;
@@ -652,11 +587,10 @@ class CpuPreparedModel : public PreparedModel {
     const std::vector<RunTimePoolInfo> mModelPoolInfos;
 };
 
-void CpuDevice::getSupportedOperations(const MetaModel& metaModel,
-                                       hidl_vec<bool>* supportedOperations) const {
+std::vector<bool> CpuDevice::getSupportedOperations(const MetaModel& metaModel) const {
     const Model& hidlModel = metaModel.getModel();
     const size_t count = hidlModel.operations.size();
-    hidl_vec<bool> result(count);
+    std::vector<bool> result(count, false);
     for (size_t i = 0; i < count; i++) {
         // TODO(b/119870033): Decide whether and how post-P operations would be supported on CPU.
         //                    We may want to use the slicer for CpuDevice just as we do for
@@ -665,7 +599,7 @@ void CpuDevice::getSupportedOperations(const MetaModel& metaModel,
         result[i] = !isExtensionOperationType(operationType) &&
                     operationType != OperationType::OEM_OPERATION;
     }
-    *supportedOperations = std::move(result);
+    return result;
 }
 
 std::pair<int, std::shared_ptr<PreparedModel>> CpuDevice::prepareModel(
