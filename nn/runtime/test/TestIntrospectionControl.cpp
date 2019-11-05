@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <iterator>
 #include <map>
 #include <queue>
@@ -228,9 +229,9 @@ TEST_F(IntrospectionControlTest, SimpleAddModel) {
 
     // Verify that the mCompilation is actually using the "test-all" device.
     CompilationBuilder* c = reinterpret_cast<CompilationBuilder*>(mCompilation);
-    const char* deviceNameBuffer =
+    const std::string& deviceNameBuffer =
             c->forTest_getExecutionPlan().forTest_simpleGetDevice()->getName();
-    EXPECT_TRUE(driverName.compare(deviceNameBuffer) == 0);
+    EXPECT_EQ(driverName, deviceNameBuffer);
 
     float input1[2] = {1.0f, 2.0f};
     float input2[2] = {3.0f, 4.0f};
@@ -309,7 +310,8 @@ std::set<Success> expectedPassSet = {Success::PASS_NEITHER, Success::PASS_DEVICE
 class TestPreparedModel12 : public SamplePreparedModel {
    public:
     TestPreparedModel12(const HidlModel& model, const SampleDriver* driver, Success success)
-        : SamplePreparedModel(model, driver), mSuccess(success) {}
+        : SamplePreparedModel(model, driver, ExecutionPreference::FAST_SINGLE_ANSWER),
+          mSuccess(success) {}
 
     Return<ErrorStatus> execute(const Request&,
                                 const sp<V1_0::IExecutionCallback>& callback) override {
@@ -384,8 +386,8 @@ class TestPreparedModel12 : public SamplePreparedModel {
             const MQDescriptorSync<V1_2::FmqRequestDatum>& requestChannel,
             const MQDescriptorSync<V1_2::FmqResultDatum>& resultChannel,
             configureExecutionBurst_cb cb) override {
-        const sp<V1_2::IBurstContext> burst =
-                ExecutionBurstServer::create(callback, requestChannel, resultChannel, this);
+        const sp<V1_2::IBurstContext> burst = ExecutionBurstServer::create(
+                callback, requestChannel, resultChannel, this, std::chrono::microseconds{0});
 
         cb(burst == nullptr ? ErrorStatus::GENERAL_FAILURE : ErrorStatus::NONE, burst);
         return Void();
@@ -653,7 +655,7 @@ TEST_P(TimingTest, Test) {
     switch (kDriverKind) {
         case DriverKind::CPU: {
             // There should be only one driver -- the CPU
-            const char* name = DeviceManager::get()->getDrivers()[0]->getName();
+            const std::string& name = DeviceManager::get()->getDrivers()[0]->getName();
             ASSERT_TRUE(selectDeviceByName(name));
             break;
         }
