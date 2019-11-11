@@ -65,7 +65,8 @@ cc_defaults {
         "TestOperandExtraParams.cpp",
         "TestTrivialModel.cpp",
         "TestUnknownDimensions.cpp",
-        "TestUnspecifiedDimensions.cpp",
+        // TODO(xusongw): Re-enable once b/141294076 is fixed.
+        // "TestUnspecifiedDimensions.cpp",
         "TestValidateModel.cpp",
         "TestValidateOperations.cpp",
         "TestValidation.cpp",
@@ -167,6 +168,26 @@ cc_test {
     ],
     header_libs: [
         "libneuralnetworks_private_headers",
+    ],
+}
+
+cc_fuzz {
+    name: "libneuralnetworks_fuzzer",
+    defaults: ["NeuralNetworksTest_default_libs"],
+    owner: "google",
+    srcs: [
+        "android_fuzzing/Converter.cpp",
+        "android_fuzzing/FuzzTest.cpp",
+        "android_fuzzing/StaticAssert.cpp",
+    ],
+    corpus: ["android_fuzzing/corpus/*"],
+    shared_libs: ["libprotobuf-cpp-full"],
+    static_libs: [
+        "libneuralnetworks",
+        "libneuralnetworks_common",
+        "libneuralnetworks_fuzzer_proto",
+        "libneuralnetworks_generated_test_harness",
+        "libprotobuf-mutator",
     ],
 }
 
