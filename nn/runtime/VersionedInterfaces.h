@@ -202,40 +202,29 @@ class VersionedIDevice {
      * @param model The model to be prepared for execution.
      * @param preference Indicates the intended execution behavior of a prepared
      *     model.
-     * @param modelCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the security-sensitive cache. The length of
-     *     the vector must either be 0 indicating that caching information is not provided,
-     *     or match the numModelCache returned from getNumberOfCacheFilesNeeded. The cache
-     *     handles will be provided in the same order when retrieving the
-     *     preparedModel from cache files with prepareModelFromCache.
-     * @param dataCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the constants' cache. The length of
-     *     the vector must either be 0 indicating that caching information is not provided,
-     *     or match the numDataCache returned from getNumberOfCacheFilesNeeded. The cache
-     *     handles will be provided in the same order when retrieving the
-     *     preparedModel from cache files with prepareModelFromCache.
-     * @param token A caching token of length Constant::BYTE_SIZE_OF_CACHE_TOKEN
-     *     identifying the prepared model. The same token will be provided when retrieving
-     *     the prepared model from the cache files with prepareModelFromCache.
-     *     Tokens should be chosen to have a low rate of collision for a particular
-     *     application. The driver cannot detect a collision; a collision will result
-     *     in a failed execution or in a successful execution that produces incorrect
-     *     output values. If both modelCache and dataCache are empty indicating that
-     *     caching information is not provided, this token must be ignored.
+     * @param cacheDir String specifying the cache directory.
+     * @param maybeToken An optional caching token of length
+     *     Constant::BYTE_SIZE_OF_CACHE_TOKEN identifying the prepared model.
+     *     The same token will be provided when retrieving the prepared model
+     *     from the cache files with prepareModelFromCache. Tokens should be
+     *     chosen to have a low rate of collision for a particular application.
+     *     The driver cannot detect a collision; a collision will result in a
+     *     failed execution or in a successful execution that produces incorrect
+     *     output values. If both modelCache and dataCache are empty indicating
+     *     that caching information is not provided, this token must be ignored.
      * @return A pair of:
-     *     - status Error status of preparing the model; must be:
-     *         - NONE if preparation succeeded
-     *         - DEVICE_UNAVAILABLE if driver is offline or busy
-     *         - GENERAL_FAILURE if there is an unspecified error
-     *         - INVALID_ARGUMENT if one of the input arguments related to
-     *             preparing the model is invalid
+     *     - Result code of preparing the model; must be:
+     *         - ANEURALNETWORKS_NO_ERROR if preparation succeeded
+     *         - ANEURALNETWORKS_UNAVAILABLE_DEVICE if driver is offline or busy
+     *         - ANEURALNETWORKS_OP_FAILED if there is an unspecified error
+     *         - ANEURALNETWORKS_BAD_DATA if one of the input arguments related
+     *             to preparing the model is invalid
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *         that has been prepared for execution, else nullptr.
      */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
+    std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
             const hal::Model& model, hal::ExecutionPreference preference,
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+            const std::string& cacheDir, const std::optional<hal::CacheToken>& maybeToken) const;
 
     /**
      * Creates a prepared model from cache files for execution.
@@ -279,33 +268,26 @@ class VersionedIDevice {
      * used with different shapes of inputs on different (possibly concurrent)
      * executions.
      *
-     * @param modelCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the security-sensitive cache. The length of
-     *     the vector must match the numModelCache returned from getNumberOfCacheFilesNeeded.
-     *     The cache handles will be provided in the same order as with prepareModel_1_2.
-     * @param dataCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the constants' cache. The length of the vector
-     *     must match the numDataCache returned from getNumberOfCacheFilesNeeded.
-     *     The cache handles will be provided in the same order as with prepareModel_1_2.
-     * @param token A caching token of length Constant::BYTE_SIZE_OF_CACHE_TOKEN
-     *     identifying the prepared model. It is the same token provided when saving
-     *     the cache files with prepareModel_1_2. Tokens should be chosen
-     *     to have a low rate of collision for a particular application. The driver
-     *     cannot detect a collision; a collision will result in a failed execution
-     *     or in a successful execution that produces incorrect output values.
+     * @param cacheDir String specifying the cache directory.
+     * @param maybeToken A caching token of length
+     *     Constant::BYTE_SIZE_OF_CACHE_TOKEN identifying the prepared model. It
+     *     is the same token provided when saving the cache files with
+     *     prepareModel_1_2. Tokens should be chosen to have a low rate of
+     *     collision for a particular application. The driver cannot detect a
+     *     collision; a collision will result in a failed execution or in a
+     *     successful execution that produces incorrect output values.
      * @return A pair of:
-     *     - status Error status of preparing the model; must be:
-     *         - NONE if preparation succeeded
-     *         - DEVICE_UNAVAILABLE if driver is offline or busy
-     *         - GENERAL_FAILURE if caching is not supported or if there is an
-     *             unspecified error
-     *         - INVALID_ARGUMENT if one of the input arguments is invalid
+     *     - Result code of preparing the model; must be:
+     *         - ANEURALNETWORKS_NO_ERROR if preparation succeeded
+     *         - ANEURALNETWORKS_UNAVAILABLE_DEVICE if driver is offline or busy
+     *         - ANEURALNETWORKS_OP_FAILED if there is an unspecified error
+     *         - ANEURALNETWORKS_BAD_DATA if one of the input arguments related
+     *             to preparing the model is invalid
      *     - preparedModel A VersionedIPreparedModel object representing a model
-     *        that has been prepared for execution, else nullptr.
+     *         that has been prepared for execution, else nullptr.
      */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+    std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
+            const std::string& cacheDir, const hal::CacheToken& token) const;
 
     /**
      * Returns the current status of a driver.
@@ -427,6 +409,16 @@ class VersionedIDevice {
     int32_t mType;
     std::string mVersionString;
     std::pair<uint32_t, uint32_t> mNumberOfCacheFilesNeeded;
+
+    // internal methods to prepare a model
+    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelInternal(
+            const hal::Model& model, hal::ExecutionPreference preference,
+            const hal::hidl_vec<hal::hidl_handle>& modelCache,
+            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>>
+    prepareModelFromCacheInternal(const hal::hidl_vec<hal::hidl_handle>& modelCache,
+                                  const hal::hidl_vec<hal::hidl_handle>& dataCache,
+                                  const hal::CacheToken& token) const;
 
     /**
      * This is a utility class for VersionedIDevice that encapsulates a
@@ -716,21 +708,25 @@ class VersionedIPreparedModel {
      *
      * The general strategy is: HIDL returns a V1_0 prepared model object, which
      * (if not nullptr) could be v1.0, v1.2, or a greater version. The V1_0
-     * object is then "dynamically cast" to a V1_2 object. If successful,
-     * mPreparedModelV1_2 will point to the same object as mPreparedModelV1_0; otherwise,
-     * mPreparedModelV1_2 will be nullptr.
+     * object is then "dynamically cast" to objects of later versions. If successful,
+     * mPreparedModel* will point to the same object as mPreparedModelV1_0; otherwise,
+     * mPreparedModel* will be nullptr.
      *
      * In general:
-     * * If the prepared model is truly v1.0, mPreparedModelV1_0 will point to a valid object
-     *   and mPreparedModelV1_2 will be nullptr.
-     * * If the prepared model is truly v1.2 or later, both mPreparedModelV1_0 and
-     *   mPreparedModelV1_2 will point to the same valid object.
+     * * If the prepared model is truly v1.0, mPreparedModelV1_0 will point to a valid object,
+     *   both mPreparedModelV1_2 and mPreparedModelV1_3 will be nullptr.
+     * * If the prepared model is truly v1.2, both mPreparedModelV1_0 and mPreparedModelV1_2
+     *   will point to the same valid object, but mPreparedModelV1_3 will be nullptr.
+     * * If the prepared model is truly v1.3 or later, all of mPreparedModelV1_0,
+     *   mPreparedModelV1_2, and mPreparedModelV1_3 will point to the same valid object.
      *
-     * Idiomatic usage: if mPreparedModelV1_2 is non-null, do V1_2 dispatch; otherwise,
-     * do V1_0 dispatch.
+     * Idiomatic usage: if mPreparedModelV1_3 is non-null, do V1_3 dispatch;
+     *       otherwise, if mPreparedModelV1_2 is non-null, do V1_2 dispatch;
+     *       otherwise, do V1_0 dispatch.
      */
     sp<hal::V1_0::IPreparedModel> mPreparedModelV1_0;
     sp<hal::V1_2::IPreparedModel> mPreparedModelV1_2;
+    sp<hal::V1_3::IPreparedModel> mPreparedModelV1_3;
 
     /**
      * HIDL callback to be invoked if the service for mPreparedModelV1_0 crashes.
