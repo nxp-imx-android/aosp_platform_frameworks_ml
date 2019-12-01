@@ -793,6 +793,11 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_0));
                 inExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_INT32};
                 outExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM};
+            } else if (inputType == OperandType::TENSOR_QUANT8_ASYMM_SIGNED) {
+                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_3));
+                inExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM_SIGNED,
+                                   OperandType::TENSOR_INT32};
+                outExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM_SIGNED};
             } else {
                 LOG(ERROR) << "Unsupported input tensor type for operation "
                            << getOperationName(opType);
@@ -1379,102 +1384,28 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
             auto inputType = operands[inputIndexes[0]].type;
             auto outputType = operands[outputIndexes[0]].type;
             std::vector<OperandType> inExpectedTypes;
-            if (inputType == OperandType::TENSOR_FLOAT16 ||
-                inputType == OperandType::TENSOR_FLOAT32 ||
-                inputType == OperandType::TENSOR_INT32 ||
-                inputType == OperandType::TENSOR_QUANT8_ASYMM) {
+            std::vector<OperandType> outExpectedTypes;
+            if ((inputType == OperandType::TENSOR_FLOAT16 ||
+                 inputType == OperandType::TENSOR_FLOAT32 ||
+                 inputType == OperandType::TENSOR_INT32 ||
+                 inputType == OperandType::TENSOR_QUANT8_ASYMM) &&
+                (outputType == OperandType::TENSOR_FLOAT16 ||
+                 outputType == OperandType::TENSOR_FLOAT32 ||
+                 outputType == OperandType::TENSOR_INT32 ||
+                 outputType == OperandType::TENSOR_QUANT8_ASYMM)) {
                 inExpectedTypes = {inputType};
-            } else {
-                LOG(ERROR) << "Unsupported input tensor type for operation "
-                           << getOperationName(opType);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            std::vector<OperandType> outExpectedTypes;
-            if (outputType == OperandType::TENSOR_FLOAT16 ||
-                outputType == OperandType::TENSOR_FLOAT32 ||
-                outputType == OperandType::TENSOR_INT32 ||
-                outputType == OperandType::TENSOR_QUANT8_ASYMM) {
                 outExpectedTypes = {outputType};
-            } else {
-                LOG(ERROR) << "Unsupported output tensor type for operation "
-                           << getOperationName(opType);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
-            return validateOperationOperandTypes(operands, inputCount, inputIndexes,
-                                                 inExpectedTypes, outputCount, outputIndexes,
-                                                 outExpectedTypes);
-        }
-        case ANEURALNETWORKS_SQUEEZE: {
-            if (inputCount != 2 || outputCount != 1) {
-                logInvalidInOutNumber(2, 1);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            auto inputType = operands[inputIndexes[0]].type;
-            std::vector<OperandType> inExpectedTypes;
-            std::vector<OperandType> outExpectedTypes;
-            if (inputType == OperandType::TENSOR_FLOAT32) {
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {OperandType::TENSOR_FLOAT32, OperandType::TENSOR_INT32};
-                outExpectedTypes = {OperandType::TENSOR_FLOAT32};
-            } else if (inputType == OperandType::TENSOR_FLOAT16) {
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
-                inExpectedTypes = {OperandType::TENSOR_FLOAT16, OperandType::TENSOR_INT32};
-                outExpectedTypes = {OperandType::TENSOR_FLOAT16};
-            } else if (inputType == OperandType::TENSOR_QUANT8_ASYMM) {
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_INT32};
-                outExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM};
+            } else if (inputType == OperandType::TENSOR_BOOL8 ||
+                       inputType == OperandType::TENSOR_QUANT16_ASYMM ||
+                       inputType == OperandType::TENSOR_QUANT16_SYMM ||
+                       inputType == OperandType::TENSOR_QUANT8_ASYMM_SIGNED ||
+                       inputType == OperandType::TENSOR_QUANT8_SYMM) {
+                inExpectedTypes = {inputType};
+                outExpectedTypes = {inputType};  // Only identity CAST is supported.
+                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_3));
             } else {
-                LOG(ERROR) << "Unsupported input tensor type for operation "
-                           << getOperationName(opType);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            return validateOperationOperandTypes(operands, inputCount, inputIndexes,
-                                                 inExpectedTypes, outputCount, outputIndexes,
-                                                 outExpectedTypes);
-        }
-        case ANEURALNETWORKS_STRIDED_SLICE: {
-            if (inputCount != 7 || outputCount != 1) {
-                logInvalidInOutNumber(7, 1);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
-            auto inputType = operands[inputIndexes[0]].type;
-            std::vector<OperandType> inExpectedTypes;
-            std::vector<OperandType> outExpectedTypes;
-            if (inputType == OperandType::TENSOR_FLOAT32) {
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {
-                        OperandType::TENSOR_FLOAT32, OperandType::TENSOR_INT32,
-                        OperandType::TENSOR_INT32,   OperandType::TENSOR_INT32,
-                        OperandType::INT32,          OperandType::INT32,
-                        OperandType::INT32,
-                };
-                outExpectedTypes = {OperandType::TENSOR_FLOAT32};
-            } else if (inputType == OperandType::TENSOR_FLOAT16) {
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
-                inExpectedTypes = {
-                        OperandType::TENSOR_FLOAT16, OperandType::TENSOR_INT32,
-                        OperandType::TENSOR_INT32,   OperandType::TENSOR_INT32,
-                        OperandType::INT32,          OperandType::INT32,
-                        OperandType::INT32,
-                };
-                outExpectedTypes = {OperandType::TENSOR_FLOAT16};
-            } else if (inputType == OperandType::TENSOR_QUANT8_ASYMM) {
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {
-                        OperandType::TENSOR_QUANT8_ASYMM,
-                        OperandType::TENSOR_INT32,
-                        OperandType::TENSOR_INT32,
-                        OperandType::TENSOR_INT32,
-                        OperandType::INT32,
-                        OperandType::INT32,
-                        OperandType::INT32,
-                };
-                outExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM};
-            } else {
-                LOG(ERROR) << "Unsupported input tensor type for operation "
-                           << getOperationName(opType);
+                LOG(ERROR) << "Unsupported data type for operation " << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
             return validateOperationOperandTypes(operands, inputCount, inputIndexes,
@@ -1487,28 +1418,22 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 return ANEURALNETWORKS_BAD_DATA;
             }
             auto inputType = operands[inputIndexes[0]].type;
-            std::vector<OperandType> inExpectedTypes;
-            std::vector<OperandType> outExpectedTypes;
             if (inputType == OperandType::TENSOR_FLOAT32) {
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {OperandType::TENSOR_FLOAT32, OperandType::TENSOR_INT32,
-                                   OperandType::INT32};
-                outExpectedTypes = {OperandType::TENSOR_FLOAT32};
             } else if (inputType == OperandType::TENSOR_FLOAT16) {
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
-                inExpectedTypes = {OperandType::TENSOR_FLOAT16, OperandType::TENSOR_INT32,
-                                   OperandType::INT32};
-                outExpectedTypes = {OperandType::TENSOR_FLOAT16};
             } else if (inputType == OperandType::TENSOR_QUANT8_ASYMM) {
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_1));
-                inExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM, OperandType::TENSOR_INT32,
-                                   OperandType::INT32};
-                outExpectedTypes = {OperandType::TENSOR_QUANT8_ASYMM};
+            } else if (inputType == OperandType::TENSOR_QUANT8_ASYMM_SIGNED) {
+                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_3));
             } else {
                 LOG(ERROR) << "Unsupported input tensor type for operation "
                            << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
+            std::vector<OperandType> inExpectedTypes = {inputType, OperandType::TENSOR_INT32,
+                                                        OperandType::INT32};
+            std::vector<OperandType> outExpectedTypes = {inputType};
             return validateOperationOperandTypes(operands, inputCount, inputIndexes,
                                                  inExpectedTypes, outputCount, outputIndexes,
                                                  outExpectedTypes);

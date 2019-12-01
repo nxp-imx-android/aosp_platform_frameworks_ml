@@ -373,9 +373,8 @@ TEST(OperationValidationTest, ARGMAX) {
 }
 
 void dequantizeOpTest(int32_t inputOperandType, int32_t outputOperandType) {
-    std::string scope = "inputType: " + std::to_string(inputOperandType) +
-                        ", outputType: " + std::to_string(outputOperandType);
-    SCOPED_TRACE(scope);
+    SCOPED_TRACE(testing::Message()
+                 << "inputType: " << inputOperandType << ", outputType: " << outputOperandType);
     uint32_t inputDimensions[4] = {2, 2, 2, 2};
     ANeuralNetworksOperandType input = getOpType(inputOperandType, 4, inputDimensions);
     ANeuralNetworksOperandType output = getOpType(outputOperandType, 4, inputDimensions);
@@ -625,6 +624,10 @@ TEST(OperationValidationTest, ADD_quant8) {
 
 TEST(OperationValidationTest, ADD_quant8_signed) {
     simpleMathOpTest(ANEURALNETWORKS_ADD, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
+}
+
+TEST(OperationValidationTest, ADD_int32) {
+    simpleMathOpTest(ANEURALNETWORKS_ADD, ANEURALNETWORKS_TENSOR_INT32);
 }
 
 TEST(OperationValidationTest, MUL_float16) {
@@ -886,6 +889,7 @@ TEST(OperationValidationTest, RESHAPE) {
     reshapeOpTest(ANEURALNETWORKS_TENSOR_FLOAT16);
     reshapeOpTest(ANEURALNETWORKS_TENSOR_FLOAT32);
     reshapeOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+    reshapeOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
 }
 
 void logSoftmaxOpTest(int32_t inputOperandCode) {
@@ -947,6 +951,10 @@ TEST(OperationValidationTest, MEAN_float32) {
 
 TEST(OperationValidationTest, MEAN_quant8) {
     meanOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+}
+
+TEST(OperationValidationTest, MEAN_quant8_signed) {
+    meanOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
 }
 
 void padOpTest(int32_t inputOperandCode) {
@@ -1285,6 +1293,10 @@ TEST(OperationValidationTest, SQUEEZE_quant8) {
     transposeAndSqueezeOpTest(ANEURALNETWORKS_SQUEEZE, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
 }
 
+TEST(OperationValidationTest, SQUEEZE_quant8_signed) {
+    transposeAndSqueezeOpTest(ANEURALNETWORKS_SQUEEZE, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
+}
+
 void convOpTest(int32_t inputOperandCode, int32_t filterOperandCode) {
     uint32_t inputDimensions[4] = {2, 4, 4, 2};
     ANeuralNetworksOperandType input = getOpType(inputOperandCode, 4, inputDimensions);
@@ -1603,6 +1615,10 @@ TEST(OperationValidationTest, CONCATENATION_float32) {
 
 TEST(OperationValidationTest, CONCATENATION_quant8) {
     concatenationTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+}
+
+TEST(OperationValidationTest, CONCATENATION_quant8_signed) {
+    concatenationTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
 }
 
 void resizeBilinearOpTest(int32_t inputOperandCode, int32_t scalarOperandCode) {
@@ -2326,6 +2342,10 @@ TEST(OperationValidationTest, STRIDED_SLICE_quant8) {
     stridedSliceOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
 }
 
+TEST(OperationValidationTest, STRIDED_SLICE_quant8_signed) {
+    stridedSliceOpTest(ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
+}
+
 void roiAlignOpTest(int32_t inputOperandCode, int32_t roiOperandCode, int32_t scalarOperandCode) {
     uint32_t inDim[] = {1, 4, 4, 1}, roiDim[] = {4, 4}, batchSplitDim[] = {1};
     uint32_t outDim[] = {4, 2, 2, 1};
@@ -2857,32 +2877,12 @@ TEST(OperationValidationTest, GREATER_EQUAL) {
 }
 
 void reduceOpTest(ANeuralNetworksOperationType operationCode, int32_t inputOperandType) {
-    bool isQuant = inputOperandType == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM;
-    float scale = isQuant ? 1.f / 256 : 0.0f;
     uint32_t inputDimensions[4] = {2, 2, 2, 2};
-    ANeuralNetworksOperandType input1 = {
-            .type = inputOperandType,
-            .dimensionCount = 4,
-            .dimensions = inputDimensions,
-            .scale = scale,
-            .zeroPoint = 0,
-    };
+    ANeuralNetworksOperandType input1 = getOpType(inputOperandType, 4, inputDimensions);
     uint32_t axesDimensions[1] = {2};
-    ANeuralNetworksOperandType input2 = {
-            .type = ANEURALNETWORKS_TENSOR_INT32,
-            .dimensionCount = 1,
-            .dimensions = axesDimensions,
-    };
-    ANeuralNetworksOperandType input3 = {
-            .type = ANEURALNETWORKS_BOOL,
-            .dimensions = {},
-    };
-    ANeuralNetworksOperandType output = {
-            .type = inputOperandType,
-            .dimensionCount = 4,
-            .dimensions = inputDimensions,
-            .scale = scale,
-    };
+    ANeuralNetworksOperandType input2 = getOpType(ANEURALNETWORKS_TENSOR_INT32, 1, axesDimensions);
+    ANeuralNetworksOperandType input3 = getOpType(ANEURALNETWORKS_BOOL, 0);
+    ANeuralNetworksOperandType output = getOpType(inputOperandType, 4, inputDimensions);
     OperationTestBase test(operationCode, {input1, input2, input3}, {output});
     test.testOpsValidations();
 }
@@ -2901,12 +2901,14 @@ TEST(OperationValidationTest, REDUCE_MAX) {
     reduceOpTest(ANEURALNETWORKS_REDUCE_MAX, ANEURALNETWORKS_TENSOR_FLOAT16);
     reduceOpTest(ANEURALNETWORKS_REDUCE_MAX, ANEURALNETWORKS_TENSOR_FLOAT32);
     reduceOpTest(ANEURALNETWORKS_REDUCE_MAX, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+    reduceOpTest(ANEURALNETWORKS_REDUCE_MAX, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
 }
 
 TEST(OperationValidationTest, REDUCE_MIN) {
     reduceOpTest(ANEURALNETWORKS_REDUCE_MIN, ANEURALNETWORKS_TENSOR_FLOAT16);
     reduceOpTest(ANEURALNETWORKS_REDUCE_MIN, ANEURALNETWORKS_TENSOR_FLOAT32);
     reduceOpTest(ANEURALNETWORKS_REDUCE_MIN, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM);
+    reduceOpTest(ANEURALNETWORKS_REDUCE_MIN, ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED);
 }
 
 TEST(OperationValidationTest, REDUCE_ANY) {
@@ -2986,6 +2988,8 @@ TEST(OperationValidationTest, BOX_WITH_NMS_LIMIT_quant) {
 }
 
 void castOpTest(int32_t inputOperandCode, int32_t outputOperandCode) {
+    SCOPED_TRACE(testing::Message()
+                 << "inputType: " << inputOperandCode << ", outputType: " << outputOperandCode);
     uint32_t inputDimensions[3] = {2, 2, 2};
     ANeuralNetworksOperandType input = getOpType(inputOperandCode, 3, inputDimensions);
     ANeuralNetworksOperandType output = getOpType(outputOperandCode, 3, inputDimensions);
@@ -3002,6 +3006,23 @@ TEST(OperationValidationTest, CAST) {
         for (auto outputType : outputTypes) {
             castOpTest(inputType, outputType);
         }
+    }
+}
+
+TEST(OperationValidationTest, CAST_identity) {
+    std::vector<int32_t> inputTypes = {
+            ANEURALNETWORKS_TENSOR_FLOAT32,
+            ANEURALNETWORKS_TENSOR_INT32,
+            ANEURALNETWORKS_TENSOR_QUANT8_ASYMM,
+            ANEURALNETWORKS_TENSOR_QUANT16_SYMM,
+            ANEURALNETWORKS_TENSOR_FLOAT16,
+            ANEURALNETWORKS_TENSOR_BOOL8,
+            ANEURALNETWORKS_TENSOR_QUANT16_ASYMM,
+            ANEURALNETWORKS_TENSOR_QUANT8_SYMM,
+            ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED,
+    };
+    for (auto inputType : inputTypes) {
+        castOpTest(inputType, inputType);
     }
 }
 
