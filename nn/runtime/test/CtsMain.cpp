@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+/*
  * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.android.neuralnetworks">
-  <!-- APEX does not have classes.dex -->
-  <application android:hasCode="false" />
-  <!--
-    *  API levels the NeuralNetworks APEX is known to work with.
-    -->
-  <uses-sdk
-      android:minSdkVersion="29"
-      android:maxSdkVersion="29"
-      android:targetSdkVersion="29"
-  />
-</manifest>
+ */
+
+#define LOG_TAG "NeuralNetworksTest"
+
+#include <gtest/gtest.h>
+
+#include "LogTestCaseToLogcat.h"
+
+int main(int argc, char** argv) {
+    testing::InitGoogleTest(&argc, argv);
+    testing::UnitTest::GetInstance()->listeners().Append(new android::nn::LogTestCaseToLogcat());
+    return RUN_ALL_TESTS();
+}
