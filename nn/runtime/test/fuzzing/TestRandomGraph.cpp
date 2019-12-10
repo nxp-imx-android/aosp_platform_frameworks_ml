@@ -198,15 +198,20 @@ class RandomGraphTest : public ::testing::TestWithParam<uint32_t> {
                 "TestRandomGraph_SingleOperationTest_CONV_2D_V1_2_12",
         };
         if (kDisabledTests.find(mTestName) != kDisabledTests.end()) return true;
-        if (featureLevel >= __ANDROID_API_Q__) return false;
         const auto& operations = mGraph.getOperations();
         for (const auto& op : operations) {
-            // Skip if testing BATCH_TO_SPACE_ND with batch dimension == 1.
+            // Skip if testing BATCH_TO_SPACE_ND with batch dimension == 1 on pre-Q drivers.
             if (op.opType == ANEURALNETWORKS_BATCH_TO_SPACE_ND &&
-                op.inputs[0]->dimensions[0].getValue() == 1)
+                op.inputs[0]->dimensions[0].getValue() == 1 && featureLevel < __ANDROID_API_Q__)
                 return true;
+
             // We have a bug in the reference implementation of INSTANCE_NORMALIZATION.
             if (op.opType == ANEURALNETWORKS_INSTANCE_NORMALIZATION) return true;
+
+            // We have a bug in the reference implementation of quantized L2_NORMALIZATION.
+            if (op.opType == ANEURALNETWORKS_L2_NORMALIZATION &&
+                op.inputs[0]->dataType == test_wrapper::Type::TENSOR_QUANT8_ASYMM)
+                return true;
         }
         return false;
     }
