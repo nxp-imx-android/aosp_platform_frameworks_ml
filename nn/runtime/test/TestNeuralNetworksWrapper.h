@@ -20,14 +20,16 @@
 #ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_TEST_TEST_NEURAL_NETWORKS_WRAPPER_H
 #define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_TEST_TEST_NEURAL_NETWORKS_WRAPPER_H
 
+#include <math.h>
+
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "NeuralNetworks.h"
 #include "NeuralNetworksWrapper.h"
 #include "NeuralNetworksWrapperExtensions.h"
-
-#include <math.h>
-#include <optional>
-#include <string>
-#include <vector>
 
 namespace android {
 namespace nn {
@@ -35,6 +37,7 @@ namespace test_wrapper {
 
 using wrapper::Event;
 using wrapper::ExecutePreference;
+using wrapper::ExecutePriority;
 using wrapper::ExtensionModel;
 using wrapper::ExtensionOperandParams;
 using wrapper::ExtensionOperandType;
@@ -147,11 +150,27 @@ class Model {
         return mNextOperandId++;
     }
 
+    template <typename T>
+    uint32_t addConstantOperand(const OperandType* type, const T& value) {
+        static_assert(sizeof(T) <= ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES,
+                      "Values larger than ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES "
+                      "not supported");
+        uint32_t index = addOperand(type);
+        setOperandValue(index, &value);
+        return index;
+    }
+
     void setOperandValue(uint32_t index, const void* buffer, size_t length) {
         if (ANeuralNetworksModel_setOperandValue(mModel, index, buffer, length) !=
             ANEURALNETWORKS_NO_ERROR) {
             mValid = false;
         }
+    }
+
+    template <typename T>
+    void setOperandValue(uint32_t index, const T* value) {
+        static_assert(!std::is_pointer<T>(), "No operand may have a pointer as its value");
+        return setOperandValue(index, value, sizeof(T));
     }
 
     void setOperandValueFromMemory(uint32_t index, const Memory* memory, uint32_t offset,
@@ -236,6 +255,11 @@ class Compilation {
                 mCompilation, static_cast<int32_t>(preference)));
     }
 
+    Result setPriority(ExecutePriority priority) {
+        return static_cast<Result>(ANeuralNetworksCompilation_setPriority(
+                mCompilation, static_cast<int32_t>(priority)));
+    }
+
     Result setCaching(const std::string& cacheDir, const std::vector<uint8_t>& token) {
         if (token.size() != ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN) {
             return Result::BAD_DATA;
@@ -290,6 +314,13 @@ class Execution {
                 ANeuralNetworksExecution_setInput(mExecution, index, type, buffer, length));
     }
 
+    template <typename T>
+    Result setInput(uint32_t index, const T* value,
+                    const ANeuralNetworksOperandType* type = nullptr) {
+        static_assert(!std::is_pointer<T>(), "No operand may have a pointer as its value");
+        return setInput(index, value, sizeof(T), type);
+    }
+
     Result setInputFromMemory(uint32_t index, const Memory* memory, uint32_t offset,
                               uint32_t length, const ANeuralNetworksOperandType* type = nullptr) {
         return static_cast<Result>(ANeuralNetworksExecution_setInputFromMemory(
@@ -300,6 +331,12 @@ class Execution {
                      const ANeuralNetworksOperandType* type = nullptr) {
         return static_cast<Result>(
                 ANeuralNetworksExecution_setOutput(mExecution, index, type, buffer, length));
+    }
+
+    template <typename T>
+    Result setOutput(uint32_t index, T* value, const ANeuralNetworksOperandType* type = nullptr) {
+        static_assert(!std::is_pointer<T>(), "No operand may have a pointer as its value");
+        return setOutput(index, value, sizeof(T), type);
     }
 
     Result setOutputFromMemory(uint32_t index, const Memory* memory, uint32_t offset,
@@ -345,6 +382,18 @@ class Execution {
                 ANeuralNetworksBurst_free(burst);
                 return result;
             }
+            case ComputeMode::FENCED: {
+                ANeuralNetworksEvent* event = nullptr;
+                Result result =
+                        static_cast<Result>(ANeuralNetworksExecution_startComputeWithDependencies(
+                                mExecution, nullptr, 0, 0, &event));
+                if (result != Result::NO_ERROR) {
+                    return result;
+                }
+                result = static_cast<Result>(ANeuralNetworksEvent_wait(event));
+                ANeuralNetworksEvent_free(event);
+                return result;
+            }
         }
         return Result::BAD_DATA;
     }
@@ -355,7 +404,7 @@ class Execution {
     // or
     // - use the burst API
     // Returns the previous ComputeMode.
-    enum class ComputeMode { SYNC, ASYNC, BURST };
+    enum class ComputeMode { SYNC, ASYNC, BURST, FENCED };
     static ComputeMode setComputeMode(ComputeMode mode) {
         ComputeMode oldComputeMode = mComputeMode;
         mComputeMode = mode;
@@ -375,6 +424,8 @@ class Execution {
                 mExecution, index, dimensions->data()));
         return result;
     }
+
+    ANeuralNetworksExecution* getHandle() { return mExecution; };
 
    private:
     ANeuralNetworksCompilation* mCompilation = nullptr;

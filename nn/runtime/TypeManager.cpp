@@ -48,9 +48,9 @@ namespace {
 
 using namespace hal;
 
-const uint8_t kLowBitsType = static_cast<uint8_t>(Model::ExtensionTypeEncoding::LOW_BITS_TYPE);
+const uint8_t kLowBitsType = static_cast<uint8_t>(ExtensionTypeEncoding::LOW_BITS_TYPE);
 const uint32_t kMaxPrefix =
-        (1 << static_cast<uint8_t>(Model::ExtensionTypeEncoding::HIGH_BITS_PREFIX)) - 1;
+        (1 << static_cast<uint8_t>(ExtensionTypeEncoding::HIGH_BITS_PREFIX)) - 1;
 
 // Checks if the two structures contain the same information. The order of
 // operand types within the structures does not matter.
@@ -181,7 +181,7 @@ bool TypeManager::isExtensionsUseAllowed(const AppPackageInfo& appPackageInfo,
 
 void TypeManager::findAvailableExtensions() {
     for (const std::shared_ptr<Device>& device : mDeviceManager->getDrivers()) {
-        for (const Extension extension : device->getSupportedExtensions()) {
+        for (const Extension& extension : device->getSupportedExtensions()) {
             registerExtension(extension, device->getName());
         }
     }

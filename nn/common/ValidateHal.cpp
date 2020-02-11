@@ -21,6 +21,7 @@
 #include <android-base/logging.h>
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "NeuralNetworks.h"
@@ -60,7 +61,21 @@ class MemoryAccessVerifier {
             mPoolSizes[i] = pools[i].size();
         }
     }
-    bool validate(const DataLocation& location) {
+    MemoryAccessVerifier(const hidl_vec<V1_3::Request::MemoryPool>& pools)
+        : mPoolCount(pools.size()), mPoolSizes(mPoolCount) {
+        for (size_t i = 0; i < mPoolCount; i++) {
+            switch (pools[i].getDiscriminator()) {
+                case Request::MemoryPool::hidl_discriminator::hidlMemory:
+                    mPoolSizes[i] = pools[i].hidlMemory().size();
+                    break;
+                case Request::MemoryPool::hidl_discriminator::token:
+                    // Set size to 0 to enforce length == 0 && offset == 0.
+                    mPoolSizes[i] = 0;
+                    break;
+            }
+        }
+    }
+    bool validate(const DataLocation& location) const {
         if (location.poolIndex >= mPoolCount) {
             LOG(ERROR) << "Invalid poolIndex " << location.poolIndex << "/" << mPoolCount;
             return false;
@@ -87,6 +102,7 @@ static bool validateOperandExtraParams(const V1_3::Operand& operand, uint32_t in
         case OperandType::INT32:
         case OperandType::UINT32:
         case OperandType::BOOL:
+        case OperandType::SUBGRAPH:
         case OperandType::TENSOR_FLOAT32:
         case OperandType::TENSOR_FLOAT16:
         case OperandType::TENSOR_INT32:
@@ -150,7 +166,8 @@ static bool validateOperandExtraParams(const V1_3::Operand& operand, uint32_t in
 template <typename VersionedOperand>
 static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
                              const hidl_vec<uint8_t>& operandValues,
-                             const hidl_vec<hidl_memory>& pools, bool allowUnspecifiedRank) {
+                             const hidl_vec<hidl_memory>& pools,
+                             const hidl_vec<Subgraph>& subgraphs, bool allowUnspecifiedRank) {
     uint32_t index = 0;
     MemoryAccessVerifier poolVerifier(pools);
     for (auto& versionedOperand : operands) {
@@ -169,6 +186,7 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
             case OperandType::INT32:
             case OperandType::UINT32:
             case OperandType::BOOL:
+            case OperandType::SUBGRAPH:
             case OperandType::OEM: {
                 size_t count = operand.dimensions.size();
                 if (count != 0) {
@@ -218,6 +236,7 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
             case OperandType::INT32:
             case OperandType::UINT32:
             case OperandType::BOOL:
+            case OperandType::SUBGRAPH:
             case OperandType::TENSOR_FLOAT16:
             case OperandType::TENSOR_FLOAT32:
             case OperandType::TENSOR_BOOL8:
@@ -267,6 +286,7 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
             case OperandType::INT32:
             case OperandType::UINT32:
             case OperandType::BOOL:
+            case OperandType::SUBGRAPH:
             case OperandType::TENSOR_FLOAT16:
             case OperandType::TENSOR_FLOAT32:
             case OperandType::TENSOR_INT32:
@@ -350,8 +370,8 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
                 }
                 break;
             case OperandLifeTime::TEMPORARY_VARIABLE:
-            case OperandLifeTime::MODEL_INPUT:
-            case OperandLifeTime::MODEL_OUTPUT:
+            case OperandLifeTime::SUBGRAPH_INPUT:
+            case OperandLifeTime::SUBGRAPH_OUTPUT:
             case OperandLifeTime::NO_VALUE:
                 if (location.poolIndex != 0 || location.offset != 0 || location.length != 0) {
                     LOG(ERROR) << "Operand " << index << ": Unexpected poolIndex "
@@ -361,10 +381,35 @@ static bool validateOperands(const hidl_vec<VersionedOperand>& operands,
                     return false;
                 }
                 break;
+            case OperandLifeTime::SUBGRAPH: {
+                if (location.poolIndex != 0) {
+                    LOG(ERROR) << "Operand " << index << ": SUBGRAPH with a non-zero poolIndex "
+                               << location.poolIndex;
+                    return false;
+                }
+                if (location.offset >= subgraphs.size()) {
+                    LOG(ERROR) << "Subgraph index out of range: " << location.offset
+                               << " >= " << subgraphs.size();
+                    return false;
+                }
+                if (location.length != 0) {
+                    LOG(ERROR) << "Operand " << index << ": SUBGRAPH with a non-zero length "
+                               << location.length;
+                    return false;
+                }
+            } break;
             default:
                 LOG(ERROR) << "Operand " << index << ": Invalid lifetime "
                            << toString(operand.lifetime);
                 return false;
+        }
+
+        // Make sure SUBGRAPH operand type and lifetime always go together.
+        if ((operand.type == OperandType::SUBGRAPH) !=
+            (operand.lifetime == OperandLifeTime::SUBGRAPH)) {
+            LOG(ERROR) << "Operand " << index << ": Operand of type " << toString(operand.type)
+                       << " cannot have lifetime " << toString(operand.lifetime);
+            return false;
         }
 
         // For constants, validate that the length is as expected. The other lifetimes
@@ -406,7 +451,35 @@ static HalVersion getHalVersion(const V1_3::Operation&) {
 
 template <typename VersionedOperation>
 static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
-                               const hidl_vec<Operand>& operands) {
+                               const hidl_vec<Operand>& operands,
+                               const hidl_vec<Subgraph>& subgraphs) {
+    auto isValidSubgraphReference = [&subgraphs](const Operand& modelOperand) -> bool {
+        NN_RET_CHECK(modelOperand.type == OperandType::SUBGRAPH)
+                << "Unexpected operand type: " << toString(modelOperand.type);
+        NN_RET_CHECK_LT(modelOperand.location.offset, subgraphs.size())
+                << "Invalid subgraph reference";
+        return true;
+    };
+    auto getSubgraph = [&subgraphs](const Operand& modelOperand) {
+        CHECK_LT(modelOperand.location.offset, subgraphs.size());
+        return subgraphs[modelOperand.location.offset];
+    };
+    auto getInputCount = [&getSubgraph](const Operand& modelOperand) {
+        return getSubgraph(modelOperand).inputIndexes.size();
+    };
+    auto getOutputCount = [&getSubgraph](const Operand& modelOperand) {
+        return getSubgraph(modelOperand).outputIndexes.size();
+    };
+    auto getInputOperand = [&getSubgraph](const Operand& modelOperand, uint32_t index) {
+        const Subgraph& subgraph = getSubgraph(modelOperand);
+        CHECK_LT(subgraph.inputIndexes[index], subgraph.operands.size());
+        return subgraph.operands[subgraph.inputIndexes[index]];
+    };
+    auto getOutputOperand = [&getSubgraph](const Operand& modelOperand, uint32_t index) {
+        const Subgraph& subgraph = getSubgraph(modelOperand);
+        CHECK_LT(subgraph.outputIndexes[index], subgraph.operands.size());
+        return subgraph.operands[subgraph.outputIndexes[index]];
+    };
     const size_t operandCount = operands.size();
     // This vector keeps track of whether there's an operation that writes to
     // each operand. It is used to validate that temporary variables and
@@ -418,7 +491,12 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
         int error = validateOperation(
                 static_cast<int32_t>(op.type), op.inputs.size(),
                 op.inputs.size() > 0 ? op.inputs.data() : nullptr, op.outputs.size(),
-                op.outputs.size() > 0 ? op.outputs.data() : nullptr, operands, getHalVersion(op));
+                op.outputs.size() > 0 ? op.outputs.data() : nullptr, operands, getHalVersion(op),
+                {.isValidSubgraphReference = isValidSubgraphReference,
+                 .getSubgraphInputCount = getInputCount,
+                 .getSubgraphOutputCount = getOutputCount,
+                 .getSubgraphInputOperand = getInputOperand,
+                 .getSubgraphOutputOperand = getOutputOperand});
         if (error != ANEURALNETWORKS_NO_ERROR) {
             LOG(ERROR) << "Invalid operation " << toString(op.type);
             return false;
@@ -427,7 +505,7 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
         for (uint32_t i : op.outputs) {
             const Operand& operand = operands[i];
             if (operand.lifetime != OperandLifeTime::TEMPORARY_VARIABLE &&
-                operand.lifetime != OperandLifeTime::MODEL_OUTPUT) {
+                operand.lifetime != OperandLifeTime::SUBGRAPH_OUTPUT) {
                 LOG(ERROR) << "Writing to an operand with incompatible lifetime "
                            << toString(operand.lifetime);
                 return false;
@@ -445,7 +523,7 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
         if (!writtenTo[i]) {
             const Operand& operand = operands[i];
             if (operand.lifetime == OperandLifeTime::TEMPORARY_VARIABLE ||
-                operand.lifetime == OperandLifeTime::MODEL_OUTPUT) {
+                operand.lifetime == OperandLifeTime::SUBGRAPH_OUTPUT) {
                 LOG(ERROR) << "Operand " << i << " with lifetime " << toString(operand.lifetime)
                            << " is not being written to.";
                 return false;
@@ -473,9 +551,21 @@ bool validatePool(const hidl_memory& pool, HalVersion ver) {
     return true;
 }
 
-static bool validatePools(const hidl_vec<hidl_memory>& pools, HalVersion ver) {
+bool validatePool(const V1_3::Request::MemoryPool& pool, HalVersion ver) {
+    switch (pool.getDiscriminator()) {
+        case Request::MemoryPool::hidl_discriminator::hidlMemory:
+            return validatePool(pool.hidlMemory(), ver);
+        case Request::MemoryPool::hidl_discriminator::token:
+            return pool.token() > 0;
+    }
+    LOG(FATAL) << "unknown MemoryPool discriminator";
+    return false;
+}
+
+template <class T_MemoryPool>
+static bool validatePools(const hidl_vec<T_MemoryPool>& pools, HalVersion ver) {
     return std::all_of(pools.begin(), pools.end(),
-                       [ver](const hidl_memory& pool) { return validatePool(pool, ver); });
+                       [ver](const auto& pool) { return validatePool(pool, ver); });
 }
 
 static bool validateModelInputOutputs(const hidl_vec<uint32_t> indexes,
@@ -504,6 +594,31 @@ static bool validateModelInputOutputs(const hidl_vec<uint32_t> indexes,
     return true;
 }
 
+// Makes sure the model does not contain subgraph reference cycles.
+static bool checkNoReferenceCycles(const V1_3::Model& model, const V1_3::Subgraph& subgraph,
+                                   std::set<const V1_3::Subgraph*>* path) {
+    auto [_, isNew] = path->insert(&subgraph);
+    if (!isNew) {
+        LOG(ERROR) << "Model contains a circular subgraph reference";
+        return false;
+    }
+    for (const Operand& operand : subgraph.operands) {
+        if (operand.lifetime == OperandLifeTime::SUBGRAPH) {
+            uint32_t refSubgraphIndex = operand.location.offset;
+            if (!checkNoReferenceCycles(model, model.referenced[refSubgraphIndex], path)) {
+                return false;
+            }
+        }
+    }
+    path->erase(&subgraph);
+    return true;
+}
+
+static bool checkNoReferenceCycles(const V1_3::Model& model) {
+    std::set<const V1_3::Subgraph*> path;
+    return checkNoReferenceCycles(model, model.main, &path);
+}
+
 template <class T_Model>
 bool validateModel(const T_Model& model) {
     NNTRACE_FULL(NNTRACE_LAYER_UTILITY, NNTRACE_PHASE_UNSPECIFIED, "validateModel");
@@ -515,20 +630,40 @@ bool validateModel(const T_Model& model) {
     // We only need versioned operands for their validation. For all the other
     // validations we can use operands upcasted to the latest version.
     const hidl_vec<Operand> latestVersionOperands = convertToV1_3(model.operands);
-    return (validateOperands(model.operands, model.operandValues, model.pools,
+    return (validateOperands(model.operands, model.operandValues, model.pools, /*subgraphs=*/{},
                              /*allowUnspecifiedRank=*/version >= HalVersion::V1_2) &&
-            validateOperations(model.operations, latestVersionOperands) &&
+            validateOperations(model.operations, latestVersionOperands, /*subgraphs=*/{}) &&
             validateModelInputOutputs(model.inputIndexes, latestVersionOperands,
-                                      OperandLifeTime::MODEL_INPUT) &&
+                                      OperandLifeTime::SUBGRAPH_INPUT) &&
             validateModelInputOutputs(model.outputIndexes, latestVersionOperands,
-                                      OperandLifeTime::MODEL_OUTPUT) &&
+                                      OperandLifeTime::SUBGRAPH_OUTPUT) &&
             validatePools(model.pools, version));
 }
 
 template bool validateModel<V1_0::Model>(const V1_0::Model& model);
 template bool validateModel<V1_1::Model>(const V1_1::Model& model);
 template bool validateModel<V1_2::Model>(const V1_2::Model& model);
-template bool validateModel<V1_3::Model>(const V1_3::Model& model);
+
+template <>
+bool validateModel(const V1_3::Model& model) {
+    NNTRACE_FULL(NNTRACE_LAYER_UTILITY, NNTRACE_PHASE_UNSPECIFIED, "validateModel");
+    if (model.main.operations.size() == 0 || model.main.operands.size() == 0) {
+        LOG(ERROR) << "Invalid empty model.";
+        return false;
+    }
+    auto validateSubgraph = [&model](const Subgraph& subgraph) -> bool {
+        return (validateOperands(subgraph.operands, model.operandValues, model.pools,
+                                 model.referenced, /*allowUnspecifiedRank=*/true) &&
+                validateOperations(subgraph.operations, subgraph.operands, model.referenced) &&
+                validateModelInputOutputs(subgraph.inputIndexes, subgraph.operands,
+                                          OperandLifeTime::SUBGRAPH_INPUT) &&
+                validateModelInputOutputs(subgraph.outputIndexes, subgraph.operands,
+                                          OperandLifeTime::SUBGRAPH_OUTPUT));
+    };
+    return (validateSubgraph(model.main) &&
+            std::all_of(model.referenced.begin(), model.referenced.end(), validateSubgraph) &&
+            validatePools(model.pools, HalVersion::V1_3) && checkNoReferenceCycles(model));
+}
 
 // Validates the arguments of a request. type is either "input" or "output" and is used
 // for printing error messages. The operandIndexes is the appropriate array of input
@@ -536,9 +671,8 @@ template bool validateModel<V1_3::Model>(const V1_3::Model& model);
 static bool validateRequestArguments(const hidl_vec<RequestArgument>& requestArguments,
                                      const hidl_vec<uint32_t>& operandIndexes,
                                      const hidl_vec<Operand>& operands,
-                                     const hidl_vec<hidl_memory>& pools, bool allowUnspecified,
-                                     const char* type) {
-    MemoryAccessVerifier poolVerifier(pools);
+                                     const MemoryAccessVerifier& poolVerifier,
+                                     bool allowUnspecified, const char* type) {
     // The request should specify as many arguments as were described in the model.
     const size_t requestArgumentCount = requestArguments.size();
     if (requestArgumentCount != operandIndexes.size()) {
@@ -609,27 +743,45 @@ static bool validateRequestArguments(const hidl_vec<RequestArgument>& requestArg
     return true;
 }
 
-template <class T_Model>
-bool validateRequest(const Request& request, const T_Model& model) {
+template <class T_Request, class T_Model>
+bool validateRequest(const T_Request& request, const T_Model& model) {
     HalVersion version = ModelToHalVersion<T_Model>::version;
+    MemoryAccessVerifier poolVerifier(request.pools);
     return (validateRequestArguments(request.inputs, model.inputIndexes,
-                                     convertToV1_3(model.operands), request.pools,
+                                     convertToV1_3(model.operands), poolVerifier,
                                      /*allowUnspecified=*/false, "input") &&
             validateRequestArguments(request.outputs, model.outputIndexes,
-                                     convertToV1_3(model.operands), request.pools,
+                                     convertToV1_3(model.operands), poolVerifier,
                                      /*allowUnspecified=*/version >= HalVersion::V1_2, "output") &&
             validatePools(request.pools, version));
 }
 
-template bool validateRequest<V1_0::Model>(const Request& request, const V1_0::Model& model);
-template bool validateRequest<V1_1::Model>(const Request& request, const V1_1::Model& model);
-template bool validateRequest<V1_2::Model>(const Request& request, const V1_2::Model& model);
-template bool validateRequest<V1_3::Model>(const Request& request, const V1_3::Model& model);
+template bool validateRequest<V1_0::Request, V1_0::Model>(const V1_0::Request& request,
+                                                          const V1_0::Model& model);
+template bool validateRequest<V1_0::Request, V1_1::Model>(const V1_0::Request& request,
+                                                          const V1_1::Model& model);
+template bool validateRequest<V1_0::Request, V1_2::Model>(const V1_0::Request& request,
+                                                          const V1_2::Model& model);
+
+template <>
+bool validateRequest(const V1_3::Request& request, const V1_3::Model& model) {
+    return (validateRequestArguments(request.inputs, model.main.inputIndexes, model.main.operands,
+                                     request.pools,
+                                     /*allowUnspecified=*/false, "input") &&
+            validateRequestArguments(request.outputs, model.main.outputIndexes, model.main.operands,
+                                     request.pools,
+                                     /*allowUnspecified=*/true, "output") &&
+            validatePools(request.pools, HalVersion::V1_3));
+}
 
 bool validateExecutionPreference(ExecutionPreference preference) {
     return preference == ExecutionPreference::LOW_POWER ||
            preference == ExecutionPreference::FAST_SINGLE_ANSWER ||
            preference == ExecutionPreference::SUSTAINED_SPEED;
+}
+
+bool validatePriority(Priority priority) {
+    return priority == Priority::LOW || priority == Priority::MEDIUM || priority == Priority::HIGH;
 }
 
 bool validOperandType(V1_0::OperandType operandType) {
@@ -689,6 +841,7 @@ bool validOperandType(V1_3::OperandType operandType) {
         case V1_3::OperandType::TENSOR_BOOL8:
         case V1_3::OperandType::TENSOR_QUANT8_SYMM_PER_CHANNEL:
         case V1_3::OperandType::TENSOR_QUANT8_ASYMM_SIGNED:
+        case V1_3::OperandType::SUBGRAPH:
         case V1_3::OperandType::OEM:
         case V1_3::OperandType::TENSOR_OEM_BYTE:
             return true;

@@ -36,8 +36,10 @@ namespace android {
 namespace nn {
 
 // Forward declaration
-class MetaModel;
+class Device;
 class ExecutionBurstController;
+class MetaModel;
+class VersionedIPreparedModel;
 struct ModelArgumentInfo;
 
 // A unified interface for actual driver prepared model as well as the CPU.
@@ -48,15 +50,28 @@ class PreparedModel {
     PreparedModel() = default;
     virtual ~PreparedModel() = default;
 
+    virtual const Device* getDevice() const = 0;
+    virtual std::shared_ptr<VersionedIPreparedModel> getInterface() const = 0;
+
     // Perform computation with given input/output argument info and memory pools.
     virtual std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
             const std::vector<ModelArgumentInfo>& inputs,
             const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
             const std::shared_ptr<ExecutionBurstController>& burstController,
-            hal::MeasureTiming measure) const = 0;
+            hal::MeasureTiming measure, const hal::OptionalTimePoint& deadline) const = 0;
+
+    // Perform fenced computation with given input/output argument info and memory pools.
+    // The returned timing information is only valid if the callback is nullptr.
+    // Returns error_code, sync_fence, callback and timing.
+    virtual std::tuple<int, int, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
+            const std::vector<ModelArgumentInfo>& inputs,
+            const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
+            const std::vector<int>& waitFor, hal::MeasureTiming measure,
+            const hal::OptionalTimePoint& deadline,
+            const hal::OptionalTimeoutDuration& timeoutDurationAfterFence) const = 0;
 
     virtual std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
-            bool blocking) const = 0;
+            bool preferPowerOverLatency) const = 0;
 };
 
 // A unified interface for actual driver devices as well as the CPU
@@ -68,31 +83,32 @@ class Device {
     virtual ~Device() = default;
 
     // Introspection methods returning device information
-    virtual const char* getName() const = 0;
-    virtual const char* getVersionString() const = 0;
+    virtual const std::string& getName() const = 0;
+    virtual const std::string& getVersionString() const = 0;
     virtual int64_t getFeatureLevel() const = 0;
     virtual int32_t getType() const = 0;
-    virtual hal::hidl_vec<hal::Extension> getSupportedExtensions() const = 0;
+    virtual const std::vector<hal::Extension>& getSupportedExtensions() const = 0;
 
     // See the MetaModel class in MetaModel.h for more details.
-    virtual void getSupportedOperations(const MetaModel& metaModel,
-                                        hal::hidl_vec<bool>* supportedOperations) const = 0;
+    virtual std::vector<bool> getSupportedOperations(const MetaModel& metaModel) const = 0;
 
     virtual hal::PerformanceInfo getPerformance(hal::OperandType type) const = 0;
     virtual hal::PerformanceInfo getRelaxedFloat32toFloat16PerformanceScalar() const = 0;
     virtual hal::PerformanceInfo getRelaxedFloat32toFloat16PerformanceTensor() const = 0;
-    virtual std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const = 0;
-    bool isCachingSupported() const;
+    virtual bool isCachingSupported() const = 0;
+    virtual std::pair<bool, bool> supportsDeadlines() const = 0;
+    virtual int wait() const = 0;
 
     virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
-            const hal::Model& hidlModel, hal::ExecutionPreference executionPreference,
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::CacheToken& token) const = 0;
-    virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModelFromCache(
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache,
-            const hal::CacheToken& token) const = 0;
+            const hal::ModelFactory& makeModel, hal::ExecutionPreference preference,
+            hal::Priority priority, const hal::OptionalTimePoint& deadline,
+            const std::string& cacheDir,
+            const std::optional<hal::CacheToken>& maybeToken) const = 0;
+
+    // The caller is responsible for making sure the MemoryDescriptor only contains PreparedModels
+    // from the same Device.
+    virtual std::pair<int, std::unique_ptr<Memory>> allocate(
+            const MemoryDescriptor& desc) const = 0;
 };
 
 // Manages the NN HAL devices.  Only one instance of this class will exist.
@@ -148,7 +164,7 @@ class DeviceManager {
     }
 
     // Register a test device.
-    void forTest_registerDevice(const char* name, const sp<hal::V1_0::IDevice>& device) {
+    void forTest_registerDevice(const std::string& name, const sp<hal::V1_0::IDevice>& device) {
         registerDevice(name, device);
     }
 
@@ -172,7 +188,7 @@ class DeviceManager {
     DeviceManager();
 
     // Adds a device for the manager to use.
-    void registerDevice(const char* name, const sp<hal::V1_0::IDevice>& device);
+    void registerDevice(const std::string& name, const sp<hal::V1_0::IDevice>& device);
 
     void findAvailableDevices();
 
@@ -189,7 +205,7 @@ class DeviceManager {
 
     // synchronous execution
     bool mSyncExecCpu = true;
-    bool mSyncExecHal = true;         // Call executeSynchronously() when available on device.
+    bool mSyncExecHal = true;         // Call executeSynchronously*() when available on device.
     bool mSyncExecHalSetter = false;  // Has mSyncExecHal been set by setSyncExecHal()?
                                       // If so, don't allow the setting to be overridden
                                       //     by system property debug.nn.syncexec-hal

@@ -23,7 +23,6 @@
 #include "Utils.h"
 
 #include <android-base/macros.h>
-#include <ui/GraphicBuffer.h>
 
 #include <algorithm>
 #include <memory>
@@ -106,11 +105,12 @@ struct RunTimeOperandInfo {
 class RunTimePoolInfo {
    public:
     static std::optional<RunTimePoolInfo> createFromHidlMemory(const hal::hidl_memory& hidlMemory);
-    static RunTimePoolInfo createFromExistingBuffer(uint8_t* buffer);
+    static RunTimePoolInfo createFromExistingBuffer(uint8_t* buffer, uint32_t size = 0);
 
     uint8_t* getBuffer() const;
     bool flush() const;
-    hal::hidl_memory getHidlMemory() const;
+    const hal::hidl_memory& getHidlMemory() const;
+    uint32_t getSize() const;
 
    private:
     class RunTimePoolInfoImpl;
@@ -121,6 +121,9 @@ class RunTimePoolInfo {
 
 bool setRunTimePoolInfosFromHidlMemories(std::vector<RunTimePoolInfo>* poolInfos,
                                          const hal::hidl_vec<hal::hidl_memory>& pools);
+
+bool setRunTimePoolInfosFromMemoryPools(std::vector<RunTimePoolInfo>* poolInfos,
+                                        const hal::hidl_vec<hal::Request::MemoryPool>& pools);
 
 // This class is used to execute a model on the CPU.
 class CpuExecutor {
@@ -154,29 +157,23 @@ class CpuExecutor {
    private:
     bool initializeRunTimeInfo(const hal::Request& request,
                                const std::vector<RunTimePoolInfo>& modelPoolInfos,
-                               const std::vector<RunTimePoolInfo>& requestPoolInfos);
+                               const std::vector<RunTimePoolInfo>& requestPoolInfos,
+                               std::vector<RunTimeOperandInfo>* operands);
+
     // Runs one operation of the graph.
-    int executeOperation(const hal::Operation& entry);
+    int executeOperation(const hal::Operation& entry, RunTimeOperandInfo* operands);
     // Decrement the usage count for the operands listed.  Frees the memory
     // allocated for any temporary variable with a count of zero.
-    void freeNoLongerUsedOperands(const std::vector<uint32_t>& inputs);
+    void freeNoLongerUsedOperands(const std::vector<uint32_t>& inputs,
+                                  RunTimeOperandInfo* operands);
 
     // Frees the memory allocated for any temporary variable, and sets the
     // output operand shapes returning to the runtime.
-    void finish(int result);
+    void finish(int result, std::vector<RunTimeOperandInfo>* operands);
 
     // The model and the request that we'll execute. Only valid while run()
     // is being executed.
     const hal::Model* mModel = nullptr;
-    const hal::Request* mRequest = nullptr;
-
-    // We're copying the list of all the dimensions from the model, as
-    // these may be modified when we run the operations.  Since we're
-    // making a full copy, the indexes used in the operand description
-    // stay valid.
-    //    std::vector<uint32_t> mDimensions;
-    // Runtime information about all the operands.
-    std::vector<RunTimeOperandInfo> mOperands;
 
     // The output operand shapes returning to the runtime.
     std::vector<hal::OutputShape> mOutputShapes;
@@ -241,7 +238,7 @@ inline bool IsNullInput(const RunTimeOperandInfo* input) {
 }
 
 inline int NumInputsWithValues(const hal::Operation& operation,
-                               std::vector<RunTimeOperandInfo>& operands) {
+                               const RunTimeOperandInfo* operands) {
     const std::vector<uint32_t>& inputs = operation.inputs;
     return std::count_if(inputs.begin(), inputs.end(),
                          [&operands](uint32_t i) { return !IsNullInput(&operands[i]); });
@@ -259,13 +256,13 @@ inline uint32_t SizeOfDimension(const RunTimeOperandInfo* operand, int i) {
     return operand->shape().dimensions[i];
 }
 
-inline RunTimeOperandInfo* GetInput(const hal::Operation& operation,
-                                    std::vector<RunTimeOperandInfo>& operands, int index) {
+inline RunTimeOperandInfo* GetInput(const hal::Operation& operation, RunTimeOperandInfo* operands,
+                                    int index) {
     return &operands[operation.inputs[index]];
 }
 
-inline RunTimeOperandInfo* GetOutput(const hal::Operation& operation,
-                                     std::vector<RunTimeOperandInfo>& operands, int index) {
+inline RunTimeOperandInfo* GetOutput(const hal::Operation& operation, RunTimeOperandInfo* operands,
+                                     int index) {
     return &operands[operation.outputs[index]];
 }
 

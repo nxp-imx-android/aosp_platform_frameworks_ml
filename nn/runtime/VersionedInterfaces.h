@@ -84,23 +84,29 @@ class VersionedIDevice {
      * VersionedIDevice will default to using the latest version of all IDevice
      * interface methods automatically.
      *
+     * @param capabilities Performance capabilities of the driver.
+     * @param supportedExtensions Extensions supported by the driver.
+     * @param type The device type of the driver.
+     * @param versionString The version string of the driver.
+     * @param numberOfCacheFilesNeeded Number of model cache and data cache
+     *     files needed by the driver.
      * @param serviceName The name of the service that provides core.getDevice<V1_0::IDevice>().
      * @param core An object that encapsulates a V1_0::IDevice, any appropriate downcasts to
      *             newer interfaces, and a hidl_death_recipient that will proactively handle
      *             the case when the service containing the IDevice object crashes.
      */
-    VersionedIDevice(std::string serviceName, Core core);
+    VersionedIDevice(hal::Capabilities capabilities,
+                     std::vector<hal::Extension> supportedExtensions, int32_t type,
+                     std::string versionString,
+                     std::pair<uint32_t, uint32_t> numberOfCacheFilesNeeded,
+                     std::pair<bool, bool> supportsDeadlines, std::string serviceName, Core core);
 
     /**
      * Gets the capabilities of a driver.
      *
-     * @return status Error status of the call, must be:
-     *                - NONE if successful
-     *                - DEVICE_UNAVAILABLE if driver is offline or busy
-     *                - GENERAL_FAILURE if there is an unspecified error
      * @return capabilities Capabilities of the driver.
      */
-    std::pair<hal::ErrorStatus, hal::Capabilities> getCapabilities() const;
+    const hal::Capabilities& getCapabilities() const;
 
     /**
      * Gets information about extensions supported by the driver implementation.
@@ -111,13 +117,9 @@ class VersionedIDevice {
      * All extension operations and operands must be fully supported for the
      * extension to appear in the list of supported extensions.
      *
-     * @return status Error status of the call, must be:
-     *     - NONE if successful
-     *     - DEVICE_UNAVAILABLE if driver is offline or busy
-     *     - GENERAL_FAILURE if there is an unspecified error
      * @return extensions A list of supported extensions.
      */
-    std::pair<hal::ErrorStatus, hal::hidl_vec<hal::Extension>> getSupportedExtensions() const;
+    const std::vector<hal::Extension>& getSupportedExtensions() const;
 
     /**
      * Gets the supported operations in a MetaModel.
@@ -151,8 +153,7 @@ class VersionedIDevice {
             const MetaModel& metaModel) const;
 
     /**
-     * Synchronously creates a prepared model for execution and optionally saves it
-     * into cache files.
+     * Creates a prepared model for execution.
      *
      * prepareModel is used to make any necessary transformations or alternative
      * representations to a model for execution, possibly including
@@ -160,42 +161,21 @@ class VersionedIDevice {
      * or compilation into the device's native binary format. The model itself
      * is not changed.
      *
-     * Optionally, caching information may be provided for the driver to save
-     * the prepared model to cache files for faster model compilation time
-     * when the same model preparation is requested in the future. There are
-     * two types of cache file handles provided to the driver: model cache
-     * and data cache. For more information on the two types of cache handles,
-     * refer to getNumberOfCacheFilesNeeded.
+     * Optionally, caching information may be provided for the driver to either:
+     * - load the prepared model from cache, bypassing full model preparation
+     * - save the prepared model to cache for faster model compilation time when
+     *     the same model preparation is requested in the future
      *
-     * The file descriptors must be opened with read and write permission. A file may
-     * have any size, and the corresponding file descriptor may have any offset. The
-     * driver must truncate a file to zero size before writing to that file. The file
-     * descriptors may be closed by the client once the asynchronous preparation has
-     * finished. The driver must dup a file descriptor if it wants to get access to
-     * the cache file later.
-     *
-     * The model is prepared synchronously with respect to the caller. The
-     * prepareModel function must verify the inputs to the preparedModel
-     * function related to preparing the model (as opposed to saving the
-     * prepared model to cache) are correct. If there is an error, prepareModel
-     * must immediately return the appropriate ErrorStatus value and nullptr for
-     * the VersionedIPreparedModel. If the inputs to the prepareModel function
-     * that are related to preparing the model are valid and there is no error,
-     * prepareModel must prepare the model.
+     * The prepareModel function must verify the inputs to the prepareModel
+     * function are correct. If there is an error, prepareModel must immediately
+     * return the appropriate result code and nullptr for the
+     * VersionedIPreparedModel. If the inputs to the prepareModel function are
+     * valid and there is no error, prepareModel must prepare the model.
      *
      * If the model was prepared successfully, prepareModel must return
-     * ErrorStatus::NONE and the produced VersionedIPreparedModel object. If an
-     * error occurred preparing the model, prepareModel must return the
-     * appropriate ErrorStatus value and nullptr for the
-     * VersionedIPreparedModel.
-     *
-     * Optionally, the driver may save the prepared model to cache during
-     * preparation. Any error that occurs when saving to cache must not affect
-     * the status of preparing the model. Even if the input arguments related to
-     * the cache may be invalid, or the driver may fail to save to cache, the
-     * prepareModel function must finish preparing the model. The driver may
-     * choose not to save to cache even if the caching information is provided
-     * and valid.
+     * ANEURALNETWORKS_NO_ERROR and the produced VersionedIPreparedModel object.
+     * If an error occurred preparing the model, prepareModel must return the
+     * appropriate result code and nullptr for the VersionedIPreparedModel.
      *
      * The only information that may be unknown to the model at this stage is
      * the shape of the tensors, which may only be known at execution time. As
@@ -207,113 +187,38 @@ class VersionedIDevice {
      *
      * Multiple threads may call prepareModel on the same model concurrently.
      *
-     * @param model The model to be prepared for execution.
+     * @param makeModel Factory function to create the model to be prepared for
+     *     execution.
      * @param preference Indicates the intended execution behavior of a prepared
      *     model.
-     * @param modelCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the security-sensitive cache. The length of
-     *     the vector must either be 0 indicating that caching information is not provided,
-     *     or match the numModelCache returned from getNumberOfCacheFilesNeeded. The cache
-     *     handles will be provided in the same order when retrieving the
-     *     preparedModel from cache files with prepareModelFromCache.
-     * @param dataCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the constants' cache. The length of
-     *     the vector must either be 0 indicating that caching information is not provided,
-     *     or match the numDataCache returned from getNumberOfCacheFilesNeeded. The cache
-     *     handles will be provided in the same order when retrieving the
-     *     preparedModel from cache files with prepareModelFromCache.
-     * @param token A caching token of length Constant::BYTE_SIZE_OF_CACHE_TOKEN
-     *     identifying the prepared model. The same token will be provided when retrieving
-     *     the prepared model from the cache files with prepareModelFromCache.
-     *     Tokens should be chosen to have a low rate of collision for a particular
-     *     application. The driver cannot detect a collision; a collision will result
-     *     in a failed execution or in a successful execution that produces incorrect
-     *     output values. If both modelCache and dataCache are empty indicating that
-     *     caching information is not provided, this token must be ignored.
+     * @param priority Priority of the prepared model relative to other prepared
+     *     models owned by an application.
+     * @param deadline Optional time point. If provided, prepareModel must
+     *     complete or be aborted by this time point.
+     * @param cacheDir String specifying the cache directory.
+     * @param maybeToken An optional caching token of length
+     *     Constant::BYTE_SIZE_OF_CACHE_TOKEN identifying the prepared model.
+     *     The same token will be provided when retrieving the prepared model
+     *     from the cache files with prepareModelFromCache. Tokens should be
+     *     chosen to have a low rate of collision for a particular application.
+     *     The driver cannot detect a collision; a collision will result in a
+     *     failed execution or in a successful execution that produces incorrect
+     *     output values. If both modelCache and dataCache are empty indicating
+     *     that caching information is not provided, this token must be ignored.
      * @return A pair of:
-     *     - status Error status of preparing the model; must be:
-     *         - NONE if preparation succeeded
-     *         - DEVICE_UNAVAILABLE if driver is offline or busy
-     *         - GENERAL_FAILURE if there is an unspecified error
-     *         - INVALID_ARGUMENT if one of the input arguments related to
-     *             preparing the model is invalid
+     *     - Result code of preparing the model; must be:
+     *         - ANEURALNETWORKS_NO_ERROR if preparation succeeded
+     *         - ANEURALNETWORKS_UNAVAILABLE_DEVICE if driver is offline or busy
+     *         - ANEURALNETWORKS_OP_FAILED if there is an unspecified error
+     *         - ANEURALNETWORKS_BAD_DATA if one of the input arguments related
+     *             to preparing the model is invalid
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *         that has been prepared for execution, else nullptr.
      */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
-            const hal::Model& model, hal::ExecutionPreference preference,
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
-
-    /**
-     * Creates a prepared model from cache files for execution.
-     *
-     * prepareModelFromCache is used to retrieve a prepared model directly from
-     * cache files to avoid slow model compilation time. There are
-     * two types of cache file handles provided to the driver: model cache
-     * and data cache. For more information on the two types of cache handles,
-     * refer to getNumberOfCacheFilesNeeded.
-     *
-     * The file descriptors must be opened with read and write permission. A file may
-     * have any size, and the corresponding file descriptor may have any offset. The
-     * driver must truncate a file to zero size before writing to that file. The file
-     * descriptors may be closed by the client once the asynchronous preparation has
-     * finished. The driver must dup a file descriptor if it wants to get access to
-     * the cache file later.
-     *
-     * The model is prepared synchronously with respect to the caller. The
-     * prepareModelFromCache function must verify the inputs to the
-     * prepareModelFromCache function are correct, and that the
-     * security-sensitive cache has not been modified since it was last written
-     * by the driver. If there is an error, or if compilation caching is not
-     * supported, or if the security-sensitive cache has been modified,
-     * prepareModelFromCache must return the appropriate ErrorStatus value and
-     * nullptr for the VersionedIPreparedModel. If the inputs to the
-     * prepareModelFromCache function are valid, the security-sensitive cache is
-     * not modified, and there is no error, prepareModelFromCache must prepare
-     * the model.
-     *
-     * If the model was prepared successfully, prepareModelFromCache must return
-     * ErrorStatus::NONE and the produced VersionedIPreparedModel object. If an
-     * error occurred preparing the model, prepareModelFromCache must return the
-     * appropriate ErrorStatus value and nullptr for the
-     * VersionedIPreparedModel.
-     *
-     * The only information that may be unknown to the model at this stage is
-     * the shape of the tensors, which may only be known at execution time. As
-     * such, some driver services may return partially prepared models, where
-     * the prepared model may only be finished when it is paired with a set of
-     * inputs to the model. Note that the same prepared model object may be
-     * used with different shapes of inputs on different (possibly concurrent)
-     * executions.
-     *
-     * @param modelCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the security-sensitive cache. The length of
-     *     the vector must match the numModelCache returned from getNumberOfCacheFilesNeeded.
-     *     The cache handles will be provided in the same order as with prepareModel_1_2.
-     * @param dataCache A vector of handles with each entry holding exactly one
-     *     cache file descriptor for the constants' cache. The length of the vector
-     *     must match the numDataCache returned from getNumberOfCacheFilesNeeded.
-     *     The cache handles will be provided in the same order as with prepareModel_1_2.
-     * @param token A caching token of length Constant::BYTE_SIZE_OF_CACHE_TOKEN
-     *     identifying the prepared model. It is the same token provided when saving
-     *     the cache files with prepareModel_1_2. Tokens should be chosen
-     *     to have a low rate of collision for a particular application. The driver
-     *     cannot detect a collision; a collision will result in a failed execution
-     *     or in a successful execution that produces incorrect output values.
-     * @return A pair of:
-     *     - status Error status of preparing the model; must be:
-     *         - NONE if preparation succeeded
-     *         - DEVICE_UNAVAILABLE if driver is offline or busy
-     *         - GENERAL_FAILURE if caching is not supported or if there is an
-     *             unspecified error
-     *         - INVALID_ARGUMENT if one of the input arguments is invalid
-     *     - preparedModel A VersionedIPreparedModel object representing a model
-     *        that has been prepared for execution, else nullptr.
-     */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+    std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
+            const hal::ModelFactory& makeModel, hal::ExecutionPreference preference, hal::Priority,
+            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const std::optional<hal::CacheToken>& maybeToken) const;
 
     /**
      * Returns the current status of a driver.
@@ -340,14 +245,12 @@ class VersionedIDevice {
     /**
      * Returns the device type of a driver.
      *
-     * @return deviceType The type of a given device, which can help application developers
-     *                    developers to distribute Machine Learning workloads and other workloads
-     *                    such as graphical rendering. E.g., for an app which renders AR scenes
-     *                    based on real time object detection results, the developer could choose
-     *                    an ACCELERATOR type device for ML workloads, and reserve GPU for
-     *                    graphical rendering.
-     *                    Return -1 if the driver is offline or busy, or the query resulted in
-     *                    an unspecified error.
+     * @return deviceType The type of a given device, which can help application
+     *     developers to distribute Machine Learning workloads and other
+     *     workloads such as graphical rendering. E.g., for an app which renders
+     *     AR scenes based on real time object detection results, the developer
+     *     could choose an ACCELERATOR type device for ML workloads, and reserve
+     *     GPU for graphical rendering.
      */
     int32_t getType() const;
 
@@ -371,15 +274,9 @@ class VersionedIDevice {
      *       the driver cannot meet that requirement because of bugs or certain optimizations.
      *       The application can filter out versions of these drivers.
      *
-     * @return status Error status returned from querying the version string. Must be:
-     *     - NONE if the query was successful
-     *     - DEVICE_UNAVAILABLE if driver is offline or busy
-     *     - GENERAL_FAILURE if the query resulted in an
-     *       unspecified error
      * @return version The version string of the device implementation.
-     *     Must have nonzero length if the query is successful, and must be an empty string if not.
      */
-    std::pair<hal::ErrorStatus, hal::hidl_string> getVersionString() const;
+    const std::string& getVersionString() const;
 
     /**
      * Gets the caching requirements of the driver implementation.
@@ -408,10 +305,6 @@ class VersionedIDevice {
      * IDevice::prepareModelFromCache or providing cache file descriptors to
      * IDevice::prepareModel_1_2.
      *
-     * @return status Error status of the call, must be:
-     *     - NONE if successful
-     *     - DEVICE_UNAVAILABLE if driver is offline or busy
-     *     - GENERAL_FAILURE if there is an unspecified error
      * @return numModelCache An unsigned integer indicating how many files for model cache
      *                       the driver needs to cache a single prepared model. It must
      *                       be less than or equal to Constant::MAX_NUMBER_OF_CACHE_FILES.
@@ -419,9 +312,108 @@ class VersionedIDevice {
      *                      the driver needs to cache a single prepared model. It must
      *                      be less than or equal to Constant::MAX_NUMBER_OF_CACHE_FILES.
      */
-    std::tuple<hal::ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const;
+    std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const;
+
+    /**
+     * Returns which task deadlines are supported.
+     *
+     * @return A pair of:
+     *     - prepareModelDeadline is supported
+     *     - executionDeadline is supported
+     */
+    std::pair<bool, bool> supportsDeadlines() const;
+
+    /**
+     * Returns the name of the service.
+     *
+     * @return Name of the service.
+     */
+    const std::string& getName() const;
+
+    /**
+     * Allocates a driver-managed buffer with the properties specified by the descriptor as well as
+     * the input and output roles of prepared models.
+     *
+     * The allocate function must verify the inputs to the allocate function are correct. If there
+     * is an error, or if a certain role or property is not supported by the driver, the allocate
+     * function must return with an appropriate ErrorStatus, a nullptr as the IBuffer, and 0 as the
+     * buffer token. If the allocation is successful, this method must return with ErrorStatus::NONE
+     * and the produced IBuffer with a positive token identifying the allocated buffer. A successful
+     * allocation must accommodate all of the specified roles and buffer properties.
+     *
+     * The buffer is allocated as an uninitialized state. An uninitialized buffer may only be used
+     * in ways that are specified by outputRoles. A buffer is initialized after it is used as an
+     * output in a successful execution, or after a successful invocation of IBuffer::copyFrom on
+     * the buffer. An initialized buffer may be used according to all roles specified in inputRoles
+     * and outputRoles. A buffer will return to the uninitialized state if it is used as an output
+     * in a failed execution, or after a failed invocation of IBuffer::copyFrom on the buffer.
+     *
+     * The driver may deduce the dimensions of the buffer according to the buffer descriptor as
+     * well as the input and output roles. The dimensions or rank of the buffer may be unknown at
+     * this stage. As such, some driver services may only create a placeholder and defer the actual
+     * allocation until execution time. Note that the same buffer may be used for different shapes
+     * of outputs on different executions. When the buffer is used as an input, the input shape
+     * must be the same as the output shape from the last execution using this buffer as an output.
+     *
+     * The driver must apply proper validatation upon every usage of the buffer, and fail the
+     * execution immediately if the usage is illegal.
+     *
+     * @param desc A buffer descriptor specifying the properties of the buffer to allocate.
+     * @param preparedModels A vector of IPreparedModel objects. Must only contain IPreparedModel
+     *     objects from the same IDevice as this method invoked on.
+     * @param inputRoles A vector of roles with each specifying an input to a prepared model.
+     * @param outputRoles A vector of roles with each specifying an output to a prepared model.
+     *     Each role specified in inputRoles and outputRoles must be unique. The corresponding
+     *     model operands of the roles must have the same OperandType, scale, zero point, and
+     *     ExtraParams. The dimensions of the operands and the dimensions specified in the buffer
+     *     descriptor must be compatible with each other. Two dimensions are incompatible if there
+     *     is at least one axis that is fully specified in both but has different values.
+     * @return A tuple consisting of:
+     *     - Error status of the buffer allocation. Must be:
+     *         - NONE if successful
+     *         - DEVICE_UNAVAILABLE if driver is offline or busy
+     *         - GENERAL_FAILURE if a certain buffer property or a certain role is not supported,
+     *           or if there is an unspecified error
+     *         - INVALID_ARGUMENT if one of the input arguments is invalid
+     *     - The allocated IBuffer object. If the buffer was unable to be allocated
+     *       due to an error, nullptr must be returned.
+     *     - A positive token identifying the allocated buffer. The same token will be
+     *       provided when referencing the buffer as one of the memory pools in the request of an
+     *       execution. If the buffer was unable to be allocated due to an error, the token must be
+     *       0.
+     */
+    std::tuple<hal::ErrorStatus, sp<hal::IBuffer>, int32_t> allocate(
+            const hal::BufferDesc& desc,
+            const std::vector<std::shared_ptr<VersionedIPreparedModel>>& preparedModels,
+            const hal::hidl_vec<hal::BufferRole>& inputRoles,
+            const hal::hidl_vec<hal::BufferRole>& outputRoles) const;
+
+    /**
+     * Blocks until the device is not in a bad state.
+     *
+     * @return Error code after waiting. ANEURALNETWORKS_NO_ERROR if device is
+     *     not in a bad state.
+     */
+    int wait() const;
 
    private:
+    // Cached initialization results.
+    const hal::Capabilities kCapabilities;
+    const std::vector<hal::Extension> kSupportedExtensions;
+    const int32_t kType;
+    const std::string kVersionString;
+    const std::pair<uint32_t, uint32_t> kNumberOfCacheFilesNeeded;
+    const std::pair<bool, bool> kSupportsDeadlines;
+
+    // internal methods to prepare a model
+    std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelInternal(
+            const hal::Model& model, hal::ExecutionPreference preference, hal::Priority priority,
+            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const std::optional<hal::CacheToken>& maybeToken) const;
+    std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCacheInternal(
+            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const hal::CacheToken& token) const;
+
     /**
      * This is a utility class for VersionedIDevice that encapsulates a
      * V1_0::IDevice, any appropriate downcasts to newer interfaces, and a
@@ -579,7 +571,7 @@ class VersionedIDevice {
             const T_Callback& callback = nullptr) const EXCLUDES(mMutex);
 
     // The name of the service that implements the driver.
-    const std::string mServiceName;
+    const std::string kServiceName;
 
     // Guards access to mCore.
     mutable std::shared_mutex mMutex;
@@ -651,6 +643,8 @@ class VersionedIPreparedModel {
      *     model is to be executed.
      * @param measure Specifies whether or not to measure duration of the
      *     execution.
+     * @param deadline Optional time point. If provided, prepareModel must
+     *     complete or be aborted by this time point.
      * @param preferSynchronous 'true' to perform synchronous HAL execution when
      *     possible, 'false' to force asynchronous HAL execution.
      * @return A tuple consisting of:
@@ -682,23 +676,108 @@ class VersionedIPreparedModel {
      *         indicating that measurement is not available.
      */
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
-            const hal::Request& request, hal::MeasureTiming measure, bool preferSynchronous) const;
+            const hal::Request& request, hal::MeasureTiming measure,
+            const hal::OptionalTimePoint& deadline, bool preferSynchronous) const;
 
     /**
      * Creates a burst controller on a prepared model.
      *
-     * @param blocking 'true' if the FMQ should block until data is available.
+     * @param preferPowerOverLatency 'true' if the Burst object should run in a
+     *                               more power efficient mode, 'false' if more
+     *                               power can be used to possibly reduce
+     *                               burst compute latency.
      * @return ExecutionBurstController Execution burst controller object.
      *                                  nullptr is returned if the burst cannot
      *                                  be configured for any reason.
      */
-    std::shared_ptr<ExecutionBurstController> configureExecutionBurst(bool blocking) const;
+    std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
+            bool preferPowerOverLatency) const;
+
+    /**
+     * Launch a fenced asynchronous execution on a prepared model.
+     *
+     * The execution is performed asynchronously with respect to the caller.
+     * executeFenced must fully validate the request. If there is an error during validation,
+     * executeFenced must immediately return with the corresponding ErrorStatus. If the inputs
+     * to the function are valid and there is no error and there is no error launching,
+     * executeFenced must dispatch an asynchronous task to perform the execution in the
+     * background, and immediately return with ErrorStatus::NONE, a sync fence that will be
+     * signaled once the execution is completed, and a callback that can be used by the client
+     * to query the duration and runtime error status. If the task has finished
+     * before the call returns, empty handle may be returned for the syncFence. If the
+     * asynchronous task fails to launch, executeFenced must immediately return with
+     * ErrorStatus::GENERAL_FAILURE, an empty handle for the syncFence, and nullptr
+     * for callback. The execution must wait for all the sync fences (if any) in waitFor to be
+     * signaled before starting the actual execution.
+     *
+     * If any of sync fences in waitFor changes to error status after the executeFenced
+     * call succeeds, the driver must immediately set the returned syncFence to error status.
+     *
+     * When the asynchronous task has finished its execution, it must
+     * immediately signal the syncFence returned from executeFenced call. After
+     * the syncFence is signaled, the task must not modify the content of
+     * any data object referenced by 'request' (described by the
+     * {@link @1.0::DataLocation} of a {@link @1.0::RequestArgument}).
+     *
+     * executeFenced can be called with an optional deadline and an optional duration.
+     * If the execution is not able to completed before the provided deadline or within
+     * the timeout duration, whichever comes earlier, the
+     * execution must be aborted, and either {@link
+     * ErrorStatus::MISSED_DEADLINE_TRANSIENT} or {@link
+     * ErrorStatus::MISSED_DEADLINE_PERSISTENT} must be returned. The error due
+     * to an abort must be sent the same way as other errors, described above.
+     * If the service reports that it does not support execution deadlines via
+     * IDevice::supportsDeadlines, and executeFenced is called with a
+     * deadline, then the argument is invalid, and
+     * {@link ErrorStatus::INVALID_ARGUMENT} must be returned.
+     *
+     * Any number of calls to the executeFenced, execute* and executeSynchronously*
+     * functions, in any combination, may be made concurrently, even on the same
+     * IPreparedModel object.
+     *
+     * @param request The input and output information on which the prepared
+     *                model is to be executed.
+     * @param waitFor A vector of sync fence file descriptors. The execution must
+     *                wait for all sync fence to be signaled before starting the
+     *                task.
+     * @param measure Specifies whether or not to measure duration of the execution.
+     * @param deadline The time by which execution must complete. If the
+     *                 execution cannot be finished by the deadline, the
+     *                 execution must be aborted.
+     * @param timeoutDurationAfterFence The maximum timeout duration within which execution must
+     *                                  complete after all sync fences in waitFor are signaled.
+     * @return A tuple consisting of:
+     *         - Error code of the dispatch call.
+     *         - A sync_fence that will be triggered when the task is completed.
+     *           The sync_fence will be set to error if critical error occurs when doing
+     *           actual evaluation.
+     *         - A callback can be used to query information like duration
+     *           and detailed runtime error status when the task is completed.
+     *         - Optional timing information. Only useful if the call is simulated using
+     *           sync execution. Either IFencedExecutionCallback will be
+     *           returned or optional timing information is returned
+     */
+    std::tuple<int, hal::hidl_handle, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
+            const hal::Request& request, const hal::hidl_vec<hal::hidl_handle>& waitFor,
+            hal::MeasureTiming measure, const hal::OptionalTimePoint& deadline,
+            const hal::OptionalTimeoutDuration& timeoutDurationAfterFence);
 
    private:
+    friend class VersionedIDevice;
+
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeAsynchronously(
-            const hal::Request& request, hal::MeasureTiming timing) const;
+            const hal::Request& request, hal::MeasureTiming timing,
+            const hal::OptionalTimePoint& deadline) const;
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeSynchronously(
-            const hal::Request& request, hal::MeasureTiming measure) const;
+            const hal::Request& request, hal::MeasureTiming measure,
+            const hal::OptionalTimePoint& deadline) const;
+
+    /**
+     * Returns sp<V1_3::IPreparedModel> that is a downcast of the sp<V1_0::IPreparedModel>
+     * passed to the constructor.  This will be nullptr if that IPreparedModel is
+     * not actually of the specified downcast type.
+     */
+    sp<hal::V1_3::IPreparedModel> getV1_3() const { return mPreparedModelV1_3; }
 
     /**
      * All versions of IPreparedModel are necessary because the preparedModel could be v1.0,
@@ -706,21 +785,25 @@ class VersionedIPreparedModel {
      *
      * The general strategy is: HIDL returns a V1_0 prepared model object, which
      * (if not nullptr) could be v1.0, v1.2, or a greater version. The V1_0
-     * object is then "dynamically cast" to a V1_2 object. If successful,
-     * mPreparedModelV1_2 will point to the same object as mPreparedModelV1_0; otherwise,
-     * mPreparedModelV1_2 will be nullptr.
+     * object is then "dynamically cast" to objects of later versions. If successful,
+     * mPreparedModel* will point to the same object as mPreparedModelV1_0; otherwise,
+     * mPreparedModel* will be nullptr.
      *
      * In general:
-     * * If the prepared model is truly v1.0, mPreparedModelV1_0 will point to a valid object
-     *   and mPreparedModelV1_2 will be nullptr.
-     * * If the prepared model is truly v1.2 or later, both mPreparedModelV1_0 and
-     *   mPreparedModelV1_2 will point to the same valid object.
+     * * If the prepared model is truly v1.0, mPreparedModelV1_0 will point to a valid object,
+     *   both mPreparedModelV1_2 and mPreparedModelV1_3 will be nullptr.
+     * * If the prepared model is truly v1.2, both mPreparedModelV1_0 and mPreparedModelV1_2
+     *   will point to the same valid object, but mPreparedModelV1_3 will be nullptr.
+     * * If the prepared model is truly v1.3 or later, all of mPreparedModelV1_0,
+     *   mPreparedModelV1_2, and mPreparedModelV1_3 will point to the same valid object.
      *
-     * Idiomatic usage: if mPreparedModelV1_2 is non-null, do V1_2 dispatch; otherwise,
-     * do V1_0 dispatch.
+     * Idiomatic usage: if mPreparedModelV1_3 is non-null, do V1_3 dispatch;
+     *       otherwise, if mPreparedModelV1_2 is non-null, do V1_2 dispatch;
+     *       otherwise, do V1_0 dispatch.
      */
     sp<hal::V1_0::IPreparedModel> mPreparedModelV1_0;
     sp<hal::V1_2::IPreparedModel> mPreparedModelV1_2;
+    sp<hal::V1_3::IPreparedModel> mPreparedModelV1_3;
 
     /**
      * HIDL callback to be invoked if the service for mPreparedModelV1_0 crashes.

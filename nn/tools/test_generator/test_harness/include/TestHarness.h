@@ -23,11 +23,13 @@
 #ifndef ANDROID_FRAMEWORKS_ML_NN_TOOLS_TEST_GENERATOR_TEST_HARNESS_TEST_HARNESS_H
 #define ANDROID_FRAMEWORKS_ML_NN_TOOLS_TEST_GENERATOR_TEST_HARNESS_TEST_HARNESS_H
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <map>
 #include <memory>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -72,11 +74,17 @@ enum class TestOperandType {
 
 enum class TestOperandLifeTime {
     TEMPORARY_VARIABLE = 0,
-    MODEL_INPUT = 1,
-    MODEL_OUTPUT = 2,
+    SUBGRAPH_INPUT = 1,
+    SUBGRAPH_OUTPUT = 2,
     CONSTANT_COPY = 3,
     CONSTANT_REFERENCE = 4,
     NO_VALUE = 5,
+    // DEPRECATED. Use SUBGRAPH_INPUT.
+    // This value is used in pre-1.3 VTS tests.
+    MODEL_INPUT = SUBGRAPH_INPUT,
+    // DEPRECATED. Use SUBGRAPH_OUTPUT.
+    // This value is used in pre-1.3 VTS tests.
+    MODEL_OUTPUT = SUBGRAPH_OUTPUT,
 };
 
 enum class TestOperationType {
@@ -175,6 +183,13 @@ enum class TestOperationType {
     UNIDIRECTIONAL_SEQUENCE_LSTM = 92,
     UNIDIRECTIONAL_SEQUENCE_RNN = 93,
     RESIZE_NEAREST_NEIGHBOR = 94,
+    QUANTIZED_LSTM = 95,
+    IF = 96,
+    WHILE = 97,
+    ELU = 98,
+    HARD_SWISH = 99,
+    FILL = 100,
+    RANK = 101,
 };
 
 enum class TestHalVersion { UNKNOWN, V1_0, V1_1, V1_2, V1_3 };
@@ -205,6 +220,18 @@ class TestBuffer {
         return TestBuffer(vec.size() * sizeof(T), vec.data());
     }
 
+    // Factory method for creating a randomized buffer with "size" number of
+    // bytes.
+    template <typename T>
+    static TestBuffer createFromRng(size_t size, std::default_random_engine* gen) {
+        static_assert(kAlignment % sizeof(T) == 0);
+        TestBuffer testBuffer(size);
+        std::uniform_int_distribution<T> dist{};
+        const size_t adjustedSize = testBuffer.alignedSize() / sizeof(T);
+        std::generate_n(testBuffer.getMutable<T>(), adjustedSize, [&] { return dist(*gen); });
+        return testBuffer;
+    }
+
     template <typename T>
     const T* get() const {
         return reinterpret_cast<const T*>(mBuffer.get());
@@ -221,8 +248,8 @@ class TestBuffer {
     // Returns the byte size that is aligned to kAlignment.
     size_t alignedSize() const { return ((mSize + kAlignment - 1) / kAlignment) * kAlignment; }
 
-    bool operator==(nullptr_t) const { return mBuffer == nullptr; }
-    bool operator!=(nullptr_t) const { return mBuffer != nullptr; }
+    bool operator==(std::nullptr_t) const { return mBuffer == nullptr; }
+    bool operator!=(std::nullptr_t) const { return mBuffer != nullptr; }
 
    private:
     std::shared_ptr<void> mBuffer;
@@ -243,11 +270,11 @@ struct TestOperand {
     TestOperandLifeTime lifetime;
     TestSymmPerChannelQuantParams channelQuant;
 
-    // For MODEL_OUTPUT only. Set to true to skip the accuracy check on this operand.
+    // For SUBGRAPH_OUTPUT only. Set to true to skip the accuracy check on this operand.
     bool isIgnored = false;
 
-    // For CONSTANT_COPY/REFERENCE and MODEL_INPUT, this is the data set in model and request.
-    // For MODEL_OUTPUT, this is the expected results.
+    // For CONSTANT_COPY/REFERENCE and SUBGRAPH_INPUT, this is the data set in model and request.
+    // For SUBGRAPH_OUTPUT, this is the expected results.
     // For TEMPORARY_VARIABLE and NO_VALUE, this is nullptr.
     TestBuffer data;
 };
@@ -278,6 +305,65 @@ struct TestModel {
 
     // The minimum supported HAL version.
     TestHalVersion minSupportedVersion = TestHalVersion::UNKNOWN;
+
+    // Explicitly create a deep copy.
+    TestModel copy() const {
+        TestModel newTestModel(*this);
+        for (TestOperand& operand : newTestModel.operands) {
+            operand.data = operand.data.copy();
+        }
+        return newTestModel;
+    }
+
+    bool hasQuant8CoupledOperands() const {
+        for (const TestOperation& operation : operations) {
+            /*
+             *  There are several ops that are exceptions to the general quant8
+             *  types coupling:
+             *  HASHTABLE_LOOKUP -- due to legacy reasons uses
+             *    TENSOR_QUANT8_ASYMM tensor as if it was TENSOR_BOOL. It
+             *    doesn't make sense to have coupling in this case.
+             *  LSH_PROJECTION -- hashes an input tensor treating it as raw
+             *    bytes. We can't expect same results for coupled inputs.
+             *  PAD_V2 -- pad_value is set using int32 scalar, so coupling
+             *    produces a wrong result.
+             *  CAST -- converts tensors without taking into account input's
+             *    scale and zero point. Coupled models shouldn't produce same
+             *    results.
+             *  QUANTIZED_16BIT_LSTM -- the op is made for a specific use case,
+             *    supporting signed quantization is not worth the compications.
+             */
+            if (operation.type == TestOperationType::HASHTABLE_LOOKUP ||
+                operation.type == TestOperationType::LSH_PROJECTION ||
+                operation.type == TestOperationType::PAD_V2 ||
+                operation.type == TestOperationType::CAST ||
+                operation.type == TestOperationType::QUANTIZED_16BIT_LSTM) {
+                continue;
+            }
+            for (const auto operandIndex : operation.inputs) {
+                if (operands[operandIndex].type == TestOperandType::TENSOR_QUANT8_ASYMM) {
+                    return true;
+                }
+            }
+            for (const auto operandIndex : operation.outputs) {
+                if (operands[operandIndex].type == TestOperandType::TENSOR_QUANT8_ASYMM) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // RANK op returns a scalar and therefore shouldn't be tested for dynamic
+    // output shape support.
+    bool hasScalarOutputs() const {
+        for (const TestOperation& operation : operations) {
+            if (operation.type == TestOperationType::RANK) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 // Manages all generated test models.
@@ -320,6 +406,8 @@ class TestModelManager {
 // GTEST_ASSERT/EXPECT. The index of the results corresponds to the index in model.outputIndexes.
 // E.g., results[i] corresponds to model.outputIndexes[i].
 void checkResults(const TestModel& model, const std::vector<TestBuffer>& results);
+
+TestModel convertQuant8AsymmOperandsToSigned(const TestModel& testModel);
 
 }  // namespace test_helper
 

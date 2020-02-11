@@ -19,6 +19,7 @@
 
 #include <atomic>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "Callbacks.h"
@@ -61,6 +62,13 @@ class ExecutionBuilder {
 
     int getDuration(int32_t durationCode, uint64_t* duration) const;
 
+    int setTimeoutDuration(uint64_t duration);
+
+    std::optional<uint64_t> getTimeoutDuration() const;
+
+    int computeFenced(const std::vector<int>& wait_for, uint64_t timeoutDurationAfterFence,
+                      int* sync_fence);
+
     int computeAsynchronously(sp<ExecutionCallback>* synchronizationCallback) {
         CHECK(synchronizationCallback != nullptr);
         return compute(synchronizationCallback);
@@ -69,7 +77,7 @@ class ExecutionBuilder {
     int burstCompute(BurstBuilder* burst) { return compute(nullptr, burst); }
 
     // Initialize output dimensional information from ModelArgumentInfo.
-    void initializeOutputShapes(std::vector<hal::OutputShape>* outputShapes) const;
+    std::vector<hal::OutputShape> getInitialOutputShapes() const;
 
     int getOutputOperandDimensions(uint32_t index, uint32_t* dimensions);
     int getOutputOperandRank(uint32_t index, uint32_t* rank);
@@ -83,6 +91,11 @@ class ExecutionBuilder {
 
     hal::ErrorStatus finish(hal::ErrorStatus error,
                             const std::vector<hal::OutputShape>& outputShapes);
+
+    // Retrieve a reference to the IFencedExecutionCallback callback.
+    const sp<hal::IFencedExecutionCallback>& getFencedExecutionCallback() {
+        return mFencedExecutionCallback;
+    }
 
     bool inFlight() const { return mStarted && !mFinished; }
 
@@ -101,6 +114,10 @@ class ExecutionBuilder {
 
     // Update output dimensional information from OutputShape to ModelArgumentInfo.
     bool updateOutputShapes(const std::vector<hal::OutputShape>& outputShapes);
+
+    bool updateMemories();
+
+    bool hasSyncFence() const { return mSyncFenceFd > 0; }
 
     const ModelBuilder* mModel;
     const ExecutionPlan* mPlan;
@@ -129,12 +146,21 @@ class ExecutionBuilder {
     // Timing reported from the driver
     hal::Timing mTiming = {};
 
+    // Amount of time to complete or abort the execution.
+    std::optional<uint64_t> mTimeoutDuration;
+
     // Properties cannot be set once the execution has started.
     std::atomic_bool mStarted = false;
 
     // Timing and output shapes can only be queried after the execution is
     // finished.
     std::atomic_bool mFinished = false;
+
+    // The sync fence fd that is created in the computeFenced call.
+    int mSyncFenceFd = -1;
+
+    // The callback used to query execution related info
+    sp<hal::IFencedExecutionCallback> mFencedExecutionCallback;
 };
 
 // class StepExecutor is used to execute a single "step" in a
@@ -146,8 +172,8 @@ class StepExecutor {
     // executionBuilder
     //     Describes the full (possibly multiple-"step") execution.
     // model
-    //     The model to be executed by the executor.  Possibly a
-    //     submodel of the model from executionBuilder.
+    //     The model to be executed by the executor.  Possibly a single
+    //     "step" model of a multiple-"step" executionBuilder.
     // driver, preparedModel
     //     The device on which to execute the "step", and the prepared
     //     model to execute on that device.  (Both are nullptr in the
@@ -160,7 +186,7 @@ class StepExecutor {
     // is executing the entire model from the ExecutionBuilder).
     void mapInputsAndOutputsTrivially();
 
-    // Update output shapes returned from ExecutionCallback to ExecutionBuilder.
+    // Update output shapes with shapes returned from execution.
     bool updateOutputShapes(const std::vector<hal::OutputShape>& from,
                             std::vector<hal::OutputShape>* to);
 
@@ -189,12 +215,12 @@ class StepExecutor {
     }
 
     // Executes using the (driver, preparedModel) specified at construction time.
-    int startCompute(sp<ExecutionCallback>* synchronizationCallback,
-                     const std::shared_ptr<ExecutionBurstController>& burstController = nullptr);
+    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> compute(
+            const std::shared_ptr<ExecutionBurstController>& burstController = nullptr);
 
     // Re-compiles and executes using the CPU, regardless of the (driver,
     // preparedModel) specified at construction time.
-    int startComputeOnCpuFallback(sp<ExecutionCallback>* synchronizationCallback);
+    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> computeOnCpuFallback();
 
     bool isCpu() const;
 
@@ -202,6 +228,11 @@ class StepExecutor {
     void setExecutionStep(const std::shared_ptr<const ExecutionStep>& step) {
         mExecutionStep = step;
     }
+
+    // Perform fenced execution and return error_code, sync_fence_fd and a
+    // callback.
+    std::tuple<int, int, sp<hal::IFencedExecutionCallback>> computeFenced(
+            const std::vector<int>& wait_for, uint64_t timeoutDurationAfterFence);
 
    private:
     void mapInputOrOutput(const ModelArgumentInfo& builderInputOrOutput,
