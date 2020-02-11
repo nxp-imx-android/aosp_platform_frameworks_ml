@@ -18,12 +18,16 @@
 
 #include "ExecutionBuilder.h"
 
+#include <android/sync.h>
+
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -138,13 +142,17 @@ int ExecutionBuilder::setInputFromMemory(uint32_t index, const ANeuralNetworksOp
                             "ANeuralNetworksExecution_setInputFromMemory", false)) {
         return ANEURALNETWORKS_BAD_DATA;
     }
-    // Both offset & length must be zero for Non-BLOB format AHardwareBuffer.
-    if (memory->getHidlMemory().name() == "hardware_buffer" && (offset != 0 || length != 0)) {
-        LOG(ERROR) << "ANeuralNetworksExecution_setInputFromMemory has non-zero offset and length"
-                   << " for Non-BLOB format AHardwareBuffer.";
+    if (!memory->getValidator().validate(mCompilation, IOType::INPUT, index, type, offset,
+                                         length)) {
         return ANEURALNETWORKS_BAD_DATA;
-    } else if (!memory->validateSize(offset, length)) {
-        return ANEURALNETWORKS_BAD_DATA;
+    }
+    // For some types of memory, e.g. MemoryAshmem allocated from ANNMemory_createFromDesc, we
+    // allow the client to specify offset == 0 && length == 0 indicating that the entire memory
+    // region is used. We update the length here because the drivers are still expecting a real
+    // length. For other memories that do not allow this semantic, it is checked in
+    // MemoryValidatorBase::validate before reaching here.
+    if (memory->getHidlMemory().valid() && offset == 0 && length == 0) {
+        length = memory->getHidlMemory().size();
     }
     // TODO validate the rest
     uint32_t poolIndex = mMemories.add(memory);
@@ -195,13 +203,17 @@ int ExecutionBuilder::setOutputFromMemory(uint32_t index, const ANeuralNetworksO
                             "ANeuralNetworksExecution_setOutputFromMemory", true)) {
         return ANEURALNETWORKS_BAD_DATA;
     }
-    // Both offset & length must be zero for Non-BLOB format AHardwareBuffer.
-    if (memory->getHidlMemory().name() == "hardware_buffer" && (offset != 0 || length != 0)) {
-        LOG(ERROR) << "ANeuralNetworksExecution_setOutputFromMemory has non-zero offset and length"
-                   << " for Non-BLOB format AHardwareBuffer.";
+    if (!memory->getValidator().validate(mCompilation, IOType::OUTPUT, index, type, offset,
+                                         length)) {
         return ANEURALNETWORKS_BAD_DATA;
-    } else if (!memory->validateSize(offset, length)) {
-        return ANEURALNETWORKS_BAD_DATA;
+    }
+    // For some types of memory, e.g. MemoryAshmem allocated from ANNMemory_createFromDesc, we
+    // allow the client to specify offset == 0 && length == 0 indicating that the entire memory
+    // region is used. We update the length here because the drivers are still expecting a real
+    // length. For other memories that do not allow this semantic, it is checked in
+    // MemoryValidatorBase::validate before reaching here.
+    if (memory->getHidlMemory().valid() && offset == 0 && length == 0) {
+        length = memory->getHidlMemory().size();
     }
     // TODO validate the rest
     uint32_t poolIndex = mMemories.add(memory);
@@ -227,9 +239,17 @@ int ExecutionBuilder::setMeasureTiming(bool measure) {
 }
 
 int ExecutionBuilder::getDuration(int32_t durationCode, uint64_t* duration) const {
-    if (!mFinished) {
+    if (!mFinished && !hasSyncFence()) {
         LOG(ERROR) << "ANeuralNetworksExecution_getDuration called before the "
                       "execution has finished.";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    // If the sync fence is valid, perform a non-blocking status check on the sync fence status.
+    // TODO(miaowang): consider using a utility method to wait on the sync fence
+    // and distinguish the not-finished status and error state.
+    if (hasSyncFence() && sync_wait(mSyncFenceFd, 0) < 0) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getDuration called before the "
+                      "execution has finished, or the execution has encountered an error.";
         return ANEURALNETWORKS_BAD_STATE;
     }
 
@@ -241,13 +261,42 @@ int ExecutionBuilder::getDuration(int32_t durationCode, uint64_t* duration) cons
         return ANEURALNETWORKS_BAD_STATE;
     }
 
+    // Timing might be reported through other compute method.
+    // Only query the fenced callback if it is available, and we are not
+    // updating mTiming to keep this method const.
+    Timing timingLaunched = mTiming;
+    Timing timingFenced = kNoTiming;
+    if (mFencedExecutionCallback != nullptr) {
+        ErrorStatus status;
+        const Return<void> ret = mFencedExecutionCallback->getExecutionInfo(
+                [&status, &timingLaunched, &timingFenced](ErrorStatus error, Timing tLaunched,
+                                                          Timing tFenced) {
+                    status = error;
+                    timingLaunched = tLaunched;
+                    timingFenced = tFenced;
+                });
+        if (!ret.isOk()) {
+            *duration = UINT64_MAX;
+            return ANEURALNETWORKS_OP_FAILED;
+        }
+        if (status != ErrorStatus::NONE) {
+            *duration = UINT64_MAX;
+            return ANEURALNETWORKS_BAD_STATE;
+        }
+    }
     uint64_t microDuration = UINT64_MAX;
     switch (durationCode) {
         case ANEURALNETWORKS_DURATION_ON_HARDWARE:
-            microDuration = mTiming.timeOnDevice;
+            microDuration = timingLaunched.timeOnDevice;
             break;
         case ANEURALNETWORKS_DURATION_IN_DRIVER:
-            microDuration = mTiming.timeInDriver;
+            microDuration = timingLaunched.timeInDriver;
+            break;
+        case ANEURALNETWORKS_FENCED_DURATION_ON_HARDWARE:
+            microDuration = timingFenced.timeOnDevice;
+            break;
+        case ANEURALNETWORKS_FENCED_DURATION_IN_DRIVER:
+            microDuration = timingFenced.timeInDriver;
             break;
         default:
             CHECK(!"unexpected");
@@ -258,12 +307,47 @@ int ExecutionBuilder::getDuration(int32_t durationCode, uint64_t* duration) cons
     return ANEURALNETWORKS_NO_ERROR;
 }
 
+int ExecutionBuilder::setTimeoutDuration(uint64_t duration) {
+    if (!mCompilation->mExplicitDeviceList || (mCompilation->mDevices.size() != 1)) {
+        LOG(ERROR) << "ANeuralNetworksExecution_setTimeout called on an ANeuralNetworksExecution "
+                      "created from an ANeuralNetworksCompilation that was not created by "
+                      "ANeuralNetworksCompilation_createForDevices with numDevices = 1";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    const auto& device = mCompilation->mDevices.front();
+    const bool supportsExecutionDeadline = device->supportsDeadlines().second;
+    if (!supportsExecutionDeadline) {
+        LOG(ERROR) << "ANeuralNetworksExecution_setTimeout called on device that does not support "
+                      "execution timeouts.";
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    if (mStarted) {
+        LOG(ERROR) << "ANeuralNetworksExecution_setTimeout called after the execution has started.";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    mTimeoutDuration = duration;
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+std::optional<uint64_t> ExecutionBuilder::getTimeoutDuration() const {
+    return mTimeoutDuration;
+}
+
 int ExecutionBuilder::getOutputOperandDimensions(uint32_t index, uint32_t* dimensions) {
-    if (!mFinished) {
+    if (!mFinished && !hasSyncFence()) {
         LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandDimensions called before the "
                       "execution has finished.";
         return ANEURALNETWORKS_BAD_STATE;
     }
+    // If the sync fence is valid, perform a non-blocking status check on the sync fence status.
+    // TODO(miaowang): consider using a utility method to wait on the sync fence
+    // and distinguish the not-finished status and error state.
+    if (hasSyncFence() && sync_wait(mSyncFenceFd, 0) < 0) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandDimensions called before the "
+                      "execution has finished, or the execution has encountered an error.";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+
     uint32_t count = static_cast<uint32_t>(mOutputs.size());
     if (index >= count) {
         LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandDimensions bad index " << index
@@ -282,9 +366,17 @@ int ExecutionBuilder::getOutputOperandDimensions(uint32_t index, uint32_t* dimen
 }
 
 int ExecutionBuilder::getOutputOperandRank(uint32_t index, uint32_t* rank) {
-    if (!mFinished) {
+    if (!mFinished && !hasSyncFence()) {
         LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandRank called before the "
                       "execution has finished.";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    // If the sync fence is valid, perform a non-blocking status check on the sync fence status.
+    // TODO(miaowang): consider using a utility method to wait on the sync fence
+    // and distinguish the not-finished status and error state.
+    if (hasSyncFence() && sync_wait(mSyncFenceFd, 0) < 0) {
+        LOG(ERROR) << "ANeuralNetworksExecution_getOutputOperandRank called before the "
+                      "execution has finished, or the execution has encountered an error.";
         return ANEURALNETWORKS_BAD_STATE;
     }
     uint32_t count = static_cast<uint32_t>(mOutputs.size());
@@ -299,162 +391,328 @@ int ExecutionBuilder::getOutputOperandRank(uint32_t index, uint32_t* rank) {
 }
 
 // Attempt synchronous execution of full model on CPU.
-// Ensure that executionCallback->notify() is called.
 // TODO: How should we handle timing in this case?
 //       For Q this is irrelevant: We only support timing in conjunction
 //         with an explicit device list; and we do not support CPU fallback
 //         with an explicit device list.  See CompilationBuilder::mExplicitDeviceList.
-static void cpuFallbackFull(ExecutionBuilder* executionBuilder,
-                            const sp<ExecutionCallback>& executionCallback) {
+static std::tuple<int, std::vector<OutputShape>, Timing> cpuFallbackFull(
+        ExecutionBuilder* executionBuilder) {
     CHECK(executionBuilder != nullptr);
-    CHECK(executionCallback != nullptr);
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "cpuFallbackFull");
     VLOG(EXECUTION) << "cpuFallbackFull";
+
+    // Get fallback executor.
     StepExecutor executor(executionBuilder, executionBuilder->getModel(),
                           DeviceManager::getCpuDevice(), /*preparedModel=*/nullptr);
     executor.mapInputsAndOutputsTrivially();
-    sp<ExecutionCallback> fallbackCallback;
-    int n = executor.startComputeOnCpuFallback(&fallbackCallback);
-    if (n != ANEURALNETWORKS_NO_ERROR) {
-        executionCallback->notify(convertResultCodeToErrorStatus(n), {}, kNoTiming);
-        return;
-    }
-    fallbackCallback->wait();
-    executionCallback->notify(fallbackCallback->getStatus(), fallbackCallback->getOutputShapes(),
-                              fallbackCallback->getTiming());
+
+    // Attempt fallback execution.
+    return executor.computeOnCpuFallback();
 }
 
 // Attempt synchronous execution on CPU.
-// (1) First, attempt to execute this step on CPU.  If successful,
-//     return true.  (Do not call executionCallback->notify().)
-// (2) If unsuccessful, and the ExecutionPlan is compound, attempt to execute the
-//     full model on CPU, ensure that executionCallback->notify() is called, and return
-//     false.
 // TODO: How should we handle timing in this case?
 //       For Q this is irrelevant: We only support timing in conjunction
 //         with an explicit device list; and we do not support CPU fallback
 //         with an explicit device list.  See CompilationBuilder::mExplicitDeviceList.
-static bool cpuFallbackPartial(ExecutionBuilder* executionBuilder, const ExecutionPlan* plan,
-                               std::shared_ptr<ExecutionPlan::Controller> controller,
-                               const sp<ExecutionCallback>& executionCallback,
-                               std::vector<OutputShape>* outputShapes) {
-    CHECK(executionBuilder != nullptr);
-    CHECK(plan != nullptr);
-    CHECK(executionCallback != nullptr);
-    CHECK(outputShapes != nullptr);
+static std::tuple<int, std::vector<OutputShape>, Timing, std::shared_ptr<StepExecutor>>
+cpuFallbackPartial(const ExecutionPlan& plan,
+                   std::shared_ptr<ExecutionPlan::Controller> controller) {
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "cpuFallbackPartial");
     VLOG(EXECUTION) << "cpuFallbackPartial";
+
+    // Get fallback executor.
     std::shared_ptr<StepExecutor> executor;
-    int n = plan->fallback(controller, &executor);
-    if (n != ANEURALNETWORKS_NO_ERROR || executor->isCpu()) {
-        cpuFallbackFull(executionBuilder, executionCallback);
-        return false;
+    int n1 = plan.fallback(controller, &executor);
+    if (n1 != ANEURALNETWORKS_NO_ERROR) {
+        return {n1, {}, kNoTiming, nullptr};
     }
-    sp<ExecutionCallback> fallbackCallback;
-    if (executor->startComputeOnCpuFallback(&fallbackCallback) != ANEURALNETWORKS_NO_ERROR) {
-        cpuFallbackFull(executionBuilder, executionCallback);
-        return false;
-    }
-    fallbackCallback->wait();
-    ErrorStatus status = fallbackCallback->getStatus();
-    const auto& stepOutputShapes = fallbackCallback->getOutputShapes();
-    if (!executor->updateOutputShapes(stepOutputShapes, outputShapes)) {
-        status = ErrorStatus::GENERAL_FAILURE;
-    }
-    if (status != ErrorStatus::NONE) {
-        // Do not fallback twice if the ExecutionPlan is simple.
-        // OUTPUT_INSUFFICIENT_SIZE is not recoverable
-        if (plan->isSimple() || status == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
-            executionCallback->notify(status, *outputShapes, kNoTiming);
-        } else {
-            cpuFallbackFull(executionBuilder, executionCallback);
-        }
-        return false;
-    }
-    return true;
+    CHECK(executor != nullptr);
+
+    // Attempt fallback execution.
+    auto [n2, outputShapes, timing] = executor->computeOnCpuFallback();
+    return {n2, std::move(outputShapes), timing, executor};
 }
 
 static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
-                                         const ExecutionPlan* plan,
+                                         const ExecutionPlan& plan,
                                          std::shared_ptr<ExecutionPlan::Controller> controller,
                                          bool allowFallback,
                                          const sp<ExecutionCallback>& executionCallback) {
     CHECK(executionBuilder != nullptr);
-    CHECK(plan != nullptr);
     VLOG(EXECUTION) << "ExecutionBuilder::compute (from plan, iteratively)";
-    std::vector<OutputShape> outputShapes;
+
+    std::vector<OutputShape> outputShapes = executionBuilder->getInitialOutputShapes();
     Timing timing = kNoTiming;
     // Disallow fallback when the ExecutionPlan is simple on CPU.
-    allowFallback &= !plan->isSimpleCpu();
-    executionBuilder->initializeOutputShapes(&outputShapes);
+    allowFallback &= !plan.isSimpleCpu();
+
     while (true) {
-        std::shared_ptr<StepExecutor> executor;
         VLOG(EXECUTION) << "looking for next StepExecutor";
-        std::shared_ptr<ExecutionBurstController> burstController = nullptr;
-        int n = plan->next(controller, &executor, &burstController);
+
+        // Get the current step of the execution.
+        std::shared_ptr<StepExecutor> executor;
+        std::shared_ptr<ExecutionBurstController> burstController;
+        int n = plan.next(controller, &executor, &burstController);
         if (n != ANEURALNETWORKS_NO_ERROR) {
-            if (allowFallback) {
-                cpuFallbackFull(executionBuilder, executionCallback);
-            } else {
-                executionCallback->notify(convertResultCodeToErrorStatus(n), {}, kNoTiming);
-            }
+            if (allowFallback) break;
+            executionCallback->notify(convertResultCodeToErrorStatus(n), {}, kNoTiming);
             return;
         }
+
+        // If the code reached the end of the plan without error, then return
+        // with no error.
         if (executor == nullptr) {
             executionCallback->notify(ErrorStatus::NONE, outputShapes, timing);
             return;
         }
+        const bool executorIsCpu = executor->isCpu();
 
-        sp<ExecutionCallback> stepCallback;
-        n = executor->startCompute(&stepCallback, burstController);
-        if (n != ANEURALNETWORKS_NO_ERROR) {
-            if (allowFallback) {
-                if (cpuFallbackPartial(executionBuilder, plan, controller, executionCallback,
-                                       &outputShapes)) {
-                    // Successfully executed one step on CPU.
-                    continue;
-                } else {
-                    // Either successfully executed entire plan on
-                    // CPU, or tried and failed to do so.
-                    return;
-                }
-            } else {
-                executionCallback->notify(convertResultCodeToErrorStatus(n), {}, kNoTiming);
-                return;
-            }
-        }
-        stepCallback->wait();
-        ErrorStatus status = stepCallback->getStatus();
-        const auto& stepOutputShapes = stepCallback->getOutputShapes();
+        // Attempt to execute a single step of the execution.
+        auto [stepN, stepOutputShapes, stepTiming] = executor->compute(burstController);
+
+        // Update global outputs.
         if (!executor->updateOutputShapes(stepOutputShapes, &outputShapes)) {
-            status = ErrorStatus::GENERAL_FAILURE;
+            stepN = ANEURALNETWORKS_OP_FAILED;
         }
-        if (status == ErrorStatus::NONE) {
+
+        // If execution was successful, continue to next step.
+        if (stepN == ANEURALNETWORKS_NO_ERROR) {
             // We only support collection of timing information in the case of a
             // single step, so it's safe to just keep track of the last step's
             // timing information.
-            timing = stepCallback->getTiming();
-        } else {
-            // OUTPUT_INSUFFICIENT_SIZE is not recoverable
-            if (allowFallback && status != ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
-                if (cpuFallbackPartial(executionBuilder, plan, controller, executionCallback,
-                                       &outputShapes)) {
-                    // Successfully executed one step on CPU.
-                    continue;
-                } else {
-                    // Either successfully executed entire plan on
-                    // CPU, or tried and failed to do so.
-                    return;
-                }
-            } else if (status == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
-                executionCallback->notify(status, outputShapes, kNoTiming);
-                return;
-            } else {
-                executionCallback->notify(status, {}, kNoTiming);
-                return;
+            timing = stepTiming;
+            continue;
+        }
+
+        // OUTPUT_INSUFFICIENT_SIZE is not recoverable, so end execution.
+        if (stepN == ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE) {
+            const ErrorStatus stepStatus = convertResultCodeToErrorStatus(stepN);
+            executionCallback->notify(stepStatus, outputShapes, kNoTiming);
+            return;
+        }
+
+        // If fallback is not allowed and there was an error, end execution.
+        if (!allowFallback) {
+            const ErrorStatus stepStatus = convertResultCodeToErrorStatus(stepN);
+            executionCallback->notify(stepStatus, {}, kNoTiming);
+            return;
+        }
+
+        // If CPU execution was already attempted, either:
+        // (1) perform a full fallback if the plan is not simple, or
+        // (2) return from the function with an error
+        if (executorIsCpu) {
+            if (!plan.isSimple()) break;
+            executionCallback->notify(convertResultCodeToErrorStatus(stepN), {}, kNoTiming);
+            return;
+        }
+
+        // If the code reaches this point, attempt a partial fallback to CPU.
+        CHECK(allowFallback);
+        auto [fallbackN, fallbackOutputShapes, fallbackTiming, fallbackExecutor] =
+                cpuFallbackPartial(plan, controller);
+
+        // Update global outputs.
+        if (fallbackExecutor != nullptr &&
+            !fallbackExecutor->updateOutputShapes(fallbackOutputShapes, &outputShapes)) {
+            fallbackN = ANEURALNETWORKS_OP_FAILED;
+        }
+
+        // If execution was successful, continue to next step.
+        if (fallbackN == ANEURALNETWORKS_NO_ERROR) {
+            // We only support collection of timing information in the case of a
+            // single step, so it's safe to just keep track of the last step's
+            // timing information.
+            timing = fallbackTiming;
+            continue;
+        }
+
+        // OUTPUT_INSUFFICIENT_SIZE is not recoverable, so end execution.
+        if (fallbackN == ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE) {
+            const ErrorStatus fallbackStatus = convertResultCodeToErrorStatus(fallbackN);
+            executionCallback->notify(fallbackStatus, outputShapes, kNoTiming);
+            return;
+        }
+
+        // Do not fallback twice if the ExecutionPlan is simple.
+        if (plan.isSimple()) {
+            const ErrorStatus fallbackStatus = convertResultCodeToErrorStatus(fallbackN);
+            executionCallback->notify(fallbackStatus, {}, kNoTiming);
+            return;
+        }
+
+        // If the code reaches this point, then there was an error with the
+        // fallback. In this case, attempt full fallback.
+        break;
+    }
+
+    // If the code has reached this point, a potentially recoverable error
+    // occurred during the step executions. Instead, do a full execution
+    // fallback on the CPU.
+    auto [fullN, fullOutputShapes, fullTiming] = cpuFallbackFull(executionBuilder);
+    const ErrorStatus fullStatus = convertResultCodeToErrorStatus(fullN);
+    executionCallback->notify(fullStatus, fullOutputShapes, fullTiming);
+}
+
+// In case of partitioned execution, startComputeFenced call will return the sync
+// fence and the fenced compute callback returned from the last partition.
+// Any failed partition will result in the whole execution fallback to CPU if
+// allowFallback is set to true.
+static std::tuple<int, int, sp<hal::IFencedExecutionCallback>> startComputeFenced(
+        ExecutionBuilder* executionBuilder, const ExecutionPlan& plan,
+        std::shared_ptr<ExecutionPlan::Controller> controller, const std::vector<int>& waitFor,
+        uint64_t timeoutDurationAfterFence, bool allowFallback) {
+    CHECK(executionBuilder != nullptr);
+    VLOG(EXECUTION) << "ExecutionBuilder::computeFenced (from plan, iteratively)";
+    // Disallow fallback when the ExecutionPlan is simple on CPU.
+    allowFallback &= !plan.isSimpleCpu();
+
+    // Initiate waitForFds, syncFence for the first step.
+    std::vector<int> waitForFds = waitFor;
+    int syncFence = -1;
+    sp<hal::IFencedExecutionCallback> computeFencedCallback;
+
+    while (true) {
+        VLOG(EXECUTION) << "looking for next StepExecutor";
+
+        // Get the current step of the execution.
+        std::shared_ptr<StepExecutor> executor;
+        std::shared_ptr<ExecutionBurstController> burstController;
+        int n = plan.next(controller, &executor, &burstController);
+        if (n != ANEURALNETWORKS_NO_ERROR) {
+            if (allowFallback) break;
+            // Return -1 for the sync fence fd, and nullptr for the callback.
+            return std::make_tuple(n, -1, nullptr);
+        }
+
+        // If the code reached the end of the plan without error, then return
+        // with no error.
+        if (executor == nullptr) {
+            // If the final step returns a -1 for sync fence, the execution is finished.
+            // Update the output shapes.
+            if (syncFence == -1) {
+                // TODO(miaowang): support dynamic output shape only with memory domain.
+                // For now just return the initial output shapes.
+                executionBuilder->finish(ErrorStatus::NONE,
+                                         executionBuilder->getInitialOutputShapes());
+            }
+            return std::make_tuple(ANEURALNETWORKS_NO_ERROR, syncFence, computeFencedCallback);
+        }
+        const bool executorIsCpu = executor->isCpu();
+
+        // Attempt to execute a single step of the execution.
+        auto [stepN, syncFd, callback] =
+                executor->computeFenced(waitForFds, timeoutDurationAfterFence);
+
+        // Update waitForFds, syncFence for the next step.
+        syncFence = syncFd;
+        computeFencedCallback = callback;
+        waitForFds.clear();
+        if (syncFd > 0) {
+            waitForFds = {syncFd};
+        }
+
+        // If execution was successful, continue to next step.
+        if (stepN == ANEURALNETWORKS_NO_ERROR) {
+            continue;
+        }
+        // If fallback is not allowed and there was an error, end execution.
+        if (!allowFallback) {
+            return std::make_tuple(stepN, -1, nullptr);
+        }
+
+        // If CPU execution was already attempted, either:
+        // (1) perform a full fallback if the plan is not simple, or
+        // (2) return from the function with an error
+        if (executorIsCpu) {
+            if (!plan.isSimple()) break;
+            return std::make_tuple(stepN, -1, nullptr);
+        }
+        // If the code reaches this point, then there was an error with the
+        // fallback. In this case, attempt full fallback.
+        break;
+    }
+
+    // If the code has reached this point, a potentially recoverable error
+    // occurred during the step executions. Instead, do a full execution
+    // fallback on the CPU.
+    VLOG(EXECUTION) << "Performing full fallback on the CPU.";
+    for (int syncFd : waitFor) {
+        if (syncFd > 0) {
+            int r = sync_wait(syncFd, -1);
+            if (r < 0) {
+                VLOG(EXECUTION) << "sync_wait failed, fd: " << syncFd;
+                return std::make_tuple(ANEURALNETWORKS_OP_FAILED, -1, nullptr);
             }
         }
     }
+    auto [fullN, fullOutputShapes, fullTiming] = cpuFallbackFull(executionBuilder);
+    const ErrorStatus fullStatus = convertResultCodeToErrorStatus(fullN);
+    syncFence = -1;
+    executionBuilder->finish(fullStatus, fullOutputShapes);
+    executionBuilder->reportTiming(fullTiming);
+    return std::make_tuple(fullN, syncFence, nullptr);
+}
+
+int ExecutionBuilder::computeFenced(const std::vector<int>& waitFor,
+                                    uint64_t timeoutDurationAfterFence, int* syncFence) {
+    CHECK(syncFence != nullptr);
+    if (mStarted) {
+        LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies"
+                      " called on an execution that has already started";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (timeoutDurationAfterFence > 0) {
+        if (!mCompilation->mExplicitDeviceList || (mCompilation->mDevices.size() != 1)) {
+            LOG(ERROR)
+                    << "ANeuralNetworksExecution_startComputeWithDependencies called with non-zero "
+                       "duration on an ANeuralNetworksExecution "
+                       "created from an ANeuralNetworksCompilation that was not created by "
+                       "ANeuralNetworksCompilation_createForDevices with numDevices = 1";
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+        const auto& device = mCompilation->mDevices.front();
+        const bool supportsExecutionDeadline = device->supportsDeadlines().second;
+        if (!supportsExecutionDeadline) {
+            LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies called with "
+                          "non-zero duration on device that does not support "
+                          "execution timeouts.";
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+    }
+    for (auto& p : mInputs) {
+        if (p.state == ModelArgumentInfo::UNSPECIFIED) {
+            LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies"
+                          " not all inputs specified";
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+    }
+    for (auto& p : mOutputs) {
+        if (p.state == ModelArgumentInfo::UNSPECIFIED) {
+            LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies"
+                          " not all outputs specified";
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+    }
+    for (uint32_t i = 0; i < mOutputs.size(); i++) {
+        if (mOutputs[i].state != ModelArgumentInfo::HAS_NO_VALUE &&
+            !checkDimensionInfo(mModel->getOutputOperand(i), nullptr,
+                                "ANeuralNetworksExecution_startComputeWithDependencies", false)) {
+            LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies"
+                          " not all outputs have fully specified dimensions";
+            return ANEURALNETWORKS_BAD_DATA;
+        }
+    }
+    mStarted = true;
+    const bool allowFallback = DeviceManager::partitioningAllowsFallback(mPartitioning);
+    std::shared_ptr<ExecutionPlan::Controller> controller = mPlan->makeController(this, nullptr);
+    VLOG(EXECUTION) << "ExecutionBuilder::computeFenced";
+    int result;
+    std::tie(result, mSyncFenceFd, mFencedExecutionCallback) = startComputeFenced(
+            this, *mPlan, controller, waitFor, timeoutDurationAfterFence, allowFallback);
+    *syncFence = mSyncFenceFd;
+    return result;
 }
 
 int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
@@ -483,6 +741,11 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         if (p.state == ModelArgumentInfo::UNSPECIFIED) {
             LOG(ERROR) << "ANeuralNetworksExecution_" << name() << " not all inputs specified";
             return ANEURALNETWORKS_BAD_DATA;
+        } else if (p.state == ModelArgumentInfo::MEMORY) {
+            const Memory* memory = mMemories[p.locationAndLength.poolIndex];
+            if (!memory->getValidator().validateInputDimensions(p.dimensions)) {
+                return ANEURALNETWORKS_OP_FAILED;
+            }
         }
     }
     for (auto& p : mOutputs) {
@@ -507,7 +770,7 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         VLOG(EXECUTION) << "ExecutionBuilder::compute (synchronous API)";
         sp<ExecutionCallback> localSynchronizationCallback = new ExecutionCallback();
         localSynchronizationCallback->setOnFinish(wrappedFinish);
-        asyncStartComputePartitioned(this, mPlan, controller, allowFallback,
+        asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
                                      localSynchronizationCallback);
         localSynchronizationCallback->wait();
         if (mMeasureTiming) {
@@ -528,24 +791,28 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         executionCallback->setOnFinish(wrappedFinish);
         if (DeviceManager::get()->syncExecRuntime()) {
             VLOG(EXECUTION) << "ExecutionBuilder::compute (asynchronous API, non-threaded)";
-            asyncStartComputePartitioned(this, mPlan, controller, allowFallback, executionCallback);
+            asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
+                                         executionCallback);
         } else {
             VLOG(EXECUTION) << "ExecutionBuilder::compute (asynchronous API)";
-            std::thread thread(asyncStartComputePartitioned, this, mPlan, controller, allowFallback,
-                               executionCallback);
-            executionCallback->bindThread(std::move(thread));
+            std::thread asyncExecution([this, controller, allowFallback, executionCallback] {
+                asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
+                                             executionCallback);
+            });
+            executionCallback->bindThread(std::move(asyncExecution));
         }
         *synchronizationCallback = executionCallback;
         return ANEURALNETWORKS_NO_ERROR;
     }
 }
 
-void ExecutionBuilder::initializeOutputShapes(std::vector<OutputShape>* outputShapes) const {
-    outputShapes->resize(mOutputs.size());
-    for (uint32_t i = 0; i < mOutputs.size(); i++) {
-        (*outputShapes)[i].dimensions = mOutputs[i].dimensions;
-        (*outputShapes)[i].isSufficient = true;
-    }
+std::vector<OutputShape> ExecutionBuilder::getInitialOutputShapes() const {
+    std::vector<OutputShape> outputShapes(mOutputs.size());
+    std::transform(mOutputs.begin(), mOutputs.end(), outputShapes.begin(),
+                   [](const auto& x) -> OutputShape {
+                       return {.dimensions = x.dimensions, .isSufficient = true};
+                   });
+    return outputShapes;
 }
 
 // Check if the dimensions "to" is updatable by dimensions "from", where "from" must
@@ -575,13 +842,29 @@ bool ExecutionBuilder::updateOutputShapes(const std::vector<OutputShape>& output
     return true;
 }
 
-ErrorStatus ExecutionBuilder::finish(ErrorStatus, const std::vector<OutputShape>& outputShapes) {
+bool ExecutionBuilder::updateMemories() {
+    for (const auto& output : mOutputs) {
+        if (output.state != ModelArgumentInfo::MEMORY) continue;
+        const Memory* memory = mMemories[output.locationAndLength.poolIndex];
+        NN_RET_CHECK(memory->getValidator().updateMetadata({.dimensions = output.dimensions}));
+    }
+    return true;
+}
+
+ErrorStatus ExecutionBuilder::finish(ErrorStatus status,
+                                     const std::vector<OutputShape>& outputShapes) {
     CHECK(!mFinished) << "ExecutionBuilder::finish is called twice";
     mFinished = true;
-    if (!updateOutputShapes(outputShapes)) {
-        return ErrorStatus::GENERAL_FAILURE;
+    if (!updateOutputShapes(outputShapes) || !updateMemories()) {
+        status = ErrorStatus::GENERAL_FAILURE;
     }
-    return ErrorStatus::NONE;
+    bool success = status == ErrorStatus::NONE;
+    for (const auto& output : mOutputs) {
+        if (output.state != ModelArgumentInfo::MEMORY) continue;
+        const Memory* memory = mMemories[output.locationAndLength.poolIndex];
+        memory->getValidator().setInitialized(success);
+    }
+    return status;
 }
 
 bool StepExecutor::updateOutputShapes(const std::vector<OutputShape>& from,
@@ -590,7 +873,7 @@ bool StepExecutor::updateOutputShapes(const std::vector<OutputShape>& from,
         return true;
     }
     if (mExecutionStep != nullptr) {
-        const auto& indexMapping = mExecutionStep->getOutputIndexSubModelToFromModel();
+        const auto& indexMapping = mExecutionStep->getOutputIndexStepModelToMainModel();
         NN_RET_CHECK_LE(indexMapping.size(), from.size());
         for (uint32_t i = 0, e = indexMapping.size(); i < e; i++) {
             uint32_t toIndex = indexMapping[i];
@@ -656,8 +939,8 @@ int StepExecutor::setInputOrOutputFromTemporaryMemory(const Operand& inputOrOutp
 
     uint32_t poolIndex = mMemories.add(memory);
     uint32_t length = TypeManager::get()->getSizeOfData(inputOrOutputOperand);
-    return inputOrOutputInfo->setFromTemporaryMemory(inputOrOutputOperand, poolIndex, offset,
-                                                     length);
+    return inputOrOutputInfo->setFromMemory(inputOrOutputOperand, /*type=*/nullptr, poolIndex,
+                                            offset, length);
 }
 
 static void logArguments(const char* kind, const std::vector<ModelArgumentInfo>& args) {
@@ -690,11 +973,9 @@ bool StepExecutor::isCpu() const {
     return mDevice == DeviceManager::getCpuDevice();
 }
 
-int StepExecutor::startCompute(sp<ExecutionCallback>* synchronizationCallback,
-                               const std::shared_ptr<ExecutionBurstController>& burstController) {
+std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::compute(
+        const std::shared_ptr<ExecutionBurstController>& burstController) {
     CHECK(mPreparedModel != nullptr);
-    CHECK(synchronizationCallback != nullptr);
-    *synchronizationCallback = nullptr;
 
     if (VLOG_IS_ON(EXECUTION)) {
         logArguments("input", mInputs);
@@ -702,35 +983,63 @@ int StepExecutor::startCompute(sp<ExecutionCallback>* synchronizationCallback,
     }
 
     const MeasureTiming measure = measureTiming(mExecutionBuilder);
-    const auto [n, outputShapes, timing] =
-            mPreparedModel->execute(mInputs, mOutputs, mMemories, burstController, measure);
+    const auto [timePointN, deadline] = makeTimePoint(mExecutionBuilder->getTimeoutDuration());
+    if (timePointN != ANEURALNETWORKS_NO_ERROR) {
+        return {timePointN, {}, kNoTiming};
+    }
+    const auto [n, outputShapes, timing] = mPreparedModel->execute(
+            mInputs, mOutputs, mMemories, burstController, measure, deadline);
     mExecutionBuilder->reportTiming(timing);
 
-    if (n != ANEURALNETWORKS_NO_ERROR && n != ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE) {
-        return n;
+    return {n, std::move(outputShapes), timing};
+}
+
+std::tuple<int, int, sp<hal::IFencedExecutionCallback>> StepExecutor::computeFenced(
+        const std::vector<int>& waitFor, uint64_t timeoutDurationAfterFence) {
+    CHECK(mPreparedModel != nullptr);
+
+    if (VLOG_IS_ON(EXECUTION)) {
+        logArguments("input", mInputs);
+        logArguments("output", mOutputs);
     }
 
-    const ErrorStatus status = convertResultCodeToErrorStatus(n);
-    *synchronizationCallback = new ExecutionCallback();
-    (*synchronizationCallback)->notify_1_2(status, outputShapes, timing);
-    return ANEURALNETWORKS_NO_ERROR;
+    const MeasureTiming measure = measureTiming(mExecutionBuilder);
+    const auto [timePointN, deadline] = makeTimePoint(mExecutionBuilder->getTimeoutDuration());
+    if (timePointN != ANEURALNETWORKS_NO_ERROR) {
+        return {timePointN, -1, nullptr};
+    }
+    OptionalTimeoutDuration otd;
+    if (timeoutDurationAfterFence > 0) {
+        otd.nanoseconds(timeoutDurationAfterFence);
+    }
+    const auto [n, syncFence, computeFencedCallback, timing] = mPreparedModel->executeFenced(
+            mInputs, mOutputs, mMemories, waitFor, measure, deadline, otd);
+    if (syncFence < 0 && computeFencedCallback == nullptr) {
+        mExecutionBuilder->reportTiming(timing);
+    }
+    return {n, syncFence, computeFencedCallback};
 }
 
 // For cpuFallback{Partial,Full}, recompile the model on CPU and then start compute.
-int StepExecutor::startComputeOnCpuFallback(sp<ExecutionCallback>* synchronizationCallback) {
-    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "StepExecutor::startComputeOnCpuFallback");
+std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::computeOnCpuFallback() {
+    NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "StepExecutor::computeOnCpuFallback");
     VLOG(EXECUTION) << "Re-compile the model on CPU";
-    const Model model = mModel->makeHidlModel();
     mDevice = DeviceManager::getCpuDevice();
     mPreparedModel = nullptr;
-    // TODO: Propagate user preference to this point instead of using default value of
-    // ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER.
+    const ModelFactory makeModel = [this] { return mModel->makeHidlModel(); };
+    // TODO: Propagate user preference and compilation priority to this point instead of using
+    // default values of ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER and
+    // ANEURALNETWORKS_PRIORITY_MEDIUM
     const ExecutionPreference preference =
             static_cast<ExecutionPreference>(ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER);
-    const auto [n, preparedModel] = mDevice->prepareModel(model, preference, {}, {}, {});
+    const Priority priority = convertToHalPriority(ANEURALNETWORKS_PRIORITY_DEFAULT);
+    const auto [n, preparedModel] =
+            mDevice->prepareModel(makeModel, preference, priority, {}, {}, {});
     mPreparedModel = preparedModel;
-    NN_RETURN_IF_ERROR(n);
-    return startCompute(synchronizationCallback, /*burstController=*/nullptr);
+    if (n != ANEURALNETWORKS_NO_ERROR) {
+        return {n, {}, kNoTiming};
+    }
+    return compute(/*burstController=*/nullptr);
 }
 
 }  // namespace nn

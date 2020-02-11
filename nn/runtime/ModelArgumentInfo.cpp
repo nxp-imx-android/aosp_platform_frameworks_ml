@@ -62,39 +62,18 @@ int ModelArgumentInfo::setFromPointer(const Operand& operand,
 int ModelArgumentInfo::setFromMemory(const Operand& operand, const ANeuralNetworksOperandType* type,
                                      uint32_t poolIndex, uint32_t offset, uint32_t length) {
     NN_RETURN_IF_ERROR(updateDimensionInfo(operand, type));
-    if (operand.type != OperandType::OEM) {
-        uint32_t neededLength = TypeManager::get()->getSizeOfData(operand.type, dimensions);
+    const bool isMemorySizeKnown = offset != 0 || length != 0;
+    if (isMemorySizeKnown && operand.type != OperandType::OEM) {
+        const uint32_t neededLength = TypeManager::get()->getSizeOfData(operand.type, dimensions);
         if (neededLength != length && neededLength != 0) {
             LOG(ERROR) << "Setting argument with invalid length: " << length
-                       << ", expected length: " << neededLength;
+                       << " (offset: " << offset << "), expected length: " << neededLength;
             return ANEURALNETWORKS_BAD_DATA;
         }
     }
 
     state = ModelArgumentInfo::MEMORY;
     locationAndLength = {.poolIndex = poolIndex, .offset = offset, .length = length};
-    buffer = nullptr;
-    return ANEURALNETWORKS_NO_ERROR;
-}
-
-int ModelArgumentInfo::setFromTemporaryMemory(const Operand& operand, uint32_t poolIndex,
-                                              uint32_t offset, uint32_t length) {
-    NN_RETURN_IF_ERROR(updateDimensionInfo(operand, nullptr));
-    if (operand.type != OperandType::OEM) {
-        uint32_t neededLength = TypeManager::get()->getSizeOfData(operand.type, dimensions);
-        if (neededLength != length) {
-            LOG(ERROR) << "Setting argument with invalid length: " << length
-                       << ", expected length: " << neededLength;
-            return ANEURALNETWORKS_BAD_DATA;
-        }
-    }
-
-    state = ModelArgumentInfo::MEMORY;
-    locationAndLength = {
-            .poolIndex = poolIndex,
-            .offset = offset,
-            .length = length,
-    };
     buffer = nullptr;
     return ANEURALNETWORKS_NO_ERROR;
 }
@@ -109,6 +88,25 @@ int ModelArgumentInfo::updateDimensionInfo(const Operand& operand,
         std::copy(&newType->dimensions[0], &newType->dimensions[count], dimensions.begin());
     }
     return ANEURALNETWORKS_NO_ERROR;
+}
+
+hidl_vec<RequestArgument> createRequestArguments(
+        const std::vector<ModelArgumentInfo>& argumentInfos,
+        const std::vector<DataLocation>& ptrArgsLocations) {
+    const size_t count = argumentInfos.size();
+    hidl_vec<RequestArgument> ioInfos(count);
+    uint32_t ptrArgsIndex = 0;
+    for (size_t i = 0; i < count; i++) {
+        const auto& info = argumentInfos[i];
+        ioInfos[i] = {
+                .hasNoValue = info.state == ModelArgumentInfo::HAS_NO_VALUE,
+                .location = info.state == ModelArgumentInfo::POINTER
+                                    ? ptrArgsLocations[ptrArgsIndex++]
+                                    : info.locationAndLength,
+                .dimensions = info.dimensions,
+        };
+    }
+    return ioInfos;
 }
 
 }  // namespace nn
