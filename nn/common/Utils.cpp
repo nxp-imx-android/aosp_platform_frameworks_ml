@@ -92,20 +92,26 @@ void initVLogMask() {
 }
 
 static std::pair<int, OptionalTimePoint> makeTimePoint(uint64_t duration) {
-    const auto currentTime = std::chrono::steady_clock::now();
-    const auto currentTimeInNanoseconds =
-            std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime);
-    const uint64_t nanosecondsSinceEpoch = currentTimeInNanoseconds.time_since_epoch().count();
+    const auto getNanosecondsSinceEpoch = [](const auto& time) -> uint64_t {
+        const auto timeSinceEpoch = time.time_since_epoch();
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(timeSinceEpoch).count();
+    };
 
-    // check for overflow
-    if (std::numeric_limits<uint64_t>::max() - nanosecondsSinceEpoch < duration) {
+    // Relevant time points.
+    const uint64_t maxNanosecondsSinceEpoch =
+            getNanosecondsSinceEpoch(std::chrono::steady_clock::time_point::max());
+    const uint64_t currentNanosecondsSinceEpoch =
+            getNanosecondsSinceEpoch(std::chrono::steady_clock::now());
+
+    // Check for overflow.
+    if (duration > maxNanosecondsSinceEpoch - currentNanosecondsSinceEpoch) {
         LOG(ERROR) << "Launching execution failed due to time point overflow";
         return {ANEURALNETWORKS_BAD_DATA, {}};
     }
-    const uint64_t nanosecondsAtTimeout = nanosecondsSinceEpoch + duration;
 
+    // Load and return OptionalTimePoint.
     OptionalTimePoint otp;
-    otp.nanosecondsSinceEpoch(nanosecondsAtTimeout);
+    otp.nanosecondsSinceEpoch(currentNanosecondsSinceEpoch + duration);
     return {ANEURALNETWORKS_NO_ERROR, otp};
 }
 
@@ -1059,15 +1065,12 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
         case ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_LSTM: {
             std::vector<OperandType> inExpectedTypes;
             auto inputType = operands[inputIndexes[0]].type;
-            std::vector<OperandType> outExpectedTypes{inputType, inputType};
-            std::vector<OperandType> outExpectedTypesMerged{inputType};
             if (inputType != OperandType::TENSOR_FLOAT32 &&
                 inputType != OperandType::TENSOR_FLOAT16) {
                 LOG(ERROR) << "Unsupported input tensor type for operation "
                            << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
-            NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
 
             inExpectedTypes = {};
             for (int i = 0; i < 48; ++i) {
@@ -1086,20 +1089,29 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 inExpectedTypes.push_back(inputType);
             }
 
-            if (inputCount != 61 || (outputCount != 1 && outputCount != 2)) {
+            const uint32_t kNumOutputs = 2;
+            const uint32_t kNumOutputsMerged = 1;
+            const uint32_t kNumOutputsWithState = 6;
+            const uint32_t kNumOutputsMergedWithState = 5;
+
+            if (inputCount != 61 ||
+                (outputCount != kNumOutputs && outputCount != kNumOutputsMerged &&
+                 outputCount != kNumOutputsWithState &&
+                 outputCount != kNumOutputsMergedWithState)) {
                 LOG(ERROR) << "Invalid number of input operands (" << inputCount
                            << ", expected 61) or output operands (" << outputCount
-                           << ", expected 1 or 2) for operation " << getOperationName(opType);
+                           << ", expected 1, 2, 5 or 6) for operation " << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
+            HalVersion minSupportedHalVersion = HalVersion::V1_2;
+            if (outputCount == kNumOutputsWithState || outputCount == kNumOutputsMergedWithState) {
+                minSupportedHalVersion = HalVersion::V1_3;
+            }
+            NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, minSupportedHalVersion));
+            std::vector<OperandType> outExpectedTypes(outputCount, inputType);
             auto status = validateOperationOperandTypes(operands, inputCount, inputIndexes,
                                                         inExpectedTypes, outputCount, outputIndexes,
                                                         outExpectedTypes);
-            if (status != ANEURALNETWORKS_NO_ERROR) {
-                status = validateOperationOperandTypes(operands, inputCount, inputIndexes,
-                                                       inExpectedTypes, outputCount, outputIndexes,
-                                                       outExpectedTypesMerged);
-            }
             return status;
         }
         case ANEURALNETWORKS_LSTM: {
