@@ -97,7 +97,7 @@ int CompilationBuilder::finish() {
     VLOG(COMPILATION) << "CompilationBuilder::finish with CPU fallback";
     mPlan.reset();
     mPlan.becomeSingleStep(DeviceManager::getCpuDevice(), mModel);
-    return mPlan.finish(mModel, mPreference, mPriority, timeout);
+    return mPlan.finish(mPreference, mPriority, timeout);
 }
 
 int CompilationBuilder::setPreference(int32_t preference) {
@@ -167,7 +167,11 @@ int CompilationBuilder::setTimeoutDuration(uint64_t duration) {
                    "compilation timeouts.";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    mTimeoutDuration = duration;
+    if (duration > 0) {
+        mTimeoutDuration = duration;
+    } else {
+        mTimeoutDuration.reset();
+    }
     return ANEURALNETWORKS_NO_ERROR;
 }
 

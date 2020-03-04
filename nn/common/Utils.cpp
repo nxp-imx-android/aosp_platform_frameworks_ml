@@ -43,6 +43,8 @@ namespace nn {
 
 using namespace hal;
 
+constexpr PerformanceInfo kNoPerformanceInfo = {.execTime = FLT_MAX, .powerUsage = FLT_MAX};
+
 const char kVLogPropKey[] = "debug.nn.vlog";
 int vLogMask = ~0;
 
@@ -92,20 +94,26 @@ void initVLogMask() {
 }
 
 static std::pair<int, OptionalTimePoint> makeTimePoint(uint64_t duration) {
-    const auto currentTime = std::chrono::steady_clock::now();
-    const auto currentTimeInNanoseconds =
-            std::chrono::time_point_cast<std::chrono::nanoseconds>(currentTime);
-    const uint64_t nanosecondsSinceEpoch = currentTimeInNanoseconds.time_since_epoch().count();
+    const auto getNanosecondsSinceEpoch = [](const auto& time) -> uint64_t {
+        const auto timeSinceEpoch = time.time_since_epoch();
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(timeSinceEpoch).count();
+    };
 
-    // check for overflow
-    if (std::numeric_limits<uint64_t>::max() - nanosecondsSinceEpoch < duration) {
+    // Relevant time points.
+    const uint64_t maxNanosecondsSinceEpoch =
+            getNanosecondsSinceEpoch(std::chrono::steady_clock::time_point::max());
+    const uint64_t currentNanosecondsSinceEpoch =
+            getNanosecondsSinceEpoch(std::chrono::steady_clock::now());
+
+    // Check for overflow.
+    if (duration > maxNanosecondsSinceEpoch - currentNanosecondsSinceEpoch) {
         LOG(ERROR) << "Launching execution failed due to time point overflow";
         return {ANEURALNETWORKS_BAD_DATA, {}};
     }
-    const uint64_t nanosecondsAtTimeout = nanosecondsSinceEpoch + duration;
 
+    // Load and return OptionalTimePoint.
     OptionalTimePoint otp;
-    otp.nanoseconds(nanosecondsAtTimeout);
+    otp.nanosecondsSinceEpoch(currentNanosecondsSinceEpoch + duration);
     return {ANEURALNETWORKS_NO_ERROR, otp};
 }
 
@@ -167,7 +175,7 @@ class OperationValidationContext : public IOperationValidationContext {
     uint32_t getNumInputs() const override;
     OperandType getInputType(uint32_t index) const override;
     Shape getInputShape(uint32_t index) const override;
-    const Operand::ExtraParams getInputExtraParams(uint32_t index) const override;
+    const OperandExtraParams getInputExtraParams(uint32_t index) const override;
 
     uint32_t getNumOutputs() const override;
     OperandType getOutputType(uint32_t index) const override;
@@ -222,7 +230,7 @@ Shape OperationValidationContext::getInputShape(uint32_t index) const {
             operand->extraParams};
 }
 
-const Operand::ExtraParams OperationValidationContext::getInputExtraParams(uint32_t index) const {
+const OperandExtraParams OperationValidationContext::getInputExtraParams(uint32_t index) const {
     return getInputOperand(index)->extraParams;
 }
 
@@ -1059,15 +1067,12 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
         case ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_LSTM: {
             std::vector<OperandType> inExpectedTypes;
             auto inputType = operands[inputIndexes[0]].type;
-            std::vector<OperandType> outExpectedTypes{inputType, inputType};
-            std::vector<OperandType> outExpectedTypesMerged{inputType};
             if (inputType != OperandType::TENSOR_FLOAT32 &&
                 inputType != OperandType::TENSOR_FLOAT16) {
                 LOG(ERROR) << "Unsupported input tensor type for operation "
                            << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
-            NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
 
             inExpectedTypes = {};
             for (int i = 0; i < 48; ++i) {
@@ -1086,20 +1091,29 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 inExpectedTypes.push_back(inputType);
             }
 
-            if (inputCount != 61 || (outputCount != 1 && outputCount != 2)) {
+            const uint32_t kNumOutputs = 2;
+            const uint32_t kNumOutputsMerged = 1;
+            const uint32_t kNumOutputsWithState = 6;
+            const uint32_t kNumOutputsMergedWithState = 5;
+
+            if (inputCount != 61 ||
+                (outputCount != kNumOutputs && outputCount != kNumOutputsMerged &&
+                 outputCount != kNumOutputsWithState &&
+                 outputCount != kNumOutputsMergedWithState)) {
                 LOG(ERROR) << "Invalid number of input operands (" << inputCount
                            << ", expected 61) or output operands (" << outputCount
-                           << ", expected 1 or 2) for operation " << getOperationName(opType);
+                           << ", expected 1, 2, 5 or 6) for operation " << getOperationName(opType);
                 return ANEURALNETWORKS_BAD_DATA;
             }
+            HalVersion minSupportedHalVersion = HalVersion::V1_2;
+            if (outputCount == kNumOutputsWithState || outputCount == kNumOutputsMergedWithState) {
+                minSupportedHalVersion = HalVersion::V1_3;
+            }
+            NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, minSupportedHalVersion));
+            std::vector<OperandType> outExpectedTypes(outputCount, inputType);
             auto status = validateOperationOperandTypes(operands, inputCount, inputIndexes,
                                                         inExpectedTypes, outputCount, outputIndexes,
                                                         outExpectedTypes);
-            if (status != ANEURALNETWORKS_NO_ERROR) {
-                status = validateOperationOperandTypes(operands, inputCount, inputIndexes,
-                                                       inExpectedTypes, outputCount, outputIndexes,
-                                                       outExpectedTypesMerged);
-            }
             return status;
         }
         case ANEURALNETWORKS_LSTM: {
@@ -1937,12 +1951,13 @@ hidl_vec<VersionedOperandPerformance<version>> nonExtensionOperandPerformance(
     // Note: range presents enumerators in declaration order, not in numerical order.
     static constexpr hidl_enum_range<VersionedOperandType<version>> kOperandTypeRange;
 
-    hidl_vec<OpPerf> ret(kOperandTypeRange.end() - kOperandTypeRange.begin());
-
-    std::transform(kOperandTypeRange.begin(), kOperandTypeRange.end(), ret.begin(),
-                   [perf](VersionedOperandType<version> type) {
-                       return OpPerf{type, perf};
-                   });
+    std::vector<OpPerf> ret;
+    ret.reserve(kOperandTypeRange.end() - kOperandTypeRange.begin());
+    for (VersionedOperandType<version> type : kOperandTypeRange) {
+        if (static_cast<OperandType>(type) != OperandType::SUBGRAPH) {
+            ret.push_back(OpPerf{type, perf});
+        }
+    }
     std::sort(ret.begin(), ret.end(),
               [](const OpPerf& a, const OpPerf& b) { return a.type < b.type; });
 
@@ -1987,7 +2002,7 @@ PerformanceInfo lookup(const hidl_vec<VersionedOperandPerformance<version>>& ope
                                      });
     if (it == operandPerformance.end()) {
         LOG(WARNING) << "No PerformanceInfo for " << toString(type);
-        return {.execTime = FLT_MAX, .powerUsage = FLT_MAX};
+        return kNoPerformanceInfo;
     } else {
         return it->info;
     }
@@ -1999,6 +2014,8 @@ PerformanceInfo lookup(const hidl_vec<V1_2::Capabilities::OperandPerformance>& o
 }
 PerformanceInfo lookup(const hidl_vec<V1_3::Capabilities::OperandPerformance>& operandPerformance,
                        V1_3::OperandType type) {
+    CHECK(type != V1_3::OperandType::SUBGRAPH)
+            << "Use Capabilities::ifPerformance or Capabilities::whilePerformance";
     return lookup<HalVersion::V1_3>(operandPerformance, type);
 }
 
@@ -2384,6 +2401,8 @@ V1_3::Capabilities convertToV1_3(const V1_2::Capabilities& capabilities) {
                     capabilities.relaxedFloat32toFloat16PerformanceScalar,
             .relaxedFloat32toFloat16PerformanceTensor =
                     capabilities.relaxedFloat32toFloat16PerformanceTensor,
+            .ifPerformance = kNoPerformanceInfo,
+            .whilePerformance = kNoPerformanceInfo,
     };
     auto& opPerf = ret.operandPerformance;
     opPerf.resize(capabilities.operandPerformance.size());
@@ -2751,26 +2770,6 @@ V1_0::OperandType convertToV1_0(const V1_3::OperandType& operandType) {
     return static_cast<V1_0::OperandType>(operandType);
 }
 
-template <typename InExtraParams, typename OutExtraParams>
-OutExtraParams copyExtraParams(const InExtraParams& extraParams) {
-    OutExtraParams out;
-    switch (extraParams.getDiscriminator()) {
-        case InExtraParams::hidl_discriminator::none: {
-            out.none(extraParams.none());
-        } break;
-        case InExtraParams::hidl_discriminator::channelQuant: {
-            out.channelQuant({
-                    .scales = extraParams.channelQuant().scales,
-                    .channelDim = extraParams.channelQuant().channelDim,
-            });
-        } break;
-        case InExtraParams::hidl_discriminator::extension: {
-            out.extension(extraParams.extension());
-        } break;
-    }
-    return out;
-}
-
 bool compliantWithV1_0(hal::V1_0::OperandLifeTime lifetime) {
     return true;
 }
@@ -2845,8 +2844,7 @@ V1_2::Operand convertToV1_2(const V1_3::Operand& operand) {
             .zeroPoint = operand.zeroPoint,
             .lifetime = static_cast<V1_0::OperandLifeTime>(operand.lifetime),
             .location = operand.location,
-            .extraParams = copyExtraParams<V1_3::Operand::ExtraParams, V1_2::Operand::ExtraParams>(
-                    operand.extraParams)};
+            .extraParams = operand.extraParams};
 }
 
 V1_3::Operand convertToV1_3(const V1_0::Operand& operand) {
@@ -2867,8 +2865,7 @@ V1_3::Operand convertToV1_3(const V1_2::Operand& operand) {
             .zeroPoint = operand.zeroPoint,
             .lifetime = convertToV1_3(operand.lifetime),
             .location = operand.location,
-            .extraParams = copyExtraParams<V1_2::Operand::ExtraParams, V1_3::Operand::ExtraParams>(
-                    operand.extraParams)};
+            .extraParams = operand.extraParams};
 }
 
 V1_3::Operand convertToV1_3(const V1_3::Operand& operand) {

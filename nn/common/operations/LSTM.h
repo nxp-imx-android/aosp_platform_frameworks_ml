@@ -40,6 +40,7 @@ struct LSTMParams {
     bool use_projection_bias;
     bool merge_outputs;
     bool time_major;
+    bool output_state;
 };
 
 struct RunTimeOperandInfo;
@@ -102,8 +103,6 @@ class LSTMCell {
     static constexpr int kOutputStateOutTensor = 1;
     static constexpr int kCellStateOutTensor = 2;
     static constexpr int kOutputTensor = 3;
-
-    static constexpr float kLayerNormEpsilon = 1e-8;
 
     static bool LSTMEvalFloat32(
             const LSTMParams& params, const float* input_buffer, const Shape& input_shape,
