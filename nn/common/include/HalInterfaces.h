@@ -87,6 +87,7 @@ using V1_3::IExecutionCallback;
 using V1_3::IFencedExecutionCallback;
 using V1_3::IPreparedModel;
 using V1_3::IPreparedModelCallback;
+using V1_3::LoopTimeoutDurationNs;
 using V1_3::Model;
 using V1_3::Operand;
 using V1_3::OperandLifeTime;
@@ -102,6 +103,7 @@ using V1_3::Request;
 using V1_3::Subgraph;
 using ExtensionNameAndPrefix = V1_2::Model::ExtensionNameAndPrefix;
 using ExtensionTypeEncoding = V1_2::Model::ExtensionTypeEncoding;
+using OperandExtraParams = V1_2::Operand::ExtraParams;
 
 using CacheToken =
         hardware::hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>;

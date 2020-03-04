@@ -20,6 +20,7 @@
 
 #include <android-base/logging.h>
 #include <android-base/properties.h>
+#include <android/sync.h>
 #include <hidl/LegacySupport.h>
 
 #include <algorithm>
@@ -260,6 +261,7 @@ template <typename T_IExecutionCallback>
 void asyncExecute(const Request& request, MeasureTiming measure, time_point driverStart,
                   const Model& model, const SampleDriver& driver,
                   const std::vector<RunTimePoolInfo>& poolInfos,
+                  const OptionalTimeoutDuration& loopTimeoutDuration,
                   const sp<T_IExecutionCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INPUTS_AND_OUTPUTS,
                  "SampleDriver::asyncExecute");
@@ -272,6 +274,10 @@ void asyncExecute(const Request& request, MeasureTiming measure, time_point driv
     NNTRACE_FULL_SWITCH(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                         "SampleDriver::asyncExecute");
     CpuExecutor executor = driver.getExecutor();
+    if (loopTimeoutDuration.getDiscriminator() !=
+        OptionalTimeoutDuration::hidl_discriminator::none) {
+        executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
     time_point driverEnd, deviceStart, deviceEnd;
     if (measure == MeasureTiming::YES) deviceStart = now();
     int n = executor.run(model, request, poolInfos, requestPoolInfos);
@@ -294,6 +300,7 @@ template <typename T_IExecutionCallback>
 ErrorStatus executeBase(const Request& request, MeasureTiming measure, const Model& model,
                         const SampleDriver& driver, const std::vector<RunTimePoolInfo>& poolInfos,
                         const OptionalTimePoint& deadline,
+                        const OptionalTimeoutDuration& loopTimeoutDuration,
                         const sp<T_IExecutionCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION, "SampleDriver::executeBase");
     VLOG(DRIVER) << "executeBase(" << SHOW_IF_DEBUG(toString(request)) << ")";
@@ -316,8 +323,10 @@ ErrorStatus executeBase(const Request& request, MeasureTiming measure, const Mod
 
     // This thread is intentionally detached because the sample driver service
     // is expected to live forever.
-    std::thread([&model, &driver, &poolInfos, request, measure, driverStart, callback] {
-        asyncExecute(request, measure, driverStart, model, driver, poolInfos, callback);
+    std::thread([&model, &driver, &poolInfos, request, measure, driverStart, loopTimeoutDuration,
+                 callback] {
+        asyncExecute(request, measure, driverStart, model, driver, poolInfos, loopTimeoutDuration,
+                     callback);
     }).detach();
 
     return ErrorStatus::NONE;
@@ -326,7 +335,7 @@ ErrorStatus executeBase(const Request& request, MeasureTiming measure, const Mod
 Return<V1_0::ErrorStatus> SamplePreparedModel::execute(
         const V1_0::Request& request, const sp<V1_0::IExecutionCallback>& callback) {
     const ErrorStatus status = executeBase(convertToV1_3(request), MeasureTiming::NO, mModel,
-                                           *mDriver, mPoolInfos, {}, callback);
+                                           *mDriver, mPoolInfos, {}, {}, callback);
     return convertToV1_0(status);
 }
 
@@ -334,20 +343,22 @@ Return<V1_0::ErrorStatus> SamplePreparedModel::execute_1_2(
         const V1_0::Request& request, MeasureTiming measure,
         const sp<V1_2::IExecutionCallback>& callback) {
     const ErrorStatus status = executeBase(convertToV1_3(request), measure, mModel, *mDriver,
-                                           mPoolInfos, {}, callback);
+                                           mPoolInfos, {}, {}, callback);
     return convertToV1_0(status);
 }
 
 Return<V1_3::ErrorStatus> SamplePreparedModel::execute_1_3(
         const V1_3::Request& request, MeasureTiming measure, const OptionalTimePoint& deadline,
+        const OptionalTimeoutDuration& loopTimeoutDuration,
         const sp<V1_3::IExecutionCallback>& callback) {
-    return executeBase(request, measure, mModel, *mDriver, mPoolInfos, deadline, callback);
+    return executeBase(request, measure, mModel, *mDriver, mPoolInfos, deadline,
+                       loopTimeoutDuration, callback);
 }
 
 static std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronouslyBase(
         const Request& request, MeasureTiming measure, const Model& model,
         const SampleDriver& driver, const std::vector<RunTimePoolInfo>& poolInfos,
-        const OptionalTimePoint& deadline) {
+        const OptionalTimePoint& deadline, const OptionalTimeoutDuration& loopTimeoutDuration) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                  "SampleDriver::executeSynchronouslyBase");
     VLOG(DRIVER) << "executeSynchronouslyBase(" << SHOW_IF_DEBUG(toString(request)) << ")";
@@ -372,6 +383,10 @@ static std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronous
     NNTRACE_FULL_SWITCH(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                         "SampleDriver::executeSynchronouslyBase");
     CpuExecutor executor = driver.getExecutor();
+    if (loopTimeoutDuration.getDiscriminator() !=
+        OptionalTimeoutDuration::hidl_discriminator::none) {
+        executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
     if (measure == MeasureTiming::YES) deviceStart = now();
     int n = executor.run(model, request, poolInfos, requestPoolInfos);
     if (measure == MeasureTiming::YES) deviceEnd = now();
@@ -392,29 +407,99 @@ Return<void> SamplePreparedModel::executeSynchronously(const V1_0::Request& requ
                                                        MeasureTiming measure,
                                                        executeSynchronously_cb cb) {
     auto [status, outputShapes, timing] = executeSynchronouslyBase(
-            convertToV1_3(request), measure, mModel, *mDriver, mPoolInfos, {});
+            convertToV1_3(request), measure, mModel, *mDriver, mPoolInfos, {}, {});
     cb(convertToV1_0(status), std::move(outputShapes), timing);
     return Void();
 }
 
-Return<void> SamplePreparedModel::executeSynchronously_1_3(const V1_3::Request& request,
-                                                           MeasureTiming measure,
-                                                           const OptionalTimePoint& deadline,
-                                                           executeSynchronously_1_3_cb cb) {
-    auto [status, outputShapes, timing] =
-            executeSynchronouslyBase(request, measure, mModel, *mDriver, mPoolInfos, deadline);
+Return<void> SamplePreparedModel::executeSynchronously_1_3(
+        const V1_3::Request& request, MeasureTiming measure, const OptionalTimePoint& deadline,
+        const OptionalTimeoutDuration& loopTimeoutDuration, executeSynchronously_1_3_cb cb) {
+    auto [status, outputShapes, timing] = executeSynchronouslyBase(
+            request, measure, mModel, *mDriver, mPoolInfos, deadline, loopTimeoutDuration);
     cb(status, std::move(outputShapes), timing);
     return Void();
 }
 
-Return<void> SamplePreparedModel::executeFenced(const hal::Request&, const hidl_vec<hidl_handle>&,
-                                                MeasureTiming, const OptionalTimePoint&,
-                                                const OptionalTimeoutDuration&,
-                                                executeFenced_cb cb) {
-    // TODO(miaowang): implement me.
-    cb(ErrorStatus::DEVICE_UNAVAILABLE, hidl_handle(nullptr), nullptr);
+// The sample driver will finish the execution and then return.
+Return<void> SamplePreparedModel::executeFenced(
+        const hal::Request& request, const hidl_vec<hidl_handle>& waitFor, MeasureTiming measure,
+        const OptionalTimePoint& deadline, const OptionalTimeoutDuration& loopTimeoutDuration,
+        const OptionalTimeoutDuration& duration, executeFenced_cb cb) {
+    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
+                 "SamplePreparedModel::executeFenced");
+    VLOG(DRIVER) << "executeFenced(" << SHOW_IF_DEBUG(toString(request)) << ")";
+
+    time_point driverStart, driverEnd, deviceStart, deviceEnd;
+    if (measure == MeasureTiming::YES) driverStart = now();
+
+    if (duration.getDiscriminator() != OptionalTimeoutDuration::hidl_discriminator::none ||
+        deadline.getDiscriminator() != OptionalTimePoint::hidl_discriminator::none ||
+        !validateRequest(request, mModel)) {
+        cb(ErrorStatus::INVALID_ARGUMENT, hidl_handle(nullptr), nullptr);
+        return Void();
+    }
+
+    // Wait for the dependent events to signal
+    for (const auto& fenceHandle : waitFor) {
+        if (!fenceHandle.getNativeHandle()) {
+            cb(ErrorStatus::INVALID_ARGUMENT, hidl_handle(nullptr), nullptr);
+            return Void();
+        }
+        int syncFenceFd = fenceHandle.getNativeHandle()->data[0];
+        if (sync_wait(syncFenceFd, -1) < 0) {
+            LOG(ERROR) << "sync_wait failed";
+            cb(ErrorStatus::GENERAL_FAILURE, hidl_handle(nullptr), nullptr);
+            return Void();
+        }
+    }
+
+    time_point driverStartAfterFence;
+    if (measure == MeasureTiming::YES) driverStartAfterFence = now();
+
+    NNTRACE_FULL_SWITCH(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INPUTS_AND_OUTPUTS,
+                        "SamplePreparedModel::executeFenced");
+    std::vector<RunTimePoolInfo> requestPoolInfos;
+    if (!setRunTimePoolInfosFromMemoryPools(&requestPoolInfos, request.pools)) {
+        cb(ErrorStatus::INVALID_ARGUMENT, hidl_handle(nullptr), nullptr);
+        return Void();
+    }
+
+    NNTRACE_FULL_SWITCH(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
+                        "SamplePreparedModel::executeFenced");
+    CpuExecutor executor = mDriver->getExecutor();
+    if (loopTimeoutDuration.getDiscriminator() !=
+        OptionalTimeoutDuration::hidl_discriminator::none) {
+        executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
+    if (measure == MeasureTiming::YES) deviceStart = now();
+    int n = executor.run(mModel, request, mPoolInfos, requestPoolInfos);
+    if (measure == MeasureTiming::YES) deviceEnd = now();
+    VLOG(DRIVER) << "executor.run returned " << n;
+    ErrorStatus executionStatus = convertResultCodeToErrorStatus(n);
+    if (executionStatus != ErrorStatus::NONE) {
+        cb(executionStatus, hidl_handle(nullptr), nullptr);
+        return Void();
+    }
+    Timing timingSinceLaunch = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
+    Timing timingAfterFence = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
+    if (measure == MeasureTiming::YES) {
+        driverEnd = now();
+        timingSinceLaunch = {
+                .timeOnDevice = uint64_t(microsecondsDuration(deviceEnd, deviceStart)),
+                .timeInDriver = uint64_t(microsecondsDuration(driverEnd, driverStart))};
+        timingAfterFence = {
+                .timeOnDevice = uint64_t(microsecondsDuration(deviceEnd, deviceStart)),
+                .timeInDriver = uint64_t(microsecondsDuration(driverEnd, driverStartAfterFence))};
+        VLOG(DRIVER) << "executeFenced timingSinceLaunch = " << toString(timingSinceLaunch);
+        VLOG(DRIVER) << "executeFenced timingAfterFence = " << toString(timingAfterFence);
+    }
+    sp<SampleFencedExecutionCallback> fencedExecutionCallback =
+            new SampleFencedExecutionCallback(timingSinceLaunch, timingAfterFence, executionStatus);
+    cb(executionStatus, hidl_handle(nullptr), fencedExecutionCallback);
     return Void();
 }
+
 // BurstExecutorWithCache maps hidl_memory when it is first seen, and preserves
 // the mapping until either (1) the memory is freed in the runtime, or (2) the
 // burst object is destroyed. This allows for subsequent executions operating on
@@ -474,6 +559,9 @@ class BurstExecutorWithCache : public ExecutionBurstServer::IBurstExecutorWithCa
                        [this](int32_t slot) { return *mMemoryCache[slot]; });
 
         // execution
+        // Configuring the loop timeout duration is not supported. This is OK
+        // because burst does not support HAL 1.3 and hence does not support
+        // WHILE loops.
         CpuExecutor executor = mDriver->getExecutor();
         if (measure == MeasureTiming::YES) deviceStart = now();
         int n = executor.run(mModel, fullRequest, mModelPoolInfos, requestPoolInfos);

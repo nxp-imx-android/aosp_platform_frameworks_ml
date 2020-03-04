@@ -54,12 +54,8 @@ __BEGIN_DECLS
 %insert Operand_1.0_Comment
 typedef enum {
 %insert Operand_1.0
-#if __ANDROID_API__ >= 29
 %insert Operand_1.2
-#endif  // __ANDROID_API__ >= 29
-#if __ANDROID_API__ >= 30
 %insert Operand_1.3
-#endif  // __ANDROID_API__ >= 30
 } OperandCode;
 
 %insert Operation_1.0_Comment
@@ -299,7 +295,36 @@ enum { ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES = 128 };
  */
 enum { ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN = 32 };
 
-#if __ANDROID_API__ >= 30
+/**
+ * Different duration measurements.
+ *
+ * Durations are measured in nanoseconds.
+ *
+ * Available since API level 29.
+ */
+typedef enum {
+    // Execution time on hardware (not driver, which runs on host processor).
+    ANEURALNETWORKS_DURATION_ON_HARDWARE = 0,
+    // Execution time in driver (including time on hardware).  Excludes overhead
+    // such as that of the runtime itself and the IPC needed for the runtime to
+    // communicate with the driver.
+    ANEURALNETWORKS_DURATION_IN_DRIVER = 1,
+    // Execution time on hardware, after all dependencies have been signaled.
+    // If no dependencies specified (for example, if the execution was scheduled other
+    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
+    // reported time will be the same as ANEURALNETWORKS_DURATION_ON_HARDWARE.
+    // Available since API level 30.
+    ANEURALNETWORKS_FENCED_DURATION_ON_HARDWARE = 2,
+    // Execution time in driver, after all dependencies have been signaled. Excludes
+    // overhead such as that of the runtime itself and the IPC needed for the runtime
+    // to communicate with the driver.
+    // If no dependencies specified (for example, if the execution was scheduled other
+    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
+    // reported time will be the same as ANEURALNETWORKS_DURATION_IN_DRIVER.
+    // Available since API level 30.
+    ANEURALNETWORKS_FENCED_DURATION_IN_DRIVER = 3,
+} DurationCode;
+
 /**
  * Relative execution priority.
  *
@@ -311,7 +336,6 @@ typedef enum {
     ANEURALNETWORKS_PRIORITY_HIGH = 110,
     ANEURALNETWORKS_PRIORITY_DEFAULT = ANEURALNETWORKS_PRIORITY_MEDIUM,
 } PriorityCode;
-#endif  // __ANDROID_API__ >= 30
 
 /**
  * ANeuralNetworksMemory is an opaque type that represents memory.
@@ -1226,6 +1250,11 @@ int ANeuralNetworksCompilation_setCaching(ANeuralNetworksCompilation* compilatio
  * exceeded, then execution will be aborted and
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
  *
+ * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned.
+ *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
  * See {@link ANeuralNetworksExecution_burstCompute} for burst synchronous execution.
@@ -1333,6 +1362,11 @@ void ANeuralNetworksBurst_free(ANeuralNetworksBurst* burst) __INTRODUCED_IN(29);
  * exceeded, then execution will be aborted and
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
  *
+ * If the execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned.
+ *
  * <p>There must be at most one {@link ANeuralNetworksExecution} processing at
  * any given time for any given burst object. Any
  * {@link ANeuralNetworksExecution} launched before the previous has finished
@@ -1414,36 +1448,6 @@ int ANeuralNetworksMemory_createFromAHardwareBuffer(const AHardwareBuffer* ahwb,
  */
 int ANeuralNetworksExecution_setMeasureTiming(ANeuralNetworksExecution* execution, bool measure)
         __INTRODUCED_IN(29);
-
-/**
- * Different duration measurements.
- *
- * Durations are measured in nanoseconds.
- *
- * Available since API level 29.
- */
-typedef enum {
-    // Execution time on hardware (not driver, which runs on host processor).
-    ANEURALNETWORKS_DURATION_ON_HARDWARE = 0,
-    // Execution time in driver (including time on hardware).  Excludes overhead
-    // such as that of the runtime itself and the IPC needed for the runtime to
-    // communicate with the driver.
-    ANEURALNETWORKS_DURATION_IN_DRIVER = 1,
-    // Execution time on hardware, after all dependencies have been signaled.
-    // If no dependencies specified (for example, if the execution was scheduled other
-    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
-    // reported time will be the same as ANEURALNETWORKS_DURATION_ON_HARDWARE.
-    // Available since API level 30.
-    ANEURALNETWORKS_FENCED_DURATION_ON_HARDWARE = 2,
-    // Execution time in driver, after all dependencies have been signaled. Excludes
-    // overhead such as that of the runtime itself and the IPC needed for the runtime
-    // to communicate with the driver.
-    // If no dependencies specified (for example, if the execution was scheduled other
-    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
-    // reported time will be the same as ANEURALNETWORKS_DURATION_IN_DRIVER.
-    // Available since API level 30.
-    ANEURALNETWORKS_FENCED_DURATION_IN_DRIVER = 3,
-} DurationCode;
 
 /**
  * Get the time spent in the specified {@link ANeuralNetworksExecution}, in nanoseconds.
@@ -1996,8 +2000,9 @@ int ANeuralNetworksCompilation_setPriority(ANeuralNetworksCompilation* compilati
  *
  * @param compilation The compilation to be modified.
  * @param duration The maximum amount of time in nanoseconds that can be spent
- *     finishing a compilation. If this duration is exceeded, the compilation
- *     must be aborted.
+ *     finishing a compilation. The compilation must be completed or aborted
+ *     within this timeout duration. If set to 0, the timeout duration is
+ *     considered infinite.
  *
  * @return ANEURALNETWORKS_NO_ERROR if successful.
  *
@@ -2265,6 +2270,12 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned through
  * {@link ANeuralNetworksEvent_wait} on the event object.
  *
+ * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned through {@link ANeuralNetworksEvent_wait} on the event
+ * object.
+ *
  * If the device can detect before the execution has started that the execution
  * will not complete within the timeout duration, the device may choose to skip
  * the execution and instead return {@link ANEURALNETWORKS_MISSED_DEADLINE_*}.
@@ -2314,8 +2325,9 @@ int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
  *
  * @param execution The execution to be modified.
  * @param duration The maximum amount of time in nanoseconds that can be spent
- *     executing a model. If this time duration is exceeded, the execution
- *     must be aborted.
+ *     executing a model. The execution must be completed or aborted within this
+ *     timeout duration. If set to 0, the timeout duration is considered
+ *     infinite.
  *
  * @return ANEURALNETWORKS_NO_ERROR if successful.
  *
@@ -2323,6 +2335,51 @@ int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
  */
 int ANeuralNetworksExecution_setTimeout(ANeuralNetworksExecution* execution, uint64_t duration)
         __INTRODUCED_IN(30);
+
+/**
+ * Set the maximum duration of WHILE loops in the specified execution.
+ *
+ * This is a fuzzy per-loop timeout intended to prevent infinite loops.
+ *
+ * If a WHILE loop termination condition is not reached within the specified
+ * duration, the execution will be aborted.
+ *
+ * See {@link ANeuralNetworks_getDefaultLoopTimeout} and
+ * {@link ANeuralNetworks_getMaximumLoopTimeout} for the default
+ * and maximum timeout values.
+ *
+ * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
+ *
+ * @param execution The execution to be modified.
+ * @param duration The maximum amount of time in nanoseconds that can be spent
+ *     executing a WHILE loop. If the specified duration value exceeds the value
+ *     produced by {@link ANeuralNetworks_getMaximumLoopTimeout}, it will be
+ *     overridden by that value.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful.
+ *
+ * Available since API level 30.
+ */
+int ANeuralNetworksExecution_setLoopTimeout(ANeuralNetworksExecution* execution, uint64_t duration)
+        __INTRODUCED_IN(30);
+
+/**
+ * Get the default timeout value for WHILE loops.
+ *
+ * @return The default timeout value in nanoseconds.
+ *
+ * Available since API level 30.
+ */
+uint64_t ANeuralNetworks_getDefaultLoopTimeout() __INTRODUCED_IN(30);
+
+/**
+ * Get the maximum timeout value for WHILE loops.
+ *
+ * @return The maximum timeout value in nanoseconds.
+ *
+ * Available since API level 30.
+ */
+uint64_t ANeuralNetworks_getMaximumLoopTimeout() __INTRODUCED_IN(30);
 
 #endif  // __ANDROID_API__ >= 30
 
@@ -2336,6 +2393,11 @@ int ANeuralNetworksExecution_setTimeout(ANeuralNetworksExecution* execution, uin
  * corresponding to this event, and the execution is not able to complete
  * before the duration is exceeded, the execution will be aborted, and
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned here.
+ *
+ * If the execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * the execution will be aborted, and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned here.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
