@@ -88,7 +88,6 @@ typedef enum {
      *   real_value = (integer_value - zeroPoint) * scale.
      */
     ANEURALNETWORKS_TENSOR_QUANT8_ASYMM = 5,
-#if __ANDROID_API__ >= __ANDROID_API_Q__
     /**
      * An 8 bit boolean scalar value.
      *
@@ -180,8 +179,6 @@ typedef enum {
      * Available since API level 29.
      */
     ANEURALNETWORKS_TENSOR_QUANT8_SYMM = 13,
-#endif  // __ANDROID_API__ >= __ANDROID_API_Q__
-#if __ANDROID_API__ >= __ANDROID_API_R__
     /**
      * A tensor of 8 bit signed integers that represent real numbers.
      *
@@ -206,7 +203,6 @@ typedef enum {
      * Available since API level 30.
      */
     ANEURALNETWORKS_MODEL = 15,
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
 } OperandCode;
 
 /**
@@ -1757,6 +1753,17 @@ typedef enum {
      * * 3: An optional {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
      *      Available since API level 29.
+     * * 4: Align corners. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false.  If True, the centers of the 4 corner
+     *      pixels of the input and output tensors are aligned, preserving the
+     *      values at the corner pixels.
+     *      Available since API level 30.
+     * * 5: Half pixel centers. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false. If True, the pixel centers are assumed to
+     *      be at (0.5, 0.5). This is the default behavior of image.resize in
+     *      TF 2.0. If this parameter is True, then align_corners parameter
+     *      must be False.
+     *      Available since API level 30.
      *
      * Inputs (resizing by scale, since API level 29):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying
@@ -1775,6 +1782,17 @@ typedef enum {
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
      * * 3: An optional {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
+     * * 4: Align corners. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false.  If True, the centers of the 4 corner
+     *      pixels of the input and output tensors are aligned, preserving the
+     *      values at the corner pixels.
+     *      Available since API level 30.
+     * * 5: Half pixel centers. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false. If True, the pixel centers are assumed to
+     *      be at (0.5, 0.5). This is the default behavior of image.resize in
+     *      TF 2.0. If this parameter is True, then align_corners parameter
+     *      must be False.
+     *      Available since API level 30.
      *
      * Outputs:
      * * 0: The output 4-D tensor, of shape
@@ -2581,7 +2599,54 @@ typedef enum {
     ANEURALNETWORKS_AXIS_ALIGNED_BBOX_TRANSFORM = 41,
 
     /**
-     * Performs a forward LSTM on the input followed by a backward LSTM.
+     * A recurrent neural network layer that applies an LSTM cell to a
+     * sequence of inputs in forward and backward directions.
+     *
+     * The op supports cross-linking via an auxiliary input. Regular cell feeds
+     * one input into the two RNN cells in the following way:
+     *
+     *       INPUT  (INPUT_REVERSED)
+     *         |         |
+     *    ---------------------
+     *    | FW_LSTM   BW_LSTM |
+     *    ---------------------
+     *         |         |
+     *      FW_OUT     BW_OUT
+     *
+     * An op with cross-linking takes two inputs and feeds them into the RNN
+     * cells in the following way:
+     *
+     *       AUX_INPUT   (AUX_INPUT_REVERSED)
+     *           |             |
+     *     INPUT | (INPUT_R'D.)|
+     *       |   |       |     |
+     *    -----------------------
+     *    |  \  /        \    / |
+     *    | FW_LSTM     BW_LSTM |
+     *    -----------------------
+     *         |           |
+     *      FW_OUT      BW_OUT
+     *
+     * The cross-linking mode is enabled iff auxiliary input and auxiliary
+     * weights are present. While stacking this op on top of itself, this
+     * allows to connect both forward and backward outputs from previous cell
+     * to the next cell's input.
+     *
+     * Since API level 30 parallel linking mode is supported. The mode is
+     * enabled if auxiliary input is present but auxiliary weights are omitted.
+     * In this case, the cell feeds inputs into the RNN in the following way:
+     *
+     *       INPUT (AUX_INPUT_REVERSED)
+     *         |         |
+     *    ---------------------
+     *    | FW_LSTM   BW_LSTM |
+     *    ---------------------
+     *         |         |
+     *      FW_OUT     BW_OUT
+     *
+     * While stacking this op on top of itself, this allows to connect both
+     * forward and backward outputs from previous cell to the next cell's
+     * corresponding inputs.
      *
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
@@ -2590,7 +2655,6 @@ typedef enum {
      * Supported tensor rank: 3, either time-major or batch-major.
      *
      * All input and output tensors must be of the same type.
-     *
      *
      * Inputs:
      * * 0: The input.
@@ -2683,25 +2747,34 @@ typedef enum {
      * * 38: The backward input cell state.
      *       A 2-D tensor of shape [batch_size, bw_num_units].
      * * 39: The auxiliary input. Optional.
-     *       A 3-D tensor of shape [max_time, batch_size, input_size], where “batch_size”
-     *       corresponds to the batching dimension, and “input_size” is the size
-     *       of the input.
-     * * 40: The forward auxiliary input-to-input weights. Optional.
-     *       A 2-D tensor of shape [fw_num_units, input_size].
-     * * 41: The forward auxiliary input-to-forget weights. Optional.
-     *       A 2-D tensor of shape [fw_num_units, input_size].
-     * * 42: The forward auxiliary input-to-cell weights. Optional.
-     *       A 2-D tensor of shape [fw_num_units, input_size].
-     * * 43: The forward auxiliary input-to-output weights. Optional.
-     *       A 2-D tensor of shape [fw_num_units, input_size].
-     * * 44: The backward auxiliary input-to-input weights. Optional.
-     *       A 2-D tensor of shape [bw_num_units, input_size].
-     * * 45: The backward auxiliary input-to-forget weights. Optional.
-     *       A 2-D tensor of shape [bw_num_units, input_size].
-     * * 46: The backward auxiliary input-to-cell weights. Optional.
-     *       A 2-D tensor of shape [bw_num_units, input_size].
-     * * 47: The backward auxiliary input-to-output weights. Optional.
-     *       A 2-D tensor of shape [bw_num_units, input_size].
+     *       A 3-D tensor of shape [max_time, batch_size, aux_input_size],
+     *       where “batch_size” corresponds to the batching dimension, and
+     *       “aux_input_size” is the size of the auxiliary input. Optional. See
+     *       the docs above for the usage modes explanation.
+     * * 40: The forward auxiliary input-to-input weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [fw_num_units, aux_input_size].
+     * * 41: The forward auxiliary input-to-forget weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [fw_num_units, aux_input_size].
+     * * 42: The forward auxiliary input-to-cell weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [fw_num_units, aux_input_size].
+     * * 43: The forward auxiliary input-to-output weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [fw_num_units, aux_input_size].
+     * * 44: The backward auxiliary input-to-input weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [bw_num_units, aux_input_size].
+     * * 45: The backward auxiliary input-to-forget weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [bw_num_units, aux_input_size].
+     * * 46: The backward auxiliary input-to-cell weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [bw_num_units, aux_input_size].
+     * * 47: The backward auxiliary input-to-output weights.
+     *       Optional. See the docs above for the usage modes explanation.
+     *       A 2-D tensor of shape [bw_num_units, aux_input_size].
      * * 48: The activation function.
      *       A value indicating the activation function:
      *       <ul>
@@ -2773,6 +2846,30 @@ typedef enum {
      *      A 3-D tensor of shape:
      *        If time-major: [max_time, batch_size, bw_output_size]
      *        If batch-major: [batch_size, max_time, bw_output_size]
+     * * 2: The forward activation state output.
+     *      A 2-D tensor of shape [batch_size, fw_output_size] containing an
+     *      activation state from the last time step in the sequence. This
+     *      output is optional and can be omitted. If this output is present
+     *      then outputs 3-5 must be present as well.
+     *      Available since API level 30.
+     * * 3: The forward cell state output.
+     *      A tensor of shape [batch_size, fw_cell_size] containing a cell state
+     *      from the last time step in the sequence. This output is optional
+     *      and can be omitted. If this output is present
+     *      then outputs 2, 4, 5 must be present as well.
+     *      Available since API level 30.
+     * * 4: The backward activation state output.
+     *      A 2-D tensor of shape [batch_size, bw_output_size] containing an
+     *      activation state from the last time step in the sequence. This
+     *      output is optional and can be omitted. If this output is present
+     *      then outputs 2, 3, 5 must be present as well.
+     *      Available since API level 30.
+     * * 5: The backward cell state output.
+     *      A tensor of shape [batch_size, bw_cell_size] containing a cell state
+     *      from the last time step in the sequence. This output is optional
+     *      and can be omitted. If this output is present
+     *      then outputs 2-4 must be present as well.
+     *      Available since API level 30.
      *
      * Available since API level 29.
      *
@@ -2806,8 +2903,8 @@ typedef enum {
      * * “activation” is the function passed as the “fused_activation_function”
      *   argument (if not “NONE”).
      *
-     * The op also supports an auxiliary input. Regular cell feeds one input
-     * into the two RNN cells in the following way:
+     * The op supports cross-linking via an auxiliary input. Regular cell feeds
+     * one input into the two RNN cells in the following way:
      *
      *       INPUT  (INPUT_REVERSED)
      *         |         |
@@ -2817,8 +2914,8 @@ typedef enum {
      *         |         |
      *      FW_OUT     BW_OUT
      *
-     * An op with an auxiliary input takes two inputs and feeds them into the
-     * RNN cells in the following way:
+     * An op with cross-linking takes two inputs and feeds them into the RNN
+     * cells in the following way:
      *
      *       AUX_INPUT   (AUX_INPUT_REVERSED)
      *           |             |
@@ -2831,9 +2928,26 @@ typedef enum {
      *         |           |
      *      FW_OUT      BW_OUT
      *
+     * The cross-linking mode is enabled iff auxiliary input and auxiliary
+     * weights are present. While stacking this op on top of itself, this
+     * allows to connect both forward and backward outputs from previous cell
+     * to the next cell's input.
+     *
+     * Since API level 30 parallel linking mode is supported. The mode is
+     * enabled if auxiliary input is present but auxiliary weights are omitted.
+     * In this case, the cell feeds inputs into the RNN in the following way:
+     *
+     *       INPUT (AUX_INPUT_REVERSED)
+     *         |         |
+     *    ---------------------
+     *    | FW_RNN     BW_RNN |
+     *    ---------------------
+     *         |         |
+     *      FW_OUT     BW_OUT
+     *
      * While stacking this op on top of itself, this allows to connect both
      * forward and backward outputs from previous cell to the next cell's
-     * inputs.
+     * corresponding inputs.
      *
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
@@ -2866,11 +2980,17 @@ typedef enum {
      *      A 2-D tensor of shape [batchSize, bwNumUnits]. Specifies a hidden
      *      state input for the first time step of the computation.
      * * 9: auxInput.
-     *      A 3-D tensor. The shape is the same as of the input 0.
+     *      A 3-D tensor. The shape is defined by the input 6 (timeMajor). If
+     *      it is set to true, then the input has a shape [maxTime, batchSize,
+     *      auxInputSize], otherwise the input has a shape [batchSize, maxTime,
+     *      auxInputSize]. Can be omitted. See the docs above for the usage
+     *      modes explanation.
      * * 10:fwAuxWeights.
-     *      A 2-D tensor of shape [fwNumUnits, inputSize].
+     *      A 2-D tensor of shape [fwNumUnits, auxInputSize]. Can be omitted.
+     *      See the docs above for the usage modes explanation.
      * * 11:bwAuxWeights.
-     *      A 2-D tensor of shape [bwNumUnits, inputSize].
+     *      A 2-D tensor of shape [bwNumUnits, auxInputSize]. Can be omitted.
+     *      See the docs above for the usage modes explanation.
      * * 12:fusedActivationFunction.
      *      A {@link FuseCode} value indicating the activation function. If
      *      “NONE” is specified then it results in a linear activation.
@@ -2896,6 +3016,18 @@ typedef enum {
      *      (timeMajor). If it is set to true, then the shape is set to
      *      [maxTime, batchSize, bwNumUnits], otherwise the shape is set to
      *      [batchSize, maxTime, bwNumUnits].
+     * * 2: The forward hidden state output.
+     *      A 2-D tensor of shape [batchSize, fwNumUnits] containing a hidden
+     *      state from the last time step in the sequence. This output is
+     *      optional and can be omitted. If this output is present then output
+     *      3 must be present as well.
+     *      Available since API level 30.
+     * * 3: The backward hidden state output.
+     *      A 2-D tensor of shape [batchSize, bwNumUnits] containing a hidden
+     *      state from the last time step in the sequence. This output is
+     *      optional and can be omitted. If this output is present then output
+     *      2 must be present as well.
+     *      Available since API level 30.
      *
      * Available since API level 29.
      *
@@ -3504,7 +3636,7 @@ typedef enum {
      * * 8: An {@link ANEURALNETWORKS_INT32} scalar, specifying the stride when
      *      walking through input in the ‘height’ dimension.
      * * 9: An {@link ANEURALNETWORKS_INT32} scalar, specifying the number of
-            groups.
+     *      groups.
      * * 10: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
      *       {@link FuseCode} values. Specifies the activation to
      *       invoke on the result.
@@ -4981,6 +5113,15 @@ typedef enum {
      *      A 3-D tensor of shape:
      *        If time-major: [max_time, batch_size, output_size]
      *        If batch-major: [batch_size, max_time, output_size]
+     * * 1: A tensor of shape [batch_size, output_size] containing a hidden
+     *      state from the last time step in the sequence. This output is
+     *      optional and can be omitted. If this output is present then
+     *      output #2 must be present as well.
+     *      Available since API level 30.
+     * * 2: A tensor of shape [batch_size, cell_size] containing a cell state
+     *      from the last time step in the sequence. This output is optional
+     *      and can be omitted.
+     *      Available since API level 30.
      *
      * Available since API level 29.
      *
@@ -5042,6 +5183,10 @@ typedef enum {
      *      it is set to 1, then the output has a shape [maxTime, batchSize,
      *      numUnits], otherwise the output has a shape [batchSize, maxTime,
      *      numUnits].
+     * * 1: A tensor of shape [batchSize, numUnits] containing hidden state
+     *      from the last time step in the sequence. This output is optional
+     *      and can be omitted.
+     *      Available since API level 30.
      *
      * Available since API level 29.
      *
@@ -5080,6 +5225,17 @@ typedef enum {
      *      height of the output tensor.
      * * 3: An {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
+     * * 4: Align corners. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false.  If True, the centers of the 4 corner
+     *      pixels of the input and output tensors are aligned, preserving the
+     *      values at the corner pixels.
+     *      Available since API level 30.
+     * * 5: Half pixel centers. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false. If True, the pixel centers are assumed to
+     *      be at (0.5, 0.5). This is the default behavior of image.resize in
+     *      TF 2.0. If this parameter is True, then align_corners parameter
+     *      must be False.
+     *      Available since API level 30.
      *
      * Inputs (resizing by scale):
      * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying
@@ -5098,6 +5254,17 @@ typedef enum {
      *      {@link ANEURALNETWORKS_FLOAT32} otherwise.
      * * 3: An {@link ANEURALNETWORKS_BOOL} scalar, default to false.
      *      Set to true to specify NCHW data layout for input0 and output0.
+     * * 4: Align corners. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false.  If True, the centers of the 4 corner
+     *      pixels of the input and output tensors are aligned, preserving the
+     *      values at the corner pixels.
+     *      Available since API level 30.
+     * * 5: Half pixel centers. An optional {@link ANEURALNETWORKS_BOOL}
+     *      scalar, default to false. If True, the pixel centers are assumed to
+     *      be at (0.5, 0.5). This is the default behavior of image.resize in
+     *      TF 2.0. If this parameter is True, then align_corners parameter
+     *      must be False.
+     *      Available since API level 30.
      *
      * Outputs:
      * * 0: The output 4-D tensor, of shape
@@ -5312,6 +5479,10 @@ typedef enum {
      *         input_output, state = body(input_output, state, input_only)
      *     return input_output
      *
+     * To prevent infinite loops, there is an implicit execution timeout
+     * associated with each loop ("loop timeout duration"). See {@link
+     * ANeuralNetworksExecution_setLoopTimeout}.
+     *
      * Inputs:
      * * 0: A {@link ANEURALNETWORKS_MODEL} reference to the condition
      *      model. The model must have (m + k + n) inputs with
@@ -5332,6 +5503,114 @@ typedef enum {
      * Available since API level 30.
      */
     ANEURALNETWORKS_WHILE = 97,
+
+    /**
+     * Computes exponential linear activation on the input tensor element-wise.
+     *
+     * The output is calculated using the following formula:
+     *
+     *     ELU(x) = max(0, x) + min(0, alpha * (exp(x) - 1))
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     *
+     * Inputs:
+     * * 0: A tensor, specifying the input. May be zero-sized.
+     * * 1: A scalar, specifying the alpha parameter.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16},
+     *      the alpha value must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For input tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32},
+     *      the alpha value must be of {@link ANEURALNETWORKS_FLOAT32}.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape and type as input0.
+     *
+     * Available since API level 30.
+     */
+    ANEURALNETWORKS_ELU = 98,
+
+    /**
+     * Computes hard-swish activation on the input tensor element-wise.
+     *
+     * Hard swish activation is introduced in
+     * https://arxiv.org/pdf/1905.02244.pdf
+     *
+     * The output is calculated using the following formula:
+     *
+     *     h-swish(x) = x * max(0, min(6, (x + 3))) / 6
+
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED}
+     *
+     * Inputs:
+     * * 0: A tensor, specifying the input. May be zero-sized.
+     *
+     * Outputs:
+     * * 0: The output tensor of same shape and type as input0.
+     *      Scale and zero point of this tensor may be different from the input
+     *      tensor's parameters.
+     *
+     * Available since API level 30.
+     */
+    ANEURALNETWORKS_HARD_SWISH = 99,
+
+    /**
+     * Creates a tensor filled with a scalar value.
+     *
+     * Supported output tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     *
+     * Inputs:
+     * * 0: A 1-D tensor, specifying the desired output tensor shape.
+     * * 1: A scalar, specifying the value to fill the output tensors with.
+     *      For output tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT16},
+     *      the scalar must be of {@link ANEURALNETWORKS_FLOAT16}.
+     *      For output tensor of {@link ANEURALNETWORKS_TENSOR_FLOAT32},
+     *      the scalar must be of {@link ANEURALNETWORKS_FLOAT32}.
+     *      For output tensor of {@link ANEURALNETWORKS_TENSOR_INT32},
+     *      the scalar must be of {@link ANEURALNETWORKS_INT32}.
+     *
+     * Outputs:
+     * * 0: The output tensor.
+     *
+     * Available since API level 30.
+     */
+    ANEURALNETWORKS_FILL = 100,
+
+    /**
+     * Returns the rank of a tensor.
+     *
+     * The rank of a tensor is the number of dimensions in it. Also known as
+     * "order", "degree", "ndims".
+     *
+     * Supported tensor {@link OperandCode}:
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
+     * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
+     * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT16_SYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_BOOL8}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT16_ASYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM}
+     * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED}
+     *
+     * Inputs:
+     * * 0: The input tensor.
+     *
+     * Outputs:
+     * * 0: A scalar of {@link ANEURALNETWORKS_INT32}, specifying the rank
+     *      of the input tensor.
+     *
+     * Available since API level 30.
+     */
+    ANEURALNETWORKS_RANK = 101,
 } OperationCode;
 
 /**
@@ -5552,7 +5831,36 @@ enum { ANEURALNETWORKS_MAX_SIZE_OF_IMMEDIATELY_COPIED_VALUES = 128 };
  */
 enum { ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN = 32 };
 
-#if __ANDROID_API__ >= __ANDROID_API_R__
+/**
+ * Different duration measurements.
+ *
+ * Durations are measured in nanoseconds.
+ *
+ * Available since API level 29.
+ */
+typedef enum {
+    // Execution time on hardware (not driver, which runs on host processor).
+    ANEURALNETWORKS_DURATION_ON_HARDWARE = 0,
+    // Execution time in driver (including time on hardware).  Excludes overhead
+    // such as that of the runtime itself and the IPC needed for the runtime to
+    // communicate with the driver.
+    ANEURALNETWORKS_DURATION_IN_DRIVER = 1,
+    // Execution time on hardware, after all dependencies have been signaled.
+    // If no dependencies specified (for example, if the execution was scheduled other
+    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
+    // reported time will be the same as ANEURALNETWORKS_DURATION_ON_HARDWARE.
+    // Available since API level 30.
+    ANEURALNETWORKS_FENCED_DURATION_ON_HARDWARE = 2,
+    // Execution time in driver, after all dependencies have been signaled. Excludes
+    // overhead such as that of the runtime itself and the IPC needed for the runtime
+    // to communicate with the driver.
+    // If no dependencies specified (for example, if the execution was scheduled other
+    // than with {@link ANeuralNetworksExecution_startComputeWithDependencies}), the
+    // reported time will be the same as ANEURALNETWORKS_DURATION_IN_DRIVER.
+    // Available since API level 30.
+    ANEURALNETWORKS_FENCED_DURATION_IN_DRIVER = 3,
+} DurationCode;
+
 /**
  * Relative execution priority.
  *
@@ -5564,7 +5872,6 @@ typedef enum {
     ANEURALNETWORKS_PRIORITY_HIGH = 110,
     ANEURALNETWORKS_PRIORITY_DEFAULT = ANEURALNETWORKS_PRIORITY_MEDIUM,
 } PriorityCode;
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
 
 /**
  * ANeuralNetworksMemory is an opaque type that represents memory.
@@ -5700,7 +6007,8 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  *        {@link ANeuralNetworksExecution_setOutput} or
  *        {@link ANeuralNetworksExecution_setOutputFromMemory}.</li>
  *    <li>Apply the model with one of the following:</li><ul>
- *        <li>Asynchronously with {@link ANeuralNetworksExecution_startCompute},
+ *        <li>Asynchronously with {@link ANeuralNetworksExecution_startCompute}
+ *            or with {@link ANeuralNetworksExecution_startComputeWithDependencies},
  *            waiting for the execution to complete with
  *            {@link ANeuralNetworksEvent_wait}.</li>
  *        <li>Synchronously with {@link ANeuralNetworksExecution_compute}.</li>
@@ -5716,13 +6024,15 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  *
  * <p>An execution cannot be modified once
  * {@link ANeuralNetworksExecution_burstCompute},
- * {@link ANeuralNetworksExecution_compute} or
- * {@link ANeuralNetworksExecution_startCompute} has been called on it.</p>
+ * {@link ANeuralNetworksExecution_compute},
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} has been called on it.</p>
  *
  * <p>An execution can be applied to a model with
  * {@link ANeuralNetworksExecution_burstCompute},
- * {@link ANeuralNetworksExecution_compute} or
- * {@link ANeuralNetworksExecution_startCompute} only once. Create new
+ * {@link ANeuralNetworksExecution_compute},
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} only once. Create new
  * executions to do new evaluations of the model.</p>
  *
  * <p>It is the application's responsibility to make sure that only one thread
@@ -5743,7 +6053,8 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * means of {@link ANeuralNetworksExecution_compute} or
  * {@link ANeuralNetworksExecution_burstCompute} (which are synchronous) in
  * different threads, or by means of
- * {@link ANeuralNetworksExecution_startCompute} (which is asynchronous).
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} (which are asynchronous).
  * (Concurrent uses of {@link ANeuralNetworksExecution_burstCompute} must be on
  * different burst objects.) The runtime makes no guarantee on the ordering of
  * completion of executions. If it's important to the application, the
@@ -5751,13 +6062,15 @@ typedef struct ANeuralNetworksCompilation ANeuralNetworksCompilation;
  * completes before the next is scheduled (for example, by scheduling all
  * executions synchronously within a single thread, or by scheduling all
  * executions asynchronously and using {@link ANeuralNetworksEvent_wait} between
- * calls to {@link ANeuralNetworksExecution_startCompute}).</p>
+ * calls to {@link ANeuralNetworksExecution_startCompute}); or by using
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} to make the execution wait for a
+ * list of events to be signaled before starting the actual evaluation.</p>
  *
  * Available since API level 27.
  */
 typedef struct ANeuralNetworksExecution ANeuralNetworksExecution;
 
-#if __ANDROID_API__ >= __ANDROID_API_Q__
+#if __ANDROID_API__ >= 29
 /**
  * Parameters for ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL operand.
  */
@@ -5802,7 +6115,7 @@ typedef struct ANeuralNetworksSymmPerChannelQuantParams {
  * Available since API level 29.
  */
 typedef struct ANeuralNetworksBurst ANeuralNetworksBurst;
-#endif  //  __ANDROID_API__ >= __ANDROID_API_Q__
+#endif  //  __ANDROID_API__ >= 29
 
 /**
  * ANeuralNetworksOperandType describes the type of an operand.
@@ -5835,7 +6148,16 @@ typedef struct ANeuralNetworksBurst ANeuralNetworksBurst;
  *         EXCEPTION: If the input is optional and omitted
  *         (by passing nullptr for buffer to
  *         {@link ANeuralNetworksExecution_setInput}) then it need
- *         not have a fully specified tensor operand type.</li></ul>
+ *         not have a fully specified tensor operand type.</li>
+ *     <li>The operand is a model output (see
+ *         {@link ANeuralNetworksModel_identifyInputsAndOutputs})
+ *         and is to be used with
+ *         {@link ANeuralNetworksExecution_startComputeWithDependencies}.
+ *         A fully specified tensor operand type must either be provided
+ *         to {@link ANeuralNetworksModel_addOperand}; or it must be
+ *         provided to the corresponding
+ *         {@link ANeuralNetworksExecution_setOutput}, or
+ *         {@link ANeuralNetworksExecution_setOutputFromMemory}.</li></ul>
  *
  * A tensor operand type of specified rank but some number of
  * unspecified dimensions is represented by setting dimensionCount to
@@ -5886,7 +6208,7 @@ typedef int32_t ANeuralNetworksOperationType;
  */
 typedef struct ANeuralNetworksEvent ANeuralNetworksEvent;
 
-#if __ANDROID_API__ >= __ANDROID_API_Q__
+#if __ANDROID_API__ >= 29
 
 /**
  * ANeuralNetworksDevice is an opaque type that represents a device.
@@ -5898,9 +6220,9 @@ typedef struct ANeuralNetworksEvent ANeuralNetworksEvent;
  */
 typedef struct ANeuralNetworksDevice ANeuralNetworksDevice;
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_Q__
+#endif  // __ANDROID_API__ >= 29
 
-#if __ANDROID_API__ >= __ANDROID_API_R__
+#if __ANDROID_API__ >= 30
 
 /**
  * ANeuralNetworksMemoryDesc is an opaque type that represents a memory descriptor.
@@ -5910,8 +6232,8 @@ typedef struct ANeuralNetworksDevice ANeuralNetworksDevice;
  *
  * To use:
  *   - Create a new memory descriptor by calling {@link ANeuralNetworksMemoryDesc_create}.
- *   - Specify all of the intended input or output roles by calling
- *     {@link ANeuralNetworksMemoryDesc_addInputRole} or
+ *   - Specify all of the intended input and output roles by calling
+ *     {@link ANeuralNetworksMemoryDesc_addInputRole} and
  *     {@link ANeuralNetworksMemoryDesc_addOutputRole}.
  *   - Optionally, specify the memory dimensions by calling
  *     {@link ANeuralNetworksMemoryDesc_setDimensions}.
@@ -5923,7 +6245,7 @@ typedef struct ANeuralNetworksDevice ANeuralNetworksDevice;
  * A memory descriptor is completed by calling {@link ANeuralNetworksMemoryDesc_finish}.
  * A memory descriptor is destroyed by calling {@link ANeuralNetworksMemoryDesc_free}.
  *
- * A memory descriptor cannot be modified once {@link ANeuralNetworksMemoryDesc_finish}
+ * A memory descriptor must not be modified once {@link ANeuralNetworksMemoryDesc_finish}
  * has been called on it.
  *
  * It is the application's responsibility to make sure that only
@@ -5948,9 +6270,9 @@ typedef struct ANeuralNetworksMemoryDesc ANeuralNetworksMemoryDesc;
  * {@link ANeuralNetworksMemoryDesc_addOutputRole}, and
  * {@link ANeuralNetworksMemoryDesc_setDimensions}.
  *
- * {@link ANeuralNetworksMemoryDesc_finish} should be called once all properties have been set.
+ * {@link ANeuralNetworksMemoryDesc_finish} must be called once all properties have been set.
  *
- * {@link ANeuralNetworksMemoryDesc_free} should be called once the memory descriptor
+ * {@link ANeuralNetworksMemoryDesc_free} must be called once the memory descriptor
  * is no longer needed.
  *
  * Available since API level 30.
@@ -6008,7 +6330,7 @@ void ANeuralNetworksMemoryDesc_free(ANeuralNetworksMemoryDesc* desc) __INTRODUCE
  * @param compilation The compilation object. It must already have been finished by calling
  *                    {@link ANeuralNetworksCompilation_finish}, and must outlive the memory
  *                    descriptor.
- * @param index The index of the input argument we are referencing. It is
+ * @param index The index of the input argument we are referencing from the compilation. It is
  *              an index into the inputs list passed to
  *              {@link ANeuralNetworksModel_identifyInputsAndOutputs}. It is not
  *              the index associated with {@link ANeuralNetworksModel_addOperand}.
@@ -6054,7 +6376,7 @@ int ANeuralNetworksMemoryDesc_addInputRole(ANeuralNetworksMemoryDesc* desc,
  * @param compilation The compilation object. It must already have been finished by calling
  *                    {@link ANeuralNetworksCompilation_finish}, and must outlive the memory
  *                    descriptor.
- * @param index The index of the output argument we are referencing. It is
+ * @param index The index of the output argument we are referencing from the compilation. It is
  *              an index into the outputs list passed to
  *              {@link ANeuralNetworksModel_identifyInputsAndOutputs}. It is not
  *              the index associated with {@link ANeuralNetworksModel_addOperand}.
@@ -6114,12 +6436,15 @@ int ANeuralNetworksMemoryDesc_finish(ANeuralNetworksMemoryDesc* desc) __INTRODUC
 /**
  * Creates a memory object from a memory descriptor.
  *
- * The memory object is created uninitialized. An uninitialized memory object may only be used
- * according to the roles specified by {@link ANeuralNetworksMemoryDesc_addOutputRole}. A memory
- * object is initialized after it is used as an output in a successful execution, or used as the
- * destination memory in a successful {@link ANeuralNetworksMemory_copy}. An initialized memory
- * object may be used according to all roles specified in {@link ANeuralNetworksMemoryDesc}. A
- * memory object will return to the uninitialized state if it is used as an output in a failed
+ * The memory object is created with an uninitialized buffer. A memory object with an uninitialized
+ * buffer may only be used according to the roles specified by {@link
+ * ANeuralNetworksMemoryDesc_addOutputRole}, or as the destination memory in {@link
+ * ANeuralNetworksMemory_copy}. The buffer of a memory object is initialized after the memory object
+ * is used as an output in a successful execution, or used as the destination memory in a successful
+ * {@link ANeuralNetworksMemory_copy}. A memory object with an initialized buffer may be used
+ * according to all roles specified in {@link ANeuralNetworksMemoryDesc}, or as the source or
+ * destination memory in {@link ANeuralNetworksMemory_copy}. The buffer of a memory object will
+ * return to the uninitialized state if the memory object is used as an output in a failed
  * execution, or used as the destination memory in a failed {@link ANeuralNetworksMemory_copy}.
  *
  * The dimensions of the memory descriptor are deduced from the dimensions of the corresponding
@@ -6129,7 +6454,8 @@ int ANeuralNetworksMemoryDesc_finish(ANeuralNetworksMemoryDesc* desc) __INTRODUC
  * unspecified dimensions or rank. In such a case, the same memory object may be used with different
  * shapes of outputs in different executions. When the memory is used as an input, the input shape
  * must be the same as the output shape from the last execution using this memory object as an
- * output. Creating a memory object with unspecified dimensions or rank may fail for certain sets of
+ * output, or the last {@link ANeuralNetworkMemory_copy} using this memory object as the destination
+ * memory. Creating a memory object with unspecified dimensions or rank may fail for certain sets of
  * roles.
  *
  * Using the memory in roles or shapes that are not compatible with the rules specified above will
@@ -6143,7 +6469,7 @@ int ANeuralNetworksMemoryDesc_finish(ANeuralNetworksMemoryDesc* desc) __INTRODUC
  * Calling {@link ANeuralNetworksModel_setOperandValueFromMemory} with the memory created from this
  * function will return an error.
  *
- * {@link ANeuralNetworksMemory_free} should be called once the memory is no longer needed.
+ * {@link ANeuralNetworksMemory_free} must be called once the memory is no longer needed.
  *
  * Attempting to create memory from an unfinished memory descriptor will return an error.
  *
@@ -6202,9 +6528,9 @@ int ANeuralNetworksMemory_createFromDesc(const ANeuralNetworksMemoryDesc* desc,
 int ANeuralNetworksMemory_copy(const ANeuralNetworksMemory* src, const ANeuralNetworksMemory* dst)
         __INTRODUCED_IN(30);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
+#endif  // __ANDROID_API__ >= 30
 
-#if __ANDROID_API__ >= __ANDROID_API_Q__
+#if __ANDROID_API__ >= 29
 
 /**
  * Get the number of available devices.
@@ -6319,33 +6645,7 @@ int ANeuralNetworksDevice_getVersion(const ANeuralNetworksDevice* device, const 
 int ANeuralNetworksDevice_getFeatureLevel(const ANeuralNetworksDevice* device,
                                           int64_t* featureLevel) __INTRODUCED_IN(29);
 
-#if __ANDROID_API__ >= __ANDROID_API_R__
-
-/**
- * Returns whether a device is able to complete or abort finishing a compilation
- * within a specified duration.
- *
- * @param device The representation of the specified device.
- * @return 'true' if {@link ANeuralNetworksCompilation_setTimeout} is supported,
- *     'false' otherwise.
- *
- * Available since API level 30.
- */
-bool ANeuralNetworksDevice_supportsCompilationTimeout(const ANeuralNetworksDevice* device)
-        __INTRODUCED_IN(30);
-
-/**
- * Returns whether a device is able to complete or abort an execution within a
- * specified duration.
- *
- * @param device The representation of the specified device.
- * @return 'true' if {@link ANeuralNetworksExecution_setTimeout} is supported,
- *     'false' otherwise.
- *
- * Available since API level 30.
- */
-bool ANeuralNetworksDevice_supportsExecutionTimeout(const ANeuralNetworksDevice* device)
-        __INTRODUCED_IN(30);
+#if __ANDROID_API__ >= 30
 
 /**
  * Wait until the device is in a live state.
@@ -6363,7 +6663,7 @@ bool ANeuralNetworksDevice_supportsExecutionTimeout(const ANeuralNetworksDevice*
  */
 int ANeuralNetworksDevice_wait(const ANeuralNetworksDevice* device) __INTRODUCED_IN(30);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
+#endif  // __ANDROID_API__ >= 30
 
 /**
  * Get the supported operations for a specified set of devices. If multiple devices
@@ -6457,13 +6757,20 @@ int ANeuralNetworksCompilation_setCaching(ANeuralNetworksCompilation* compilatio
  *
  * If {@link ANeuralNetworksExecution_setTimeout} was called on this execution,
  * and the execution is not able to complete before the timeout duration is
- * exceeded, then execution will be aborted and
+ * exceeded, then execution may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
+ *
+ * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
- * See {@link ANeuralNetworksExecution_startCompute} for asynchronous execution.
- * Synchronous execution incurs lower overhead than asynchronous execution.
+ * See {@link ANeuralNetworksExecution_burstCompute} for burst synchronous execution.
+ * See {@link ANeuralNetworksExecution_startCompute} for regular asynchronous execution.
+ * See {@link ANeuralNetworksExecution_startComputeWithDependencies} for
+ * asynchronous execution with dependencies.
  *
  * Available since API level 29.
  *
@@ -6479,9 +6786,9 @@ int ANeuralNetworksExecution_compute(ANeuralNetworksExecution* execution) __INTR
  * Get the dimensional information of the specified output operand of the model of the
  * {@link ANeuralNetworksExecution}.
  *
- * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute},
- * {@link ANeuralNetworksEvent_wait} must be called prior to this function to recuperate
- * the resources used by the execution.
+ * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute}
+ * or {@link ANeuralNetworksExecution_startComputeWithDependencies},
+ * {@link ANeuralNetworksEvent_wait} must be called prior to this function.
  *
  * @param execution The execution to be queried.
  * @param index The index of the output argument we are querying. It is
@@ -6504,9 +6811,9 @@ int ANeuralNetworksExecution_getOutputOperandRank(ANeuralNetworksExecution* exec
  * Get the dimensional information of the specified output operand of the model of the
  * {@link ANeuralNetworksExecution}. The target output operand cannot be a scalar.
  *
- * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute},
- * {@link ANeuralNetworksEvent_wait} must be called prior to this function to recuperate
- * the resources used by the execution.
+ * On asynchronous execution initiated by {@link ANeuralNetworksExecution_startCompute}
+ * or {@link ANeuralNetworksExecution_startComputeWithDependencies},
+ * {@link ANeuralNetworksEvent_wait} must be called prior to this function.
  *
  * @param execution The execution to be queried.
  * @param index The index of the output argument we are querying. It is an index into the lists
@@ -6562,13 +6869,23 @@ void ANeuralNetworksBurst_free(ANeuralNetworksBurst* burst) __INTRODUCED_IN(29);
  *
  * If {@link ANeuralNetworksExecution_setTimeout} was called on the execution,
  * and the execution is not able to complete before the timeout duration is
- * exceeded, then execution will be aborted and
+ * exceeded, then execution may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
+ *
+ * If the execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned.
  *
  * <p>There must be at most one {@link ANeuralNetworksExecution} processing at
  * any given time for any given burst object. Any
  * {@link ANeuralNetworksExecution} launched before the previous has finished
  * will result in ANEURALNETWORKS_BAD_STATE.</p>
+ *
+ * See {@link ANeuralNetworksExecution_compute} for synchronous execution.
+ * See {@link ANeuralNetworksExecution_startCompute} for regular asynchronous execution.
+ * See {@link ANeuralNetworksExecution_startComputeWithDependencies} for
+ * asynchronous execution with dependencies.
  *
  * Available since API level 29.
  *
@@ -6643,22 +6960,6 @@ int ANeuralNetworksExecution_setMeasureTiming(ANeuralNetworksExecution* executio
         __INTRODUCED_IN(29);
 
 /**
- * Different duration measurements.
- *
- * Durations are measured in nanoseconds.
- *
- * Available since API level 29.
- */
-typedef enum {
-    // Execution time on hardware (not driver, which runs on host processor).
-    ANEURALNETWORKS_DURATION_ON_HARDWARE = 0,
-    // Execution time in driver (including time on hardware).  Excludes overhead
-    // such as that of the runtime itself and the IPC needed for the runtime to
-    // communicate with the driver.
-    ANEURALNETWORKS_DURATION_IN_DRIVER = 1,
-} DurationCode;
-
-/**
  * Get the time spent in the specified {@link ANeuralNetworksExecution}, in nanoseconds.
  * The execution must have completed.
  *
@@ -6677,7 +6978,7 @@ int ANeuralNetworksExecution_getDuration(const ANeuralNetworksExecution* executi
                                          int32_t durationCode, uint64_t* duration)
         __INTRODUCED_IN(29);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_Q__
+#endif  // __ANDROID_API__ >= 29
 
 #if __ANDROID_API__ >= 27
 
@@ -6726,8 +7027,10 @@ void ANeuralNetworksMemory_free(ANeuralNetworksMemory* memory) __INTRODUCED_IN(2
  * Create an empty {@link ANeuralNetworksModel}.
  *
  * <p>This only creates the object. Computation is performed once
- * {@link ANeuralNetworksExecution_compute} or
- * {@link ANeuralNetworksExecution_startCompute} is invoked.
+ * {@link ANeuralNetworksExecution_burstCompute},
+ * {@link ANeuralNetworksExecution_compute},
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} is invoked.
  *
  * The model should be constructed with calls to
  * {@link ANeuralNetworksModel_addOperation} and
@@ -6874,7 +7177,7 @@ int ANeuralNetworksModel_addOperand(ANeuralNetworksModel* model,
 int ANeuralNetworksModel_setOperandValue(ANeuralNetworksModel* model, int32_t index,
                                          const void* buffer, size_t length) __INTRODUCED_IN(27);
 
-#if __ANDROID_API__ >= __ANDROID_API_Q__
+#if __ANDROID_API__ >= 29
 
 /**
  * Sets an operand's per channel quantization parameters.
@@ -6899,7 +7202,7 @@ int ANeuralNetworksModel_setOperandSymmPerChannelQuantParams(
         ANeuralNetworksModel* model, int32_t index,
         const ANeuralNetworksSymmPerChannelQuantParams* channelQuant) __INTRODUCED_IN(29);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_Q__
+#endif  // __ANDROID_API__ >= 29
 
 /**
  * Sets an operand to a value stored in a memory object.
@@ -7146,7 +7449,7 @@ int ANeuralNetworksCompilation_setPreference(ANeuralNetworksCompilation* compila
  *
  * If {@link ANeuralNetworksCompilation_setTimeout} was called on this
  * compilation, and the compilation is not able to be finished before the
- * timeout duration is exceeded, then compilation will be aborted and
+ * timeout duration is exceeded, then compilation may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
  *
  * See {@link ANeuralNetworksCompilation} for information on multithreaded usage.
@@ -7159,7 +7462,7 @@ int ANeuralNetworksCompilation_setPreference(ANeuralNetworksCompilation* compila
  */
 int ANeuralNetworksCompilation_finish(ANeuralNetworksCompilation* compilation) __INTRODUCED_IN(27);
 
-#if __ANDROID_API__ >= __ANDROID_API_R__
+#if __ANDROID_API__ >= 30
 
 /**
  * Set the execution priority.
@@ -7188,27 +7491,26 @@ int ANeuralNetworksCompilation_setPriority(ANeuralNetworksCompilation* compilati
         __INTRODUCED_IN(30);
 
 /**
- * Set the maximum duration for compiling the model.
+ * Set the maximum expected duration for compiling the model.
  *
  * If the device is not able to complete the compilation within the specified
- * duration, the compilation must be aborted. The timeout duration begins at the
+ * duration, the compilation may be aborted. The timeout duration begins at the
  * call to {@link ANeuralNetworksCompilation_finish}.
  *
  * By default (i.e., unless ANeuralNetworksCompilation_setTimeout is called),
  * the timeout duration for compiling the model is considered infinite.
  *
  * The {@link ANeuralNetworksCompilation} must have been created with
- * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1, and
- * the device must support compilation timeout as indicated by
- * {@link ANeuralNetworksDevice_supportsCompilationTimeout}, otherwise this
- * function will fail with ANEURALNETWORKS_BAD_DATA.
+ * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
  *
  * See {@link ANeuralNetworksCompilation} for information on multithreaded usage.
  *
  * @param compilation The compilation to be modified.
- * @param duration The maximum amount of time in nanoseconds that can be spent
- *     finishing a compilation. If this duration is exceeded, the compilation
- *     must be aborted.
+ * @param duration The maximum amount of time in nanoseconds that is expected to
+ *     be spent finishing a compilation. If this duration is exceeded, the
+ *     compilation may be aborted. If set to 0, the timeout duration is
+ *     considered infinite.
  *
  * @return ANEURALNETWORKS_NO_ERROR if successful.
  *
@@ -7217,13 +7519,15 @@ int ANeuralNetworksCompilation_setPriority(ANeuralNetworksCompilation* compilati
 int ANeuralNetworksCompilation_setTimeout(ANeuralNetworksCompilation* compilation,
                                           uint64_t duration) __INTRODUCED_IN(30);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
+#endif  // __ANDROID_API__ >= 30
 
 /**
  * Create a {@link ANeuralNetworksExecution} to apply the given compilation.
  * This only creates the object. Computation is only performed once
- * {@link ANeuralNetworksExecution_compute} or
- * {@link ANeuralNetworksExecution_startCompute} is invoked.
+ * {@link ANeuralNetworksExecution_burstCompute},
+ * {@link ANeuralNetworksExecution_compute},
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} is invoked.
  *
  * <p>The provided compilation must outlive the execution.</p>
  *
@@ -7245,8 +7549,9 @@ int ANeuralNetworksExecution_create(ANeuralNetworksCompilation* compilation,
  *
  * <p>The execution need not have been scheduled by a call to
  * {@link ANeuralNetworksExecution_burstCompute},
- * {@link ANeuralNetworksExecution_compute}, or
- * {@link ANeuralNetworksExecution_startCompute}; but if it has been scheduled,
+ * {@link ANeuralNetworksExecution_compute},
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies}; but if it has been scheduled,
  * then the application must not call {@link ANeuralNetworksExecution_free}
  * until the execution has completed (i.e.,
  * {@link ANeuralNetworksExecution_burstCompute},
@@ -7458,8 +7763,8 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
 /**
  * Schedule asynchronous evaluation of the execution.
  *
- * <p>Schedules asynchronous evaluation of the execution. Once the model has
- * been applied and the outputs are ready to be consumed, the returned event
+ * <p>Schedules asynchronous evaluation of the execution. Once the execution
+ * has completed and the outputs are ready to be consumed, the returned event
  * will be signaled. Use {@link ANeuralNetworksEvent_wait} to wait for that
  * event.
  * </p>
@@ -7469,9 +7774,15 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
  *
  * If {@link ANeuralNetworksExecution_setTimeout} was called on this execution,
  * and the execution is not able to complete before the timeout duration is
- * exceeded, then execution will be aborted and
+ * exceeded, then execution may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned through
  * {@link ANeuralNetworksEvent_wait} on the event object.
+ *
+ * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned through {@link ANeuralNetworksEvent_wait} on the event
+ * object.
  *
  * If the device can detect before the execution has started that the execution
  * will not complete within the timeout duration, the device may choose to skip
@@ -7480,7 +7791,9 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
  * See {@link ANeuralNetworksExecution_compute} for synchronous execution.
- * Synchronous execution incurs lower overhead than asynchronous execution.
+ * See {@link ANeuralNetworksExecution_burstCompute} for burst synchronous execution.
+ * See {@link ANeuralNetworksExecution_startComputeWithDependencies} for
+ * asynchronous execution with dependencies.
  *
  * Available since API level 27.
  *
@@ -7488,39 +7801,38 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
  * @param event The event that will be signaled on completion. event is set to
  *              NULL if there's an error.
  *
- * @return ANEURALNETWORKS_NO_ERROR if successful.
+ * @return ANEURALNETWORKS_NO_ERROR if the evaluation is successfully scheduled.
  */
 int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
                                           ANeuralNetworksEvent** event) __INTRODUCED_IN(27);
 
-#if __ANDROID_API__ >= __ANDROID_API_R__
+#if __ANDROID_API__ >= 30
 
 /**
- * Set the maximum duration of the specified execution.
+ * Set the maximum expected duration of the specified execution.
  *
  * If the device is not able to complete the execution within the specified
- * duration, the execution must be aborted. The timeout duration begins at a
+ * duration, the execution may be aborted. The timeout duration begins at a
  * call to one of:
- * - {@link ANeuralNetworksExecution_startCompute}
- * - {@link ANeuralNetworksExecution_compute}
  * - {@link ANeuralNetworksExecution_burstCompute}
+ * - {@link ANeuralNetworksExecution_compute}
+ * - {@link ANeuralNetworksExecution_startCompute}
+ * - {@link ANeuralNetworksExecution_startComputeWithDependencies}
  *
  * By default (i.e., unless ANeuralNetworksExecution_setTimeout is called),
  * the timeout duration for execution is considered infinite.
  *
  * The {@link ANeuralNetworksExecution} must have been created from an
  * {@link ANeuralNetworksCompilation} which in turn was created from
- * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1, and
- * the device must support execution timeout as indicated by
- * {@link ANeuralNetworksDevice_supportsExecutionTimeout}, otherwise this
- * function will fail with ANEURALNETWORKS_BAD_DATA.
+ * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
  * @param execution The execution to be modified.
- * @param duration The maximum amount of time in nanoseconds that can be spent
- *     executing a model. If this time duration is exceeded, the execution
- *     must be aborted.
+ * @param duration The maximum amount of time in nanoseconds that is expected to
+ *     be spent executing a model. If this duration is exceeded, the execution
+ *     may be aborted. If set to 0, the timeout duration is considered infinite.
  *
  * @return ANEURALNETWORKS_NO_ERROR if successful.
  *
@@ -7529,7 +7841,54 @@ int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
 int ANeuralNetworksExecution_setTimeout(ANeuralNetworksExecution* execution, uint64_t duration)
         __INTRODUCED_IN(30);
 
-#endif  // __ANDROID_API__ >= __ANDROID_API_R__
+/**
+ * Set the maximum duration of WHILE loops in the specified execution.
+ *
+ * This is a fuzzy per-loop timeout intended to prevent infinite loops.
+ *
+ * If a WHILE loop termination condition is not reached within the specified
+ * duration, the execution will be aborted.
+ *
+ * See {@link ANeuralNetworks_getDefaultLoopTimeout} and
+ * {@link ANeuralNetworks_getMaximumLoopTimeout} for the default
+ * and maximum timeout values.
+ *
+ * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
+ *
+ * @param execution The execution to be modified.
+ * @param duration The maximum amount of time in nanoseconds that can be spent
+ *     executing a WHILE loop. If the specified duration value exceeds the value
+ *     produced by {@link ANeuralNetworks_getMaximumLoopTimeout}, it will be
+ *     overridden by that value.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful.
+ *         ANEURALNETWORKS_BAD_STATE if execution has started.
+ *         ANEURALNETWORKS_UNEXPECTED_NULL if execution is NULL.
+ *
+ * Available since API level 30.
+ */
+int ANeuralNetworksExecution_setLoopTimeout(ANeuralNetworksExecution* execution, uint64_t duration)
+        __INTRODUCED_IN(30);
+
+/**
+ * Get the default timeout value for WHILE loops.
+ *
+ * @return The default timeout value in nanoseconds.
+ *
+ * Available since API level 30.
+ */
+uint64_t ANeuralNetworks_getDefaultLoopTimeout() __INTRODUCED_IN(30);
+
+/**
+ * Get the maximum timeout value for WHILE loops.
+ *
+ * @return The maximum timeout value in nanoseconds.
+ *
+ * Available since API level 30.
+ */
+uint64_t ANeuralNetworks_getMaximumLoopTimeout() __INTRODUCED_IN(30);
+
+#endif  // __ANDROID_API__ >= 30
 
 /**
  * Waits until the execution completes.
@@ -7539,13 +7898,19 @@ int ANeuralNetworksExecution_setTimeout(ANeuralNetworksExecution* execution, uin
  *
  * If {@link ANeuralNetworksExecution_setTimeout} was called on the execution
  * corresponding to this event, and the execution is not able to complete
- * before the duration is exceeded, the execution will be aborted, and
+ * before the duration is exceeded, the execution may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned here.
+ *
+ * If the execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * the execution will be aborted, and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned here.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
  * Available since API level 27.
  *
+ * @param event The event that will be signaled on completion.
  * @return ANEURALNETWORKS_NO_ERROR if the execution completed normally.
  *         ANEURALNETWORKS_UNMAPPABLE if the execution input or output memory cannot
  *         be properly mapped.
@@ -7565,6 +7930,103 @@ int ANeuralNetworksEvent_wait(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
 void ANeuralNetworksEvent_free(ANeuralNetworksEvent* event) __INTRODUCED_IN(27);
 
 #endif  // __ANDROID_API__ >= 27
+
+#if __ANDROID_API__ >= 30
+/**
+ * Create a {@link ANeuralNetworksEvent} from a sync_fence file descriptor.
+ *
+ * The newly created ANeuralNetworksEvent does not take ownership of the provided sync_fence_fd,
+ * it will instead dup the provided sync_fence_fd and own the duplicate.
+ *
+ * @param sync_fence_fd The sync_fence file descriptor.
+ * @param event The newly created object or NULL if unsuccessful.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful.
+ *
+ * Available since API level 30.
+ */
+int ANeuralNetworksEvent_createFromSyncFenceFd(int sync_fence_fd, ANeuralNetworksEvent** event)
+        __INTRODUCED_IN(30);
+
+/**
+ * Get sync_fence file descriptor from the event.
+ *
+ * If the ANeuralNetworksEvent is not backed by a sync fence, the sync_fence_fd
+ * will be set to -1, and ANEURALNETWORKS_BAD_DATA will be returned.
+ *
+ * See {@link ANeuralNetworksEvent_createFromSyncFenceFd} and
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies} to see how to create
+ * an event backed by a sync fence.
+ *
+ * The user takes ownership of the returned fd, and must close the returned file descriptor when
+ * it is no longer needed.
+ *
+ * @param event An event that is backed by a sync fence.
+ * @param sync_fence_fd The sync_fence file descriptor. The file descriptor will
+ *                      be set to -1 if there is an error.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if successful.
+ *
+ * Available since API level 30.
+ */
+int ANeuralNetworksEvent_getSyncFenceFd(const ANeuralNetworksEvent* event, int* sync_fence_fd)
+        __INTRODUCED_IN(30);
+
+/**
+ * Schedule asynchronous evaluation of the execution with dependencies.
+ *
+ * The execution will wait for all the depending events to be signaled before
+ * starting the evaluation. Once the execution has completed and the outputs
+ * are ready to be consumed, the returned event will be signaled. Depending on which
+ * devices are handling the execution, the event could be backed by a sync fence.
+ *
+ * If parts of the execution are scheduled on devices that do not support fenced execution,
+ * the function call may wait for such parts to finish before returning.
+ *
+ * The function will return an error if any of the events in dependencies is already in a bad
+ * state. After the execution is scheduled, if any of the events in dependencies does not complete
+ * normally, the execution will fail, and {@link ANeuralNetworksEvent_wait} on the returned
+ * event will return an error.
+ *
+ * The function will return an error if any of the execution outputs has a tensor operand type
+ * that is not fully specified.
+ *
+ * The function can be passed a timeout duration in nanoseconds.
+ * The duration begins when all waitFor sync fences have been signaled, and can be used
+ * together with {@link ANeuralNetworksExecution_setTimeout} which specifies the
+ * maximum timeout duration beginning at the call to
+ * {@link ANeuralNetworksExecution_startComputeWithDependencies}.
+ * If the duration is non-zero, the {@link ANeuralNetworksExecution} must have been created
+ * from an {@link ANeuralNetworksCompilation} which in turn was created from
+ * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
+ *
+ * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
+ *
+ * See {@link ANeuralNetworksExecution_compute} for synchronous execution.
+ * See {@link ANeuralNetworksExecution_burstCompute} for burst synchronous execution.
+ * See {@link ANeuralNetworksExecution_startCompute} for regular asynchronous execution.
+ *
+ * @param execution The execution to be scheduled and executed.
+ * @param dependencies A set of depending events. The actual evaluation will not start
+ *                     until all the events are signaled.
+ * @param num_dependencies The number of events in the dependencies set.
+ * @param duration The maximum length of time in nanoseconds within which execution must
+ *                 complete after all dependencies are signaled. If set to 0, the timeout
+ *                 duration is considered infinite.
+ * @param event The event that will be signaled on completion. event is set to
+ *              NULL if there's an error.
+ *
+ * @return ANEURALNETWORKS_NO_ERROR if the evaluation is successfully scheduled.
+ *
+ * Available since API level 30.
+ */
+int ANeuralNetworksExecution_startComputeWithDependencies(
+        ANeuralNetworksExecution* execution, const ANeuralNetworksEvent* const* dependencies,
+        uint32_t num_dependencies, uint64_t duration, ANeuralNetworksEvent** event)
+        __INTRODUCED_IN(30);
+
+#endif  // __ANDROID_API__ >= 30
 
 __END_DECLS
 
