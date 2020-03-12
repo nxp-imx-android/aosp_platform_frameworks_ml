@@ -31,6 +31,7 @@
 
 #include "Callbacks.h"
 #include "HalInterfaces.h"
+#include "Utils.h"
 
 namespace android {
 namespace nn {
@@ -99,7 +100,7 @@ class VersionedIDevice {
                      std::vector<hal::Extension> supportedExtensions, int32_t type,
                      std::string versionString,
                      std::pair<uint32_t, uint32_t> numberOfCacheFilesNeeded,
-                     std::pair<bool, bool> supportsDeadlines, std::string serviceName, Core core);
+                     std::string serviceName, Core core);
 
     /**
      * Gets the capabilities of a driver.
@@ -193,8 +194,9 @@ class VersionedIDevice {
      *     model.
      * @param priority Priority of the prepared model relative to other prepared
      *     models owned by an application.
-     * @param deadline Optional time point. If provided, prepareModel must
-     *     complete or be aborted by this time point.
+     * @param deadline Optional time point. If provided, prepareModel is
+     *     expected to complete by this time point. If it is not able to be
+     *     completed by the deadline, the execution may be aborted.
      * @param cacheDir String specifying the cache directory.
      * @param maybeToken An optional caching token of length
      *     Constant::BYTE_SIZE_OF_CACHE_TOKEN identifying the prepared model.
@@ -217,7 +219,7 @@ class VersionedIDevice {
      */
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
             const hal::ModelFactory& makeModel, hal::ExecutionPreference preference, hal::Priority,
-            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<hal::CacheToken>& maybeToken) const;
 
     /**
@@ -315,15 +317,6 @@ class VersionedIDevice {
     std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const;
 
     /**
-     * Returns which task deadlines are supported.
-     *
-     * @return A pair of:
-     *     - prepareModelDeadline is supported
-     *     - executionDeadline is supported
-     */
-    std::pair<bool, bool> supportsDeadlines() const;
-
-    /**
      * Returns the name of the service.
      *
      * @return Name of the service.
@@ -403,15 +396,14 @@ class VersionedIDevice {
     const int32_t kType;
     const std::string kVersionString;
     const std::pair<uint32_t, uint32_t> kNumberOfCacheFilesNeeded;
-    const std::pair<bool, bool> kSupportsDeadlines;
 
     // internal methods to prepare a model
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelInternal(
             const hal::Model& model, hal::ExecutionPreference preference, hal::Priority priority,
-            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<hal::CacheToken>& maybeToken) const;
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCacheInternal(
-            const hal::OptionalTimePoint& deadline, const std::string& cacheDir,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const hal::CacheToken& token) const;
 
     /**
@@ -643,8 +635,9 @@ class VersionedIPreparedModel {
      *     model is to be executed.
      * @param measure Specifies whether or not to measure duration of the
      *     execution.
-     * @param deadline Optional time point. If provided, prepareModel must
-     *     complete or be aborted by this time point.
+     * @param deadline Optional time point. If provided, prepareModel is
+     *     expected to complete by this time point. If it is not able to be
+     *     completed by the deadline, the execution may be aborted.
      * @param loopTimeoutDuration The maximum amount of time that should be spent
      *     executing a {@link OperationType::WHILE} operation. If a loop
      *     condition model does not output false within this duration, the
@@ -685,7 +678,7 @@ class VersionedIPreparedModel {
      */
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
             const hal::Request& request, hal::MeasureTiming measure,
-            const hal::OptionalTimePoint& deadline,
+            const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration, bool preferSynchronous) const;
 
     /**
@@ -728,17 +721,13 @@ class VersionedIPreparedModel {
      * any data object referenced by 'request' (described by the
      * {@link @1.0::DataLocation} of a {@link @1.0::RequestArgument}).
      *
-     * executeFenced can be called with an optional deadline and an optional duration.
+     * executeFenced may be called with an optional deadline and an optional duration.
      * If the execution is not able to completed before the provided deadline or within
      * the timeout duration, whichever comes earlier, the
-     * execution must be aborted, and either {@link
+     * execution may be aborted, and either {@link
      * ErrorStatus::MISSED_DEADLINE_TRANSIENT} or {@link
-     * ErrorStatus::MISSED_DEADLINE_PERSISTENT} must be returned. The error due
+     * ErrorStatus::MISSED_DEADLINE_PERSISTENT} may be returned. The error due
      * to an abort must be sent the same way as other errors, described above.
-     * If the service reports that it does not support execution deadlines via
-     * IDevice::supportsDeadlines, and executeFenced is called with a
-     * deadline, then the argument is invalid, and
-     * {@link ErrorStatus::INVALID_ARGUMENT} must be returned.
      *
      * Any number of calls to the executeFenced, execute* and executeSynchronously*
      * functions, in any combination, may be made concurrently, even on the same
@@ -750,15 +739,16 @@ class VersionedIPreparedModel {
      *                wait for all sync fence to be signaled before starting the
      *                task.
      * @param measure Specifies whether or not to measure duration of the execution.
-     * @param deadline The time by which execution must complete. If the
-     *                 execution cannot be finished by the deadline, the
-     *                 execution must be aborted.
+     * @param deadline The time by which execution is expected to complete. If
+     *                 the execution cannot be finished by the deadline, the
+     *                 execution may be aborted.
      * @param loopTimeoutDuration The maximum amount of time that should be spent
      *     executing a WHILE operation. If a loop does not terminate within this
      *     duration, the execution must be aborted. This must be set if an only
      *     if the model contains a {@link OperationType::WHILE} operation.
-     * @param timeoutDurationAfterFence The maximum timeout duration within which execution must
-     *                                  complete after all sync fences in waitFor are signaled.
+     * @param timeoutDurationAfterFence The timeout duration within which the
+     *                                  execution is expected to complete after
+     *                                  all sync fences in waitFor are signaled.
      * @return A tuple consisting of:
      *         - Error code of the dispatch call.
      *         - A sync_fence that will be triggered when the task is completed.
@@ -772,7 +762,7 @@ class VersionedIPreparedModel {
      */
     std::tuple<int, hal::hidl_handle, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
             const hal::Request& request, const hal::hidl_vec<hal::hidl_handle>& waitFor,
-            hal::MeasureTiming measure, const hal::OptionalTimePoint& deadline,
+            hal::MeasureTiming measure, const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration,
             const hal::OptionalTimeoutDuration& timeoutDurationAfterFence);
 
@@ -781,11 +771,11 @@ class VersionedIPreparedModel {
 
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeAsynchronously(
             const hal::Request& request, hal::MeasureTiming timing,
-            const hal::OptionalTimePoint& deadline,
+            const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration) const;
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeSynchronously(
             const hal::Request& request, hal::MeasureTiming measure,
-            const hal::OptionalTimePoint& deadline,
+            const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration) const;
 
     /**

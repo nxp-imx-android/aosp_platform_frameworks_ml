@@ -58,7 +58,7 @@ class PreparedModel {
             const std::vector<ModelArgumentInfo>& inputs,
             const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
             const std::shared_ptr<ExecutionBurstController>& burstController,
-            hal::MeasureTiming measure, const hal::OptionalTimePoint& deadline,
+            hal::MeasureTiming measure, const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration) const = 0;
 
     // Perform fenced computation with given input/output argument info and memory pools.
@@ -68,7 +68,7 @@ class PreparedModel {
             const std::vector<ModelArgumentInfo>& inputs,
             const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
             const std::vector<int>& waitFor, hal::MeasureTiming measure,
-            const hal::OptionalTimePoint& deadline,
+            const std::optional<Deadline>& deadline,
             const hal::OptionalTimeoutDuration& loopTimeoutDuration,
             const hal::OptionalTimeoutDuration& timeoutDurationAfterFence) const = 0;
 
@@ -100,12 +100,11 @@ class Device {
     virtual hal::PerformanceInfo getIfPerformance() const = 0;
     virtual hal::PerformanceInfo getWhilePerformance() const = 0;
     virtual bool isCachingSupported() const = 0;
-    virtual std::pair<bool, bool> supportsDeadlines() const = 0;
     virtual int wait() const = 0;
 
     virtual std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
             const hal::ModelFactory& makeModel, hal::ExecutionPreference preference,
-            hal::Priority priority, const hal::OptionalTimePoint& deadline,
+            hal::Priority priority, const std::optional<Deadline>& deadline,
             const std::string& cacheDir,
             const std::optional<hal::CacheToken>& maybeToken) const = 0;
 
