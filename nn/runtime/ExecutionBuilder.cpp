@@ -320,13 +320,6 @@ int ExecutionBuilder::setTimeoutDuration(uint64_t duration) {
                       "ANeuralNetworksCompilation_createForDevices with numDevices = 1";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    const auto& device = mCompilation->mDevices.front();
-    const bool supportsExecutionDeadline = device->supportsDeadlines().second;
-    if (!supportsExecutionDeadline) {
-        LOG(ERROR) << "ANeuralNetworksExecution_setTimeout called on device that does not support "
-                      "execution timeouts.";
-        return ANEURALNETWORKS_BAD_DATA;
-    }
     if (mStarted) {
         LOG(ERROR) << "ANeuralNetworksExecution_setTimeout called after the execution has started.";
         return ANEURALNETWORKS_BAD_STATE;
@@ -458,6 +451,7 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
                                          const ExecutionPlan& plan,
                                          std::shared_ptr<ExecutionPlan::Controller> controller,
                                          bool allowFallback,
+                                         const std::optional<Deadline>& deadline,
                                          const sp<ExecutionCallback>& executionCallback) {
     CHECK(executionBuilder != nullptr);
     VLOG(EXECUTION) << "ExecutionBuilder::compute (from plan, iteratively)";
@@ -493,7 +487,7 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
         const bool executorIsCpu = executor->isCpu();
 
         // Attempt to execute a single step of the execution.
-        auto [stepN, stepOutputShapes, stepTiming] = executor->compute(burstController);
+        auto [stepN, stepOutputShapes, stepTiming] = executor->compute(deadline, burstController);
 
         // Update global outputs.
         if (!executor->updateOutputShapes(stepOutputShapes, &outputShapes)) {
@@ -586,7 +580,8 @@ static void asyncStartComputePartitioned(ExecutionBuilder* executionBuilder,
 static std::tuple<int, int, sp<hal::IFencedExecutionCallback>> startComputeFenced(
         ExecutionBuilder* executionBuilder, const ExecutionPlan& plan,
         std::shared_ptr<ExecutionPlan::Controller> controller, const std::vector<int>& waitFor,
-        uint64_t timeoutDurationAfterFence, bool allowFallback) {
+        uint64_t timeoutDurationAfterFence, const std::optional<Deadline>& deadline,
+        bool allowFallback) {
     CHECK(executionBuilder != nullptr);
     VLOG(EXECUTION) << "ExecutionBuilder::computeFenced (from plan, iteratively)";
     // Disallow fallback when the ExecutionPlan is simple on CPU.
@@ -627,7 +622,7 @@ static std::tuple<int, int, sp<hal::IFencedExecutionCallback>> startComputeFence
 
         // Attempt to execute a single step of the execution.
         auto [stepN, syncFd, callback] =
-                executor->computeFenced(waitForFds, timeoutDurationAfterFence);
+                executor->computeFenced(waitForFds, timeoutDurationAfterFence, deadline);
 
         // Update waitForFds, syncFence for the next step.
         syncFence = syncFd;
@@ -696,15 +691,8 @@ int ExecutionBuilder::computeFenced(const std::vector<int>& waitFor,
                        "ANeuralNetworksCompilation_createForDevices with numDevices = 1";
             return ANEURALNETWORKS_BAD_DATA;
         }
-        const auto& device = mCompilation->mDevices.front();
-        const bool supportsExecutionDeadline = device->supportsDeadlines().second;
-        if (!supportsExecutionDeadline) {
-            LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies called with "
-                          "non-zero duration on device that does not support "
-                          "execution timeouts.";
-            return ANEURALNETWORKS_BAD_DATA;
-        }
     }
+    const auto deadline = makeDeadline(mTimeoutDuration);
     for (auto& p : mInputs) {
         if (p.state == ModelArgumentInfo::UNSPECIFIED) {
             LOG(ERROR) << "ANeuralNetworksExecution_startComputeWithDependencies"
@@ -734,7 +722,7 @@ int ExecutionBuilder::computeFenced(const std::vector<int>& waitFor,
     VLOG(EXECUTION) << "ExecutionBuilder::computeFenced";
     int result;
     std::tie(result, mSyncFenceFd, mFencedExecutionCallback) = startComputeFenced(
-            this, *mPlan, controller, waitFor, timeoutDurationAfterFence, allowFallback);
+            this, *mPlan, controller, waitFor, timeoutDurationAfterFence, deadline, allowFallback);
     *syncFence = mSyncFenceFd;
     return result;
 }
@@ -745,10 +733,11 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
             << "synchronizationCallback and burstBuilder cannot simultaneously be used";
 
     const bool synchronous = (synchronizationCallback == nullptr);
-
     if (!synchronous) {
         *synchronizationCallback = nullptr;
     }
+
+    const auto deadline = makeDeadline(mTimeoutDuration);
 
     // TODO validate that we have full types for all inputs and outputs,
     // that the graph is not cyclic,
@@ -794,7 +783,7 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         VLOG(EXECUTION) << "ExecutionBuilder::compute (synchronous API)";
         sp<ExecutionCallback> localSynchronizationCallback = new ExecutionCallback();
         localSynchronizationCallback->setOnFinish(wrappedFinish);
-        asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
+        asyncStartComputePartitioned(this, *mPlan, controller, allowFallback, deadline,
                                      localSynchronizationCallback);
         localSynchronizationCallback->wait();
         if (mMeasureTiming) {
@@ -815,14 +804,15 @@ int ExecutionBuilder::compute(sp<ExecutionCallback>* synchronizationCallback,
         executionCallback->setOnFinish(wrappedFinish);
         if (DeviceManager::get()->syncExecRuntime()) {
             VLOG(EXECUTION) << "ExecutionBuilder::compute (asynchronous API, non-threaded)";
-            asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
+            asyncStartComputePartitioned(this, *mPlan, controller, allowFallback, deadline,
                                          executionCallback);
         } else {
             VLOG(EXECUTION) << "ExecutionBuilder::compute (asynchronous API)";
-            std::thread asyncExecution([this, controller, allowFallback, executionCallback] {
-                asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
-                                             executionCallback);
-            });
+            std::thread asyncExecution(
+                    [this, controller, allowFallback, deadline, executionCallback] {
+                        asyncStartComputePartitioned(this, *mPlan, controller, allowFallback,
+                                                     deadline, executionCallback);
+                    });
             executionCallback->bindThread(std::move(asyncExecution));
         }
         *synchronizationCallback = executionCallback;
@@ -1007,6 +997,7 @@ static OptionalTimeoutDuration makeTimeoutDuration(uint64_t nanoseconds) {
 }
 
 std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::compute(
+        const std::optional<Deadline>& deadline,
         const std::shared_ptr<ExecutionBurstController>& burstController) {
     CHECK(mPreparedModel != nullptr);
 
@@ -1016,10 +1007,6 @@ std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::compute(
     }
 
     const MeasureTiming measure = measureTiming(mExecutionBuilder);
-    const auto [timePointN, deadline] = makeTimePoint(mExecutionBuilder->getTimeoutDuration());
-    if (timePointN != ANEURALNETWORKS_NO_ERROR) {
-        return {timePointN, {}, kNoTiming};
-    }
     const OptionalTimeoutDuration loopTimeoutDuration =
             makeTimeoutDuration(mExecutionBuilder->getLoopTimeoutDuration());
     const auto [n, outputShapes, timing] = mPreparedModel->execute(
@@ -1030,7 +1017,8 @@ std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::compute(
 }
 
 std::tuple<int, int, sp<hal::IFencedExecutionCallback>> StepExecutor::computeFenced(
-        const std::vector<int>& waitFor, uint64_t timeoutDurationAfterFence) {
+        const std::vector<int>& waitFor, uint64_t timeoutDurationAfterFence,
+        const std::optional<Deadline>& deadline) {
     CHECK(mPreparedModel != nullptr);
 
     if (VLOG_IS_ON(EXECUTION)) {
@@ -1039,10 +1027,6 @@ std::tuple<int, int, sp<hal::IFencedExecutionCallback>> StepExecutor::computeFen
     }
 
     const MeasureTiming measure = measureTiming(mExecutionBuilder);
-    const auto [timePointN, deadline] = makeTimePoint(mExecutionBuilder->getTimeoutDuration());
-    if (timePointN != ANEURALNETWORKS_NO_ERROR) {
-        return {timePointN, -1, nullptr};
-    }
     const OptionalTimeoutDuration loopTimeoutDuration =
             makeTimeoutDuration(mExecutionBuilder->getLoopTimeoutDuration());
     OptionalTimeoutDuration optionalTimeoutDurationAfterFence;
@@ -1077,7 +1061,7 @@ std::tuple<int, std::vector<OutputShape>, Timing> StepExecutor::computeOnCpuFall
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return {n, {}, kNoTiming};
     }
-    return compute(/*burstController=*/nullptr);
+    return compute({}, /*burstController=*/nullptr);
 }
 
 }  // namespace nn

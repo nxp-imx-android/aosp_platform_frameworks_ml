@@ -162,14 +162,6 @@ Return<void> SampleDriver::getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeed
     return Void();
 }
 
-Return<void> SampleDriver::supportsDeadlines(supportsDeadlines_cb cb) {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INITIALIZATION,
-                 "SampleDriver::supportsDeadlines");
-    // Set both numbers to be false for deadlines not supported.
-    cb(/*prepareModelDeadline=*/false, /*executionDeadline=*/false);
-    return Void();
-}
-
 Return<V1_0::ErrorStatus> SampleDriver::prepareModel(
         const V1_0::Model& model, const sp<V1_0::IPreparedModelCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION, "SampleDriver::prepareModel");
@@ -261,6 +253,7 @@ template <typename T_IExecutionCallback>
 void asyncExecute(const Request& request, MeasureTiming measure, time_point driverStart,
                   const Model& model, const SampleDriver& driver,
                   const std::vector<RunTimePoolInfo>& poolInfos,
+                  const std::optional<Deadline>& deadline,
                   const OptionalTimeoutDuration& loopTimeoutDuration,
                   const sp<T_IExecutionCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INPUTS_AND_OUTPUTS,
@@ -277,6 +270,9 @@ void asyncExecute(const Request& request, MeasureTiming measure, time_point driv
     if (loopTimeoutDuration.getDiscriminator() !=
         OptionalTimeoutDuration::hidl_discriminator::none) {
         executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
+    if (deadline.has_value()) {
+        executor.setDeadline(*deadline);
     }
     time_point driverEnd, deviceStart, deviceEnd;
     if (measure == MeasureTiming::YES) deviceStart = now();
@@ -299,7 +295,7 @@ void asyncExecute(const Request& request, MeasureTiming measure, time_point driv
 template <typename T_IExecutionCallback>
 ErrorStatus executeBase(const Request& request, MeasureTiming measure, const Model& model,
                         const SampleDriver& driver, const std::vector<RunTimePoolInfo>& poolInfos,
-                        const OptionalTimePoint& deadline,
+                        const OptionalTimePoint& halDeadline,
                         const OptionalTimeoutDuration& loopTimeoutDuration,
                         const sp<T_IExecutionCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION, "SampleDriver::executeBase");
@@ -316,17 +312,18 @@ ErrorStatus executeBase(const Request& request, MeasureTiming measure, const Mod
         notify(callback, ErrorStatus::INVALID_ARGUMENT, {}, kNoTiming);
         return ErrorStatus::INVALID_ARGUMENT;
     }
-    if (deadline.getDiscriminator() != OptionalTimePoint::hidl_discriminator::none) {
-        notify(callback, ErrorStatus::INVALID_ARGUMENT, {}, kNoTiming);
-        return ErrorStatus::INVALID_ARGUMENT;
+    const auto deadline = makeDeadline(halDeadline);
+    if (hasDeadlinePassed(deadline)) {
+        notify(callback, ErrorStatus::MISSED_DEADLINE_PERSISTENT, {}, kNoTiming);
+        return ErrorStatus::NONE;
     }
 
     // This thread is intentionally detached because the sample driver service
     // is expected to live forever.
-    std::thread([&model, &driver, &poolInfos, request, measure, driverStart, loopTimeoutDuration,
-                 callback] {
-        asyncExecute(request, measure, driverStart, model, driver, poolInfos, loopTimeoutDuration,
-                     callback);
+    std::thread([&model, &driver, &poolInfos, request, measure, driverStart, deadline,
+                 loopTimeoutDuration, callback] {
+        asyncExecute(request, measure, driverStart, model, driver, poolInfos, deadline,
+                     loopTimeoutDuration, callback);
     }).detach();
 
     return ErrorStatus::NONE;
@@ -358,7 +355,7 @@ Return<V1_3::ErrorStatus> SamplePreparedModel::execute_1_3(
 static std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronouslyBase(
         const Request& request, MeasureTiming measure, const Model& model,
         const SampleDriver& driver, const std::vector<RunTimePoolInfo>& poolInfos,
-        const OptionalTimePoint& deadline, const OptionalTimeoutDuration& loopTimeoutDuration) {
+        const OptionalTimePoint& halDeadline, const OptionalTimeoutDuration& loopTimeoutDuration) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                  "SampleDriver::executeSynchronouslyBase");
     VLOG(DRIVER) << "executeSynchronouslyBase(" << SHOW_IF_DEBUG(toString(request)) << ")";
@@ -369,8 +366,9 @@ static std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronous
     if (!validateRequest(request, model)) {
         return {ErrorStatus::INVALID_ARGUMENT, {}, kNoTiming};
     }
-    if (deadline.getDiscriminator() != OptionalTimePoint::hidl_discriminator::none) {
-        return {ErrorStatus::INVALID_ARGUMENT, {}, kNoTiming};
+    const auto deadline = makeDeadline(halDeadline);
+    if (hasDeadlinePassed(deadline)) {
+        return {ErrorStatus::MISSED_DEADLINE_PERSISTENT, {}, kNoTiming};
     }
 
     NNTRACE_FULL_SWITCH(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INPUTS_AND_OUTPUTS,
@@ -386,6 +384,9 @@ static std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronous
     if (loopTimeoutDuration.getDiscriminator() !=
         OptionalTimeoutDuration::hidl_discriminator::none) {
         executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
+    if (deadline.has_value()) {
+        executor.setDeadline(*deadline);
     }
     if (measure == MeasureTiming::YES) deviceStart = now();
     int n = executor.run(model, request, poolInfos, requestPoolInfos);
@@ -424,7 +425,7 @@ Return<void> SamplePreparedModel::executeSynchronously_1_3(
 // The sample driver will finish the execution and then return.
 Return<void> SamplePreparedModel::executeFenced(
         const hal::Request& request, const hidl_vec<hidl_handle>& waitFor, MeasureTiming measure,
-        const OptionalTimePoint& deadline, const OptionalTimeoutDuration& loopTimeoutDuration,
+        const OptionalTimePoint& halDeadline, const OptionalTimeoutDuration& loopTimeoutDuration,
         const OptionalTimeoutDuration& duration, executeFenced_cb cb) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                  "SamplePreparedModel::executeFenced");
@@ -433,10 +434,13 @@ Return<void> SamplePreparedModel::executeFenced(
     time_point driverStart, driverEnd, deviceStart, deviceEnd;
     if (measure == MeasureTiming::YES) driverStart = now();
 
-    if (duration.getDiscriminator() != OptionalTimeoutDuration::hidl_discriminator::none ||
-        deadline.getDiscriminator() != OptionalTimePoint::hidl_discriminator::none ||
-        !validateRequest(request, mModel)) {
+    if (!validateRequest(request, mModel)) {
         cb(ErrorStatus::INVALID_ARGUMENT, hidl_handle(nullptr), nullptr);
+        return Void();
+    }
+    const auto deadline = makeDeadline(halDeadline);
+    if (hasDeadlinePassed(deadline)) {
+        cb(ErrorStatus::MISSED_DEADLINE_PERSISTENT, hidl_handle(nullptr), nullptr);
         return Void();
     }
 
@@ -451,6 +455,15 @@ Return<void> SamplePreparedModel::executeFenced(
             LOG(ERROR) << "sync_wait failed";
             cb(ErrorStatus::GENERAL_FAILURE, hidl_handle(nullptr), nullptr);
             return Void();
+        }
+    }
+
+    // Update deadline if the timeout duration is closer than the deadline.
+    auto closestDeadline = deadline;
+    if (duration.getDiscriminator() != OptionalTimeoutDuration::hidl_discriminator::none) {
+        const auto timeoutDurationDeadline = makeDeadline(duration.nanoseconds());
+        if (!closestDeadline.has_value() || *closestDeadline > timeoutDurationDeadline) {
+            closestDeadline = timeoutDurationDeadline;
         }
     }
 
@@ -471,6 +484,9 @@ Return<void> SamplePreparedModel::executeFenced(
     if (loopTimeoutDuration.getDiscriminator() !=
         OptionalTimeoutDuration::hidl_discriminator::none) {
         executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
+    if (closestDeadline.has_value()) {
+        executor.setDeadline(*closestDeadline);
     }
     if (measure == MeasureTiming::YES) deviceStart = now();
     int n = executor.run(mModel, request, mPoolInfos, requestPoolInfos);
