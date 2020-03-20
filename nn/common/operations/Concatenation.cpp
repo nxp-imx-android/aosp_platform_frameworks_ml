@@ -106,32 +106,16 @@ inline bool concatenation(IOperationExecutionContext* context) {
                          context->getOutputShape(kOutputTensor));
 }
 
-// Convert int8 quantized values to uint8 assuming that the scale is the same
-// and the distance between offsets is 128.
-inline void convertInt8ToUInt8(const int8_t* input, std::vector<uint8_t>* output) {
-    CHECK(input != nullptr);
-    CHECK(output != nullptr);
-    for (int i = 0; i < output->size(); ++i) {
-        (*output)[i] = static_cast<uint8_t>(static_cast<int32_t>(input[i]) + 128);
-    }
-}
-
-// Convert uint8 quantized values to int8 assuming that the scale is the same
-// and the distance between offsets is 128.
-inline void convertUInt8ToInt8(const std::vector<uint8_t>& input, int8_t* output) {
-    CHECK(output != nullptr);
-    for (int i = 0; i < input.size(); ++i) {
-        output[i] = static_cast<int8_t>(static_cast<int32_t>(input[i]) - 128);
-    }
-}
-
 template <>
 inline bool concatenation<int8_t>(IOperationExecutionContext* context) {
     uint32_t inputCount = context->getNumInputs() - 1;
     std::vector<std::vector<uint8_t>> inputs_uint8(inputCount);
     for (int i = 0; i < inputCount; ++i) {
-        inputs_uint8[i].resize(getNumberOfElements(context->getInputShape(i)));
-        convertInt8ToUInt8(context->getInputBuffer<int8_t>(i), &inputs_uint8[i]);
+        const auto currentSize = getNumberOfElements(context->getInputShape(i));
+        inputs_uint8[i].resize(currentSize);
+        if (currentSize != 0) {
+            convertInt8ToUInt8(context->getInputBuffer<int8_t>(i), &inputs_uint8[i]);
+        }
     }
     std::vector<const uint8_t*> inputDatas;
     std::vector<Shape> inputShapes;

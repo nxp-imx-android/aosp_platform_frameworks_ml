@@ -98,7 +98,7 @@ int ModelBuilder::addOperand(const ANeuralNetworksOperandType& type) {
             .zeroPoint = type.zeroPoint,
             .lifetime = OperandLifeTime::TEMPORARY_VARIABLE,
             .location = {.poolIndex = 0, .offset = 0, .length = 0},
-            .extraParams = Operand::ExtraParams(),
+            .extraParams = OperandExtraParams(),
     });
     mHasOEMOperand |= isOemOperand;
     return ANEURALNETWORKS_NO_ERROR;
@@ -169,6 +169,35 @@ int ModelBuilder::setOperandValue(uint32_t index, const void* buffer, size_t len
             mLargeOperandValues.push_back(LargeValue{.operandIndex = index, .buffer = buffer});
         }
     }
+    return ANEURALNETWORKS_NO_ERROR;
+}
+
+int ModelBuilder::setOperandValueFromModel(uint32_t index, const ModelBuilder* value) {
+    VLOG(MODEL) << __func__ << " for operand " << index << " model " << value;
+    if (badState("setOperandValueFromModel")) {
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (!value->mCompletedModel) {
+        LOG(ERROR) << "ANeuralNetworksModel_setOperandValueFromModel value model must be finished";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (value->mInvalidModel) {
+        LOG(ERROR) << "ANeuralNetworksModel_setOperandValueFromModel value model is invalid";
+        return ANEURALNETWORKS_BAD_STATE;
+    }
+    if (index >= operandCount()) {
+        LOG(ERROR) << "ANeuralNetworksModel_setOperandValueFromModel setting operand " << index
+                   << " of " << operandCount();
+        return ANEURALNETWORKS_BAD_DATA;
+    }
+    Operand& operand = mOperands[index];
+    operand.lifetime = OperandLifeTime::SUBGRAPH;
+    operand.location = {
+            .poolIndex = 0,
+            .offset = static_cast<uint32_t>(mReferencedModels.size()),
+            .length = 0,
+    };
+    mReferencedModels.push_back(value);
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -298,19 +327,16 @@ int ModelBuilder::setOperandValueFromMemory(uint32_t index, const Memory* memory
                    << " which has operand type that is not fully specified";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    // Only BLOB format AHardwareBuffer can be used for constant data.
-    if (memory->getHidlMemory().name() == "hardware_buffer") {
-        LOG(ERROR) << "ANeuralNetworksModel_setOperandValueFromMemory passed an AHardwareBuffer"
-                   << " that is not in AHARDWAREBUFFER_FORMAT_BLOB format";
-        return ANEURALNETWORKS_UNMAPPABLE;
-    }
     uint32_t neededLength = TypeManager::get()->getSizeOfData(operand);
     if (neededLength != length) {
         LOG(ERROR) << "ANeuralNetworksModel_setOperandValueFromMemory setting " << length
                    << " bytes when needing " << neededLength;
         return ANEURALNETWORKS_BAD_DATA;
     }
-    if (!memory->validateSize(offset, length)) {
+    // Set compilation = nullptr to indicate that the memory is used for a model constant.
+    // In this case, IOType::INPUT is a dummy value that is ignored by the validator.
+    if (!memory->getValidator().validate(/*compilation=*/nullptr, /*dummy*/ IOType::INPUT, index,
+                                         nullptr, offset, length)) {
         return ANEURALNETWORKS_BAD_DATA;
     }
     operand.lifetime = OperandLifeTime::CONSTANT_REFERENCE;
@@ -342,8 +368,33 @@ int ModelBuilder::addOperation(ANeuralNetworksOperationType type, uint32_t input
             return ANEURALNETWORKS_BAD_DATA;
         }
     }
+
+    auto isValidSubgraphReference = [this](const Operand& modelOperand) -> bool {
+        NN_RET_CHECK(modelOperand.type == OperandType::SUBGRAPH)
+                << "Unexpected operand type: " << toString(modelOperand.type);
+        NN_RET_CHECK_LT(modelOperand.location.offset, referencedModelCount())
+                << "Invalid subgraph model reference";
+        return true;
+    };
+    auto getInputCount = [this](const Operand& modelOperand) -> uint32_t {
+        return getReferencedModel(modelOperand)->inputCount();
+    };
+    auto getOutputCount = [this](const Operand& modelOperand) -> uint32_t {
+        return getReferencedModel(modelOperand)->outputCount();
+    };
+    auto getInputOperand = [this](const Operand& modelOperand, uint32_t index) -> const Operand* {
+        return &getReferencedModel(modelOperand)->getInputOperand(index);
+    };
+    auto getOutputOperand = [this](const Operand& modelOperand, uint32_t index) -> const Operand* {
+        return &getReferencedModel(modelOperand)->getOutputOperand(index);
+    };
     NN_RETURN_IF_ERROR(validateOperation(type, inputCount, inputs, outputCount, outputs, mOperands,
-                                         HalVersion::LATEST));
+                                         HalVersion::LATEST,
+                                         {.isValidSubgraphReference = isValidSubgraphReference,
+                                          .getSubgraphInputCount = getInputCount,
+                                          .getSubgraphOutputCount = getOutputCount,
+                                          .getSubgraphInputOperand = getInputOperand,
+                                          .getSubgraphOutputOperand = getOutputOperand}));
 
     uint32_t operationIndex = operationCount();
     if (operationIndex >= MAX_NUMBER_OF_OPERATIONS) {
@@ -411,8 +462,8 @@ int ModelBuilder::identifyInputsAndOutputs(uint32_t inputCount, const uint32_t* 
         return true;
     };
 
-    if (!setArguments(&mInputIndexes, inputCount, inputs, OperandLifeTime::MODEL_INPUT) ||
-        !setArguments(&mOutputIndexes, outputCount, outputs, OperandLifeTime::MODEL_OUTPUT)) {
+    if (!setArguments(&mInputIndexes, inputCount, inputs, OperandLifeTime::SUBGRAPH_INPUT) ||
+        !setArguments(&mOutputIndexes, outputCount, outputs, OperandLifeTime::SUBGRAPH_OUTPUT)) {
         return ANEURALNETWORKS_BAD_DATA;
     }
 
@@ -496,7 +547,7 @@ void ModelBuilder::sortIntoRunOrder() {
         for (uint32_t operandIndex : mOperations[operationIndex].inputs) {
             auto lifetime = mOperands[operandIndex].lifetime;
             if (lifetime == OperandLifeTime::TEMPORARY_VARIABLE ||
-                lifetime == OperandLifeTime::MODEL_OUTPUT) {
+                lifetime == OperandLifeTime::SUBGRAPH_OUTPUT) {
                 count++;
                 operandToOperations.insert(
                         std::pair<uint32_t, uint32_t>(operandIndex, operationIndex));
@@ -530,54 +581,124 @@ void ModelBuilder::sortIntoRunOrder() {
     mOperations = runOrder;
 }
 
+// A helper class to simplify state management when creating a HIDL model.
+class ModelBuilder::HidlModelMaker {
+   public:
+    static Model run(const ModelBuilder* model);
+
+   private:
+    static Subgraph makeSubgraph(const ModelBuilder* model);
+    HidlModelMaker() {}
+    Model makeHidlModel(const ModelBuilder* mainModel);
+    uint32_t addSubgraph(const ModelBuilder* refModel);
+    void updateOperandLocations(const ModelBuilder* refModel, Subgraph* subgraph);
+    void addExtensions(const ModelBuilder* model);
+    void addExtensionWithPrefix(uint16_t prefix);
+
+    std::vector<Subgraph> mRefSubgraphs;
+    std::vector<uint8_t> mOperandValues;
+    MemoryTracker mMemories;
+    std::vector<ExtensionNameAndPrefix> mExtensionNameToPrefix;
+    std::set<uint16_t> mPrefixSet;
+};
+
 Model ModelBuilder::makeHidlModel() const {
+    // TODO: Cache the HIDL model to speed up subsequent calls.
+    return HidlModelMaker::run(this);
+}
+
+Model ModelBuilder::HidlModelMaker::run(const ModelBuilder* model) {
+    // run() ensures the state of HidlModelMaker is destroyed after the call.
+    return HidlModelMaker().makeHidlModel(model);
+}
+
+Model ModelBuilder::HidlModelMaker::makeHidlModel(const ModelBuilder* mainModel) {
+    addExtensions(mainModel);
     Model model;
-
-    model.operands = mOperands;
-    model.operations = mOperations;
-    model.inputIndexes = mInputIndexes;
-    model.outputIndexes = mOutputIndexes;
-    model.operandValues = mSmallOperandValues;
-    model.relaxComputationFloat32toFloat16 = mRelaxComputationFloat32toFloat16;
-    model.extensionNameToPrefix = getExtensionNameToPrefixMap();
-
-    uint32_t count = mMemories.size();
-    model.pools.resize(count);
+    model.main = makeSubgraph(mainModel);
+    updateOperandLocations(mainModel, &model.main);
+    model.referenced = std::move(mRefSubgraphs);
+    model.operandValues = std::move(mOperandValues);
+    model.pools.resize(mMemories.size());
     std::transform(mMemories.begin(), mMemories.end(), model.pools.begin(),
                    [](const Memory* m) { return m->getHidlMemory(); });
-
+    model.relaxComputationFloat32toFloat16 = mainModel->mRelaxComputationFloat32toFloat16;
+    model.extensionNameToPrefix = std::move(mExtensionNameToPrefix);
     return model;
 }
 
-std::vector<Model::ExtensionNameAndPrefix> ModelBuilder::getExtensionNameToPrefixMap() const {
-    std::vector<Model::ExtensionNameAndPrefix> extensionNameToPrefix;
-    std::set<uint16_t> prefixSet;
+Subgraph ModelBuilder::HidlModelMaker::makeSubgraph(const ModelBuilder* model) {
+    Subgraph subgraph;
+    subgraph.operands = model->mOperands;
+    subgraph.operations = model->mOperations;
+    subgraph.inputIndexes = model->mInputIndexes;
+    subgraph.outputIndexes = model->mOutputIndexes;
+    return subgraph;
+}
 
-    auto addExtensionWithPrefix = [&extensionNameToPrefix, &prefixSet](uint16_t prefix) {
-        if (!prefixSet.insert(prefix).second) {
-            return;
+void ModelBuilder::HidlModelMaker::updateOperandLocations(const ModelBuilder* refModel,
+                                                          Subgraph* subgraph) {
+    for (Operand& operand : subgraph->operands) {
+        if (operand.lifetime == OperandLifeTime::CONSTANT_COPY) {
+            uint32_t valueLength = operand.location.length;
+            uint32_t existingSize = mOperandValues.size();
+            uint32_t extraBytes = alignBytesNeeded(existingSize, valueLength);
+            uint32_t originalOffset = operand.location.offset;
+            uint32_t offset = existingSize + extraBytes;
+            mOperandValues.resize(offset + valueLength);
+            memcpy(&mOperandValues[offset], &refModel->mSmallOperandValues[originalOffset],
+                   valueLength);
+            operand.location.offset = offset;
+        } else if (operand.lifetime == OperandLifeTime::CONSTANT_REFERENCE) {
+            uint32_t originalPoolIndex = operand.location.poolIndex;
+            operand.location.poolIndex = mMemories.add(refModel->mMemories[originalPoolIndex]);
         }
-        const Extension* extension;
-        CHECK(TypeManager::get()->getExtensionInfo(prefix, &extension));
-        extensionNameToPrefix.push_back({
-                .name = extension->name,
-                .prefix = prefix,
-        });
-    };
+    }
+    // Do recursive calls at the end to improve locality of mOperandValues.
+    for (Operand& operand : subgraph->operands) {
+        if (operand.lifetime == OperandLifeTime::SUBGRAPH) {
+            uint32_t refModelIndex = operand.location.offset;
+            // TODO(b/147875885): Avoid creating duplicate refSubgraphs when
+            // a single refModel is referenced multiple times.
+            operand.location.offset = addSubgraph(refModel->mReferencedModels[refModelIndex]);
+        }
+    }
+}
 
-    constexpr uint8_t kLowBitsType =
-            static_cast<uint8_t>(Model::ExtensionTypeEncoding::LOW_BITS_TYPE);
-    for (const auto& operand : mOperands) {
+uint32_t ModelBuilder::HidlModelMaker::addSubgraph(const ModelBuilder* refModel) {
+    uint32_t index = mRefSubgraphs.size();
+    mRefSubgraphs.push_back(makeSubgraph(refModel));
+    updateOperandLocations(refModel, &mRefSubgraphs.back());
+    return index;
+}
+
+void ModelBuilder::HidlModelMaker::addExtensions(const ModelBuilder* model) {
+    constexpr uint8_t kLowBitsType = static_cast<uint8_t>(ExtensionTypeEncoding::LOW_BITS_TYPE);
+    for (const auto& operand : model->mOperands) {
         if (isExtensionOperandType(operand.type)) {
             addExtensionWithPrefix(static_cast<uint32_t>(operand.type) >> kLowBitsType);
         }
     }
-    for (const auto& operation : mOperations) {
+    for (const auto& operation : model->mOperations) {
         if (isExtensionOperationType(operation.type)) {
             addExtensionWithPrefix(static_cast<uint32_t>(operation.type) >> kLowBitsType);
         }
     }
-    return extensionNameToPrefix;
+    for (const auto& refModel : model->mReferencedModels) {
+        addExtensions(refModel);
+    }
+}
+
+void ModelBuilder::HidlModelMaker::addExtensionWithPrefix(uint16_t prefix) {
+    if (!mPrefixSet.insert(prefix).second) {
+        return;
+    }
+    const Extension* extension;
+    CHECK(TypeManager::get()->getExtensionInfo(prefix, &extension));
+    mExtensionNameToPrefix.push_back({
+            .name = extension->name,
+            .prefix = prefix,
+    });
 }
 
 }  // namespace nn

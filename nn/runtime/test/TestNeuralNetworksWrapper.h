@@ -37,6 +37,7 @@ namespace test_wrapper {
 
 using wrapper::Event;
 using wrapper::ExecutePreference;
+using wrapper::ExecutePriority;
 using wrapper::ExtensionModel;
 using wrapper::ExtensionOperandParams;
 using wrapper::ExtensionOperandType;
@@ -115,9 +116,13 @@ class Model {
             mModel = other.mModel;
             mNextOperandId = other.mNextOperandId;
             mValid = other.mValid;
+            mRelaxed = other.mRelaxed;
+            mFinished = other.mFinished;
             other.mModel = nullptr;
             other.mNextOperandId = 0;
             other.mValid = false;
+            other.mRelaxed = false;
+            other.mFinished = false;
         }
         return *this;
     }
@@ -128,6 +133,7 @@ class Model {
             if (result != Result::NO_ERROR) {
                 mValid = false;
             }
+            mFinished = true;
             return result;
         } else {
             return Result::BAD_STATE;
@@ -159,6 +165,13 @@ class Model {
         return index;
     }
 
+    uint32_t addModelOperand(const Model* value) {
+        OperandType operandType(Type::MODEL, {});
+        uint32_t operand = addOperand(&operandType);
+        setOperandValueFromModel(operand, value);
+        return operand;
+    }
+
     void setOperandValue(uint32_t index, const void* buffer, size_t length) {
         if (ANeuralNetworksModel_setOperandValue(mModel, index, buffer, length) !=
             ANEURALNETWORKS_NO_ERROR) {
@@ -176,6 +189,13 @@ class Model {
                                    size_t length) {
         if (ANeuralNetworksModel_setOperandValueFromMemory(mModel, index, memory->get(), offset,
                                                            length) != ANEURALNETWORKS_NO_ERROR) {
+            mValid = false;
+        }
+    }
+
+    void setOperandValueFromModel(uint32_t index, const Model* value) {
+        if (ANeuralNetworksModel_setOperandValueFromModel(mModel, index, value->mModel) !=
+            ANEURALNETWORKS_NO_ERROR) {
             mValid = false;
         }
     }
@@ -208,6 +228,7 @@ class Model {
     ANeuralNetworksModel* getHandle() const { return mModel; }
     bool isValid() const { return mValid; }
     bool isRelaxed() const { return mRelaxed; }
+    bool isFinished() const { return mFinished; }
 
    protected:
     ANeuralNetworksModel* mModel = nullptr;
@@ -215,6 +236,7 @@ class Model {
     uint32_t mNextOperandId = 0;
     bool mValid = true;
     bool mRelaxed = false;
+    bool mFinished = false;
 };
 
 class Compilation {
@@ -249,9 +271,19 @@ class Compilation {
         return *this;
     }
 
+    Result createForDevice(const Model* model, const ANeuralNetworksDevice* device) {
+        return static_cast<Result>(ANeuralNetworksCompilation_createForDevices(
+                model->getHandle(), &device, 1, &mCompilation));
+    }
+
     Result setPreference(ExecutePreference preference) {
         return static_cast<Result>(ANeuralNetworksCompilation_setPreference(
                 mCompilation, static_cast<int32_t>(preference)));
+    }
+
+    Result setPriority(ExecutePriority priority) {
+        return static_cast<Result>(ANeuralNetworksCompilation_setPriority(
+                mCompilation, static_cast<int32_t>(priority)));
     }
 
     Result setCaching(const std::string& cacheDir, const std::vector<uint8_t>& token) {
@@ -339,6 +371,10 @@ class Execution {
                 mExecution, index, type, memory->get(), offset, length));
     }
 
+    Result setLoopTimeout(uint64_t duration) {
+        return static_cast<Result>(ANeuralNetworksExecution_setLoopTimeout(mExecution, duration));
+    }
+
     Result startCompute(Event* event) {
         ANeuralNetworksEvent* ev = nullptr;
         Result result = static_cast<Result>(ANeuralNetworksExecution_startCompute(mExecution, &ev));
@@ -376,6 +412,18 @@ class Execution {
                 ANeuralNetworksBurst_free(burst);
                 return result;
             }
+            case ComputeMode::FENCED: {
+                ANeuralNetworksEvent* event = nullptr;
+                Result result =
+                        static_cast<Result>(ANeuralNetworksExecution_startComputeWithDependencies(
+                                mExecution, nullptr, 0, 0, &event));
+                if (result != Result::NO_ERROR) {
+                    return result;
+                }
+                result = static_cast<Result>(ANeuralNetworksEvent_wait(event));
+                ANeuralNetworksEvent_free(event);
+                return result;
+            }
         }
         return Result::BAD_DATA;
     }
@@ -386,7 +434,7 @@ class Execution {
     // or
     // - use the burst API
     // Returns the previous ComputeMode.
-    enum class ComputeMode { SYNC, ASYNC, BURST };
+    enum class ComputeMode { SYNC, ASYNC, BURST, FENCED };
     static ComputeMode setComputeMode(ComputeMode mode) {
         ComputeMode oldComputeMode = mComputeMode;
         mComputeMode = mode;
@@ -406,6 +454,8 @@ class Execution {
                 mExecution, index, dimensions->data()));
         return result;
     }
+
+    ANeuralNetworksExecution* getHandle() { return mExecution; };
 
    private:
     ANeuralNetworksCompilation* mCompilation = nullptr;

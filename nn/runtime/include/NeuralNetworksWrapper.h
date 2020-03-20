@@ -24,6 +24,7 @@
 #include <math.h>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace android {
@@ -45,12 +46,20 @@ enum class Type {
     TENSOR_QUANT8_SYMM_PER_CHANNEL = ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL,
     TENSOR_QUANT16_ASYMM = ANEURALNETWORKS_TENSOR_QUANT16_ASYMM,
     TENSOR_QUANT8_SYMM = ANEURALNETWORKS_TENSOR_QUANT8_SYMM,
+    MODEL = ANEURALNETWORKS_MODEL,
 };
 
 enum class ExecutePreference {
     PREFER_LOW_POWER = ANEURALNETWORKS_PREFER_LOW_POWER,
     PREFER_FAST_SINGLE_ANSWER = ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER,
     PREFER_SUSTAINED_SPEED = ANEURALNETWORKS_PREFER_SUSTAINED_SPEED
+};
+
+enum class ExecutePriority {
+    LOW = ANEURALNETWORKS_PRIORITY_LOW,
+    MEDIUM = ANEURALNETWORKS_PRIORITY_MEDIUM,
+    HIGH = ANEURALNETWORKS_PRIORITY_HIGH,
+    DEFAULT = ANEURALNETWORKS_PRIORITY_DEFAULT,
 };
 
 enum class Result {
@@ -64,6 +73,8 @@ enum class Result {
     BAD_STATE = ANEURALNETWORKS_BAD_STATE,
     OUTPUT_INSUFFICIENT_SIZE = ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE,
     UNAVAILABLE_DEVICE = ANEURALNETWORKS_UNAVAILABLE_DEVICE,
+    MISSED_DEADLINE_TRANSIENT = ANEURALNETWORKS_MISSED_DEADLINE_TRANSIENT,
+    MISSED_DEADLINE_PERSISTENT = ANEURALNETWORKS_MISSED_DEADLINE_PERSISTENT,
 };
 
 struct SymmPerChannelQuantParams {
@@ -326,6 +337,9 @@ class Event {
         mEvent = newEvent;
     }
 
+    // Only for use by Execution
+    ANeuralNetworksEvent* getHandle() const { return mEvent; }
+
    private:
     ANeuralNetworksEvent* mEvent = nullptr;
 };
@@ -363,6 +377,11 @@ class Compilation {
     Result setPreference(ExecutePreference preference) {
         return static_cast<Result>(ANeuralNetworksCompilation_setPreference(
                 mCompilation, static_cast<int32_t>(preference)));
+    }
+
+    Result setPriority(ExecutePriority priority) {
+        return static_cast<Result>(ANeuralNetworksCompilation_setPriority(
+                mCompilation, static_cast<int32_t>(priority)));
     }
 
     Result setCaching(const std::string& cacheDir, const std::vector<uint8_t>& token) {

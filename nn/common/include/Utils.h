@@ -22,6 +22,7 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "HalInterfaces.h"
@@ -32,10 +33,10 @@ namespace android {
 namespace nn {
 
 // The number of data types (OperandCode) defined in NeuralNetworks.h.
-const int kNumberOfDataTypes = 15;
+const int kNumberOfDataTypes = 16;
 
 // The number of operation types (OperationCode) defined in NeuralNetworks.h.
-const int kNumberOfOperationTypes = 95;
+const int kNumberOfOperationTypes = 102;
 
 // The number of execution preferences defined in NeuralNetworks.h.
 const int kNumberOfPreferences = 3;
@@ -53,7 +54,7 @@ const int kOEMCodeBase = 10000;
  * forget to update the corresponding 'tags' table in
  * the initVlogMask() function implemented in Utils.cpp.
  */
-enum VLogFlags { MODEL = 0, COMPILATION, EXECUTION, CPUEXE, MANAGER, DRIVER };
+enum VLogFlags { MODEL = 0, COMPILATION, EXECUTION, CPUEXE, MANAGER, DRIVER, MEMORY };
 
 #define VLOG_IS_ON(TAG) ((vLogMask & (1 << (TAG))) != 0)
 
@@ -130,6 +131,33 @@ void initVLogMask();
 #define NN_RET_CHECK_GE(x, y) NN_RET_CHECK_OP(x, y, >=)
 #define NN_RET_CHECK_GT(x, y) NN_RET_CHECK_OP(x, y, >)
 
+// Type to represent a deadline time point across processes.
+using Deadline = std::chrono::steady_clock::time_point;
+
+// Make an Deadline from a duration. If the sum of the current time and the
+// duration exceeds the max time, return a time point holding the maximum
+// expressible time.
+Deadline makeDeadline(uint64_t duration);
+
+// Convenience function. If the duration is provided, this function creates a
+// Deadline using makeDeadline. If the duration is not provided, this function
+// returns std::nullopt.
+std::optional<Deadline> makeDeadline(std::optional<uint64_t> duration);
+
+// Make an optional Deadline from an OptionalTimePoint. If
+// timePoint.nanosecondsSinceEpoch cannot be represented in Deadline, return a
+// time point holding the maximum Deadline. If the OptionalTimePoint is none,
+// this function returns std::nullopt.
+std::optional<Deadline> makeDeadline(const hal::OptionalTimePoint& timePoint);
+
+// Returns true if the deadline has passed. Returns false if either the deadline
+// has not been exceeded or if the deadline is not present.
+bool hasDeadlinePassed(const std::optional<Deadline>& deadline);
+
+// Make an OptionalTimePoint from an optional Deadline. If the Deadline is not
+// provided, this function returns none for OptionalTimePoint.
+hal::OptionalTimePoint makeTimePoint(const std::optional<Deadline>& deadline);
+
 // Ensure that every user of FalseyErrorStream is linked to the
 // correct instance, using the correct LOG_TAG
 namespace {
@@ -178,8 +206,13 @@ using VersionedOperandType = typename VersionedType<version>::OperandType;
 
 }  // namespace
 
-// Return a vector with one entry for each non extension OperandType, set to the
-// specified PerformanceInfo value.  The vector will be sorted by OperandType.
+// Return a vector with one entry for each non-extension OperandType except
+// SUBGRAPH, set to the specified PerformanceInfo value.  The vector will be
+// sorted by OperandType.
+//
+// Control flow (OperandType::SUBGRAPH) operation performance is specified
+// separately using Capabilities::ifPerformance and
+// Capabilities::whilePerformance.
 template <HalVersion version>
 hal::hidl_vec<VersionedOperandPerformance<version>> nonExtensionOperandPerformance(
         hal::PerformanceInfo perf);
@@ -246,6 +279,7 @@ std::string getOperandTypeName(hal::OperandType type);
 //
 // Undefined behavior if the operand type is a scalar type.
 bool tensorHasUnspecifiedDimensions(int type, const uint32_t* dim, uint32_t dimCount);
+bool tensorHasUnspecifiedDimensions(hal::OperandType type, const std::vector<uint32_t>& dimensions);
 bool tensorHasUnspecifiedDimensions(const hal::Operand& operand);
 bool tensorHasUnspecifiedDimensions(const ANeuralNetworksOperandType* type);
 
@@ -275,6 +309,13 @@ std::string toString(const std::vector<Type>& range) {
         os += (i == 0 ? "" : ", ") + toString(range[i]);
     }
     return os += "]";
+}
+
+template <typename A, typename B>
+std::string toString(const std::pair<A, B>& pair) {
+    std::ostringstream oss;
+    oss << "(" << toString(pair.first) << ", " << toString(pair.second) << ")";
+    return oss.str();
 }
 
 inline std::string toString(HalVersion halVersion) {
@@ -312,12 +353,27 @@ int validateOperandType(
 int validateOperandList(uint32_t count, const uint32_t* list, uint32_t operandCount,
                         const char* tag);
 
+// A set of functions to help validate models containing IF or WHILE operations.
+struct SubgraphValidationHelper {
+    // Checks if a given operand is a SUBGRAPH operand with a valid offset.
+    std::function<bool(const hal::Operand&)> isValidSubgraphReference;
+    // Gets the input count of a subgraph referenced by a given operand.
+    std::function<uint32_t(const hal::Operand&)> getSubgraphInputCount;
+    // Gets the output count of a subgraph referenced by a given operand.
+    std::function<uint32_t(const hal::Operand&)> getSubgraphOutputCount;
+    // Gets the specified input operand of a subgraph referenced by a given operand.
+    std::function<const hal::Operand*(const hal::Operand&, uint32_t)> getSubgraphInputOperand;
+    // Gets the specified output operand of a subgraph referenced by a given operand.
+    std::function<const hal::Operand*(const hal::Operand&, uint32_t)> getSubgraphOutputOperand;
+};
+
 // Returns ANEURALNETWORKS_NO_ERROR if the corresponding operation is defined and can handle the
 // provided operand types in the given HAL version, otherwise returns ANEURALNETWORKS_BAD_DATA.
+// The last argument is only used for validating IF and WHILE operations.
 int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                       const uint32_t* inputIndexes, uint32_t outputCount,
                       const uint32_t* outputIndexes, const std::vector<hal::Operand>& operands,
-                      HalVersion halVersion);
+                      HalVersion halVersion, const SubgraphValidationHelper& helper);
 
 inline size_t getSizeFromInts(int lower, int higher) {
     return (uint32_t)(lower) + ((uint64_t)(uint32_t)(higher) << 32);
@@ -336,6 +392,10 @@ int convertErrorStatusToResultCode(hal::ErrorStatus status);
 // result violates the specification.
 std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> getExecutionResult(
         hal::ErrorStatus status, std::vector<hal::OutputShape> outputShapes, hal::Timing timing);
+
+// Combine two tensor dimensions, both may have unspecified dimensions or rank.
+std::optional<std::vector<uint32_t>> combineDimensions(const std::vector<uint32_t>& lhs,
+                                                       const std::vector<uint32_t>& rhs);
 
 // Versioning
 
@@ -380,6 +440,11 @@ bool compliantWithV1_2(const hal::V1_2::Model& model,
                        std::set<uint32_t>* noncompliantOperations = nullptr);
 bool compliantWithV1_2(const hal::V1_3::Model& model,
                        std::set<uint32_t>* noncompliantOperations = nullptr);
+
+hal::V1_0::ErrorStatus convertToV1_0(hal::V1_0::ErrorStatus status);
+hal::V1_0::ErrorStatus convertToV1_0(hal::V1_3::ErrorStatus status);
+hal::V1_3::ErrorStatus convertToV1_3(hal::V1_0::ErrorStatus status);
+hal::V1_3::ErrorStatus convertToV1_3(hal::V1_3::ErrorStatus status);
 
 hal::V1_0::Capabilities convertToV1_0(const hal::V1_0::Capabilities& capabilities);
 hal::V1_0::Capabilities convertToV1_0(const hal::V1_1::Capabilities& capabilities);
@@ -436,6 +501,37 @@ hal::hidl_vec<hal::V1_2::Operand> convertToV1_2(const hal::hidl_vec<hal::V1_3::O
 hal::hidl_vec<hal::V1_3::Operand> convertToV1_3(const hal::hidl_vec<hal::V1_0::Operand>& operands);
 hal::hidl_vec<hal::V1_3::Operand> convertToV1_3(const hal::hidl_vec<hal::V1_2::Operand>& operands);
 hal::hidl_vec<hal::V1_3::Operand> convertToV1_3(const hal::hidl_vec<hal::V1_3::Operand>& operands);
+
+bool compliantWithV1_0(const hal::V1_0::Request& request);
+bool compliantWithV1_0(const hal::V1_3::Request& request);
+
+hal::V1_0::Request convertToV1_0(const hal::V1_0::Request& request);
+hal::V1_0::Request convertToV1_0(const hal::V1_3::Request& request);
+hal::V1_3::Request convertToV1_3(const hal::V1_0::Request& request);
+hal::V1_3::Request convertToV1_3(const hal::V1_3::Request& request);
+
+bool compliantWithV1_0(hal::V1_0::OperandLifeTime lifetime);
+bool compliantWithV1_0(hal::V1_3::OperandLifeTime lifetime);
+bool compliantWithV1_3(hal::V1_0::OperandLifeTime lifetime);
+bool compliantWithV1_3(hal::V1_3::OperandLifeTime lifetime);
+
+hal::V1_0::OperandLifeTime convertToV1_0(hal::V1_0::OperandLifeTime lifetime);
+hal::V1_0::OperandLifeTime convertToV1_0(hal::V1_3::OperandLifeTime lifetime);
+hal::V1_3::OperandLifeTime convertToV1_3(hal::V1_0::OperandLifeTime lifetime);
+hal::V1_3::OperandLifeTime convertToV1_3(hal::V1_3::OperandLifeTime lifetime);
+
+constexpr hal::Priority convertToHalPriority(int32_t priority) {
+    switch (priority) {
+        case ANEURALNETWORKS_PRIORITY_LOW:
+            return hal::Priority::LOW;
+        case ANEURALNETWORKS_PRIORITY_MEDIUM:
+            return hal::Priority::MEDIUM;
+        case ANEURALNETWORKS_PRIORITY_HIGH:
+            return hal::Priority::HIGH;
+    }
+    LOG(FATAL) << "unrecognized priority: " << priority;
+    return {};
+}
 
 #ifdef NN_DEBUGGABLE
 uint32_t getProp(const char* str, uint32_t defaultValue = 0);
