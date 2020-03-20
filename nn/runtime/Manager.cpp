@@ -19,6 +19,7 @@
 #include "Manager.h"
 
 #include <android/hidl/manager/1.2/IServiceManager.h>
+#include <android/sync.h>
 #include <build/version.h>
 #include <hidl/HidlTransportSupport.h>
 #include <hidl/ServiceManagement.h>
@@ -79,17 +80,28 @@ class DriverDevice : public Device {
         const auto& capabilities = kInterface->getCapabilities();
         return capabilities.relaxedFloat32toFloat16PerformanceTensor;
     }
+    PerformanceInfo getIfPerformance() const override {
+        const auto& capabilities = kInterface->getCapabilities();
+        return capabilities.ifPerformance;
+    }
+    PerformanceInfo getWhilePerformance() const override {
+        const auto& capabilities = kInterface->getCapabilities();
+        return capabilities.whilePerformance;
+    }
     bool isCachingSupported() const override {
         // Caching is supported if either of numModelCache or numDataCache is greater than 0.
         const auto [numModelCacheFiles, numDataCacheFiles] =
                 kInterface->getNumberOfCacheFilesNeeded();
         return numModelCacheFiles > 0 || numDataCacheFiles > 0;
     }
+    int wait() const override { return kInterface->wait(); }
 
     std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
-            const ModelFactory& makeModel, ExecutionPreference preference,
-            const std::string& cacheDir,
+            const ModelFactory& makeModel, ExecutionPreference preference, Priority priority,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<CacheToken>& maybeToken) const override;
+
+    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor& desc) const override;
 
    private:
     const std::shared_ptr<VersionedIDevice> kInterface;
@@ -105,16 +117,31 @@ class DriverDevice : public Device {
 // A PreparedModel with underlying IPreparedModel instance return by actual driver.
 class DriverPreparedModel : public PreparedModel {
    public:
-    DriverPreparedModel(const std::shared_ptr<VersionedIPreparedModel>& preparedModel)
-        : mPreparedModel(preparedModel) {
+    DriverPreparedModel(const Device* device,
+                        const std::shared_ptr<VersionedIPreparedModel>& preparedModel)
+        : mDevice(device), mPreparedModel(preparedModel) {
+        CHECK(mDevice != nullptr);
         CHECK(mPreparedModel != nullptr);
     }
 
+    const Device* getDevice() const override { return mDevice; }
+    std::shared_ptr<VersionedIPreparedModel> getInterface() const override {
+        return mPreparedModel;
+    }
     std::tuple<int, std::vector<OutputShape>, Timing> execute(
             const std::vector<ModelArgumentInfo>& inputs,
             const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
-            const std::shared_ptr<ExecutionBurstController>& burstController,
-            MeasureTiming measure) const override;
+            const std::shared_ptr<ExecutionBurstController>& burstController, MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const OptionalTimeoutDuration& loopTimeoutDuration) const override;
+
+    std::tuple<int, int, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
+            const std::vector<ModelArgumentInfo>& inputs,
+            const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
+            const std::vector<int>& waitFor, MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const OptionalTimeoutDuration& loopTimeoutDuration,
+            const hal::OptionalTimeoutDuration& timeoutDurationAfterFence) const override;
 
     std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
             bool preferPowerOverLatency) const override {
@@ -122,6 +149,7 @@ class DriverPreparedModel : public PreparedModel {
     }
 
    private:
+    const Device* mDevice;
     const std::shared_ptr<VersionedIPreparedModel> mPreparedModel;
 };
 
@@ -155,17 +183,17 @@ std::vector<bool> DriverDevice::getSupportedOperations(const MetaModel& metaMode
     std::tie(status, supportedOperations) = kInterface->getSupportedOperations(metaModel);
 
     const Model& hidlModel = metaModel.getModel();
+    const uint32_t operationCount = hidlModel.main.operations.size();
     if (status != ErrorStatus::NONE) {
         LOG(ERROR) << "IDevice::getSupportedOperations returned the error " << toString(status);
         // Set the supported operation vectors to all false, so we won't use this driver.
-        return std::vector<bool>(hidlModel.operations.size(), false);
+        return std::vector<bool>(operationCount, false);
     }
-    if (supportedOperations.size() != hidlModel.operations.size()) {
+    if (supportedOperations.size() != operationCount) {
         LOG(ERROR) << "IDevice::getSupportedOperations returned a vector of length "
-                   << supportedOperations.size() << " when expecting "
-                   << hidlModel.operations.size();
+                   << supportedOperations.size() << " when expecting " << operationCount;
         // Set the supported operation vectors to all false, so we won't use this driver.
-        return std::vector<bool>(hidlModel.operations.size(), false);
+        return std::vector<bool>(operationCount, false);
     }
 
 #ifdef NN_DEBUGGABLE
@@ -180,11 +208,11 @@ std::vector<bool> DriverDevice::getSupportedOperations(const MetaModel& metaMode
         }
 
         uint32_t accumulator = baseAccumulator;
-        const Operation& operation = hidlModel.operations[operationIndex];
+        const Operation& operation = hidlModel.main.operations[operationIndex];
         accumulator ^= static_cast<uint32_t>(operation.type);
         auto accumulateOperands = [&hidlModel, &accumulator](const hidl_vec<uint32_t>& operands) {
             for (uint32_t operandIndex : operands) {
-                const Operand& operand = hidlModel.operands[operandIndex];
+                const Operand& operand = hidlModel.main.operands[operandIndex];
                 accumulator ^= static_cast<uint32_t>(operand.type);
                 accumulator ^= operand.dimensions.size();
                 for (uint32_t dimension : operand.dimensions) {
@@ -208,35 +236,36 @@ std::vector<bool> DriverDevice::getSupportedOperations(const MetaModel& metaMode
 }
 
 std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModel(
-        const ModelFactory& makeModel, ExecutionPreference preference, const std::string& cacheDir,
+        const ModelFactory& makeModel, ExecutionPreference preference, Priority priority,
+        const std::optional<Deadline>& deadline, const std::string& cacheDir,
         const std::optional<CacheToken>& maybeToken) const {
-    const auto [n, preparedModel] =
-            kInterface->prepareModel(makeModel, preference, cacheDir, maybeToken);
+    const auto [n, preparedModel] = kInterface->prepareModel(makeModel, preference, priority,
+                                                             deadline, cacheDir, maybeToken);
     if (n != ANEURALNETWORKS_NO_ERROR) {
         return {n, nullptr};
     }
     CHECK(preparedModel != nullptr) << "prepareModel returned nullptr without error code";
-    return {ANEURALNETWORKS_NO_ERROR, std::make_shared<DriverPreparedModel>(preparedModel)};
+    return {ANEURALNETWORKS_NO_ERROR, std::make_shared<DriverPreparedModel>(this, preparedModel)};
 }
 
-// Convert ModelArgumentInfo to HIDL RequestArgument. For pointer arguments, use the location
-// information in ptrArgsLocations.
-static void setRequestArgumentArray(const std::vector<ModelArgumentInfo>& argumentInfos,
-                                    const std::vector<DataLocation>& ptrArgsLocations,
-                                    hidl_vec<RequestArgument>* ioInfos) {
-    size_t count = argumentInfos.size();
-    ioInfos->resize(count);
-    uint32_t ptrArgsIndex = 0;
-    for (size_t i = 0; i < count; i++) {
-        const auto& info = argumentInfos[i];
-        (*ioInfos)[i] = {
-                .hasNoValue = info.state == ModelArgumentInfo::HAS_NO_VALUE,
-                .location = info.state == ModelArgumentInfo::POINTER
-                                    ? ptrArgsLocations[ptrArgsIndex++]
-                                    : info.locationAndLength,
-                .dimensions = info.dimensions,
-        };
+std::pair<int, std::unique_ptr<Memory>> DriverDevice::allocate(const MemoryDescriptor& desc) const {
+    const BufferDesc hidlDesc = {.dimensions = desc.dimensions};
+    std::vector<std::shared_ptr<VersionedIPreparedModel>> preparedModels(
+            desc.preparedModels.size());
+    std::transform(desc.preparedModels.begin(), desc.preparedModels.end(), preparedModels.begin(),
+                   [](const auto* preparedModel) {
+                       const auto versionedPreparedModel = preparedModel->getInterface();
+                       CHECK(versionedPreparedModel != nullptr);
+                       return versionedPreparedModel;
+                   });
+    auto [status, buffer, token] =
+            kInterface->allocate(hidlDesc, preparedModels, desc.inputRoles, desc.outputRoles);
+    if (status != ErrorStatus::NONE) {
+        LOG(ERROR) << "DriverDevice::allocate -- memory allocation on device " << getName()
+                   << " failed!";
+        return {convertErrorStatusToResultCode(status), nullptr};
     }
+    return MemoryFromDevice::create(std::move(buffer), token);
 }
 
 // Figures out how to place each of the input or outputs in a buffer. This just
@@ -288,8 +317,9 @@ allocatePointerArgumentsToPool(const std::vector<ModelArgumentInfo>& args,
 std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
         const std::vector<ModelArgumentInfo>& inputs, const std::vector<ModelArgumentInfo>& outputs,
         const MemoryTracker& memories,
-        const std::shared_ptr<ExecutionBurstController>& burstController,
-        MeasureTiming measure) const {
+        const std::shared_ptr<ExecutionBurstController>& burstController, MeasureTiming measure,
+        const std::optional<Deadline>& deadline,
+        const OptionalTimeoutDuration& loopTimeoutDuration) const {
     NNTRACE_RT(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "DriverPreparedModel::execute");
 
     // Make a copy of the memory tracker as we will append memory pools for pointer arguments.
@@ -324,12 +354,12 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
     }
 
     Request request;
-    setRequestArgumentArray(inputs, inputPtrArgsLocations, &request.inputs);
-    setRequestArgumentArray(outputs, outputPtrArgsLocations, &request.outputs);
+    request.inputs = createRequestArguments(inputs, inputPtrArgsLocations);
+    request.outputs = createRequestArguments(outputs, outputPtrArgsLocations);
     uint32_t count = localMemories.size();
     request.pools.resize(count);
     for (uint32_t i = 0; i < count; i++) {
-        request.pools[i] = localMemories[i]->getHidlMemory();
+        request.pools[i] = localMemories[i]->getMemoryPool();
     }
 
     NNTRACE_FULL_SWITCH(NNTRACE_LAYER_IPC, NNTRACE_PHASE_EXECUTION,
@@ -341,19 +371,23 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
 
     // compute using burst if present
     const bool burstCompute = (burstController != nullptr);
-    bool burstFallback = false;
+    bool burstFallback = true;
     if (burstCompute) {
-        std::vector<intptr_t> memoryIds;
-        memoryIds.reserve(localMemories.size());
-        for (const Memory* memory : localMemories) {
-            memory->usedBy(burstController);
-            memoryIds.push_back(memory->getKey());
-        }
+        const bool compliant = compliantWithV1_0(request);
+        if (compliant) {
+            V1_0::Request request10 = convertToV1_0(request);
+            std::vector<intptr_t> memoryIds;
+            memoryIds.reserve(localMemories.size());
+            for (const Memory* memory : localMemories) {
+                memory->usedBy(burstController);
+                memoryIds.push_back(memory->getKey());
+            }
 
-        VLOG(EXECUTION) << "Before ExecutionBurstController->compute() "
-                        << SHOW_IF_DEBUG(toString(request));
-        std::tie(n, outputShapes, timing, burstFallback) =
-                burstController->compute(request, measure, memoryIds);
+            VLOG(EXECUTION) << "Before ExecutionBurstController->compute() "
+                            << SHOW_IF_DEBUG(toString(request10));
+            std::tie(n, outputShapes, timing, burstFallback) =
+                    burstController->compute(request10, measure, memoryIds);
+        }
     }
 
     // compute from IPreparedModel if either:
@@ -361,8 +395,8 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
     // (2) the burst execution failed and requested a fallback execution
     if (!burstCompute || burstFallback) {
         const bool preferSynchronous = DeviceManager::get()->syncExecHal();
-        std::tie(n, outputShapes, timing) =
-                mPreparedModel->execute(request, measure, preferSynchronous);
+        std::tie(n, outputShapes, timing) = mPreparedModel->execute(
+                request, measure, deadline, loopTimeoutDuration, preferSynchronous);
     }
 
     if (n != ANEURALNETWORKS_NO_ERROR) {
@@ -385,6 +419,122 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
 
     VLOG(EXECUTION) << "DriverPreparedModel::execute completed";
     return {ANEURALNETWORKS_NO_ERROR, std::move(outputShapes), timing};
+}
+
+std::tuple<int, int, sp<hal::IFencedExecutionCallback>, hal::Timing>
+DriverPreparedModel::executeFenced(
+        const std::vector<ModelArgumentInfo>& inputs, const std::vector<ModelArgumentInfo>& outputs,
+        const MemoryTracker& memories, const std::vector<int>& waitFor, hal::MeasureTiming measure,
+        const std::optional<Deadline>& deadline, const OptionalTimeoutDuration& loopTimeoutDuration,
+        const hal::OptionalTimeoutDuration& timeoutDurationAfterFence) const {
+    NNTRACE_RT(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "DriverPreparedModel::executeFenced");
+    CHECK(std::all_of(waitFor.begin(), waitFor.end(), [](int fd) { return fd > 0; }));
+    // Make a copy of the memory tracker as we will append memory pools for pointer arguments.
+    MemoryTracker localMemories = memories;
+    sp<hal::IFencedExecutionCallback> executeFencedCallback;
+    hal::Timing timing = kNoTiming;
+
+    // We separate the input & output pools so accelerators only need to copy
+    // the contents of the input pools. We could also use it to set protection
+    // on read only memory but that's not currently done.
+
+    // Layout the input and output data
+    const auto [n1, inputPtrArgsMemory, inputPtrArgsLocations] =
+            allocatePointerArgumentsToPool(inputs, &localMemories);
+    if (n1 != ANEURALNETWORKS_NO_ERROR) {
+        return {n1, -1, nullptr, timing};
+    }
+    const auto [n2, outputPtrArgsMemory, outputPtrArgsLocations] =
+            allocatePointerArgumentsToPool(outputs, &localMemories);
+    if (n2 != ANEURALNETWORKS_NO_ERROR) {
+        return {n2, -1, nullptr, timing};
+    }
+
+    // Copy the input data that was specified via a pointer.
+    if (inputPtrArgsMemory != nullptr) {
+        uint32_t ptrInputIndex = 0;
+        for (const auto& info : inputs) {
+            if (info.state == ModelArgumentInfo::POINTER) {
+                const DataLocation& loc = inputPtrArgsLocations[ptrInputIndex++];
+                uint8_t* const data = inputPtrArgsMemory->getPointer();
+                memcpy(data + loc.offset, info.buffer, loc.length);
+            }
+        }
+    }
+
+    Request request;
+    request.inputs = createRequestArguments(inputs, inputPtrArgsLocations);
+    request.outputs = createRequestArguments(outputs, outputPtrArgsLocations);
+    uint32_t count = localMemories.size();
+    request.pools.resize(count);
+    for (uint32_t i = 0; i < count; i++) {
+        request.pools[i] = localMemories[i]->getMemoryPool();
+    }
+
+    NNTRACE_FULL_SWITCH(NNTRACE_LAYER_IPC, NNTRACE_PHASE_EXECUTION,
+                        "DriverPreparedModel::executeFenced");
+
+    int n = ANEURALNETWORKS_OP_FAILED;
+    hidl_vec<hidl_handle> waitForHandles;
+    waitForHandles.resize(waitFor.size());
+    for (uint32_t i = 0; i < waitFor.size(); i++) {
+        native_handle_t* nativeHandle = native_handle_create(1, 0);
+        if (nativeHandle == nullptr) {
+            LOG(ERROR) << "Failed to create native_handle";
+            return {n, -1, nullptr, timing};
+        }
+        int dupFd = dup(waitFor[i]);
+        if (dupFd <= 0) {
+            LOG(ERROR) << "Unable to dup the file descriptor";
+            return {n, -1, nullptr, timing};
+        }
+        nativeHandle->data[0] = dupFd;
+        hidl_handle hidlHandle;
+        hidlHandle.setTo(nativeHandle, /*shouldOwn=*/true);
+        waitForHandles[i] = std::move(hidlHandle);
+    }
+
+    hidl_handle syncFence;
+    std::tie(n, syncFence, executeFencedCallback, timing) =
+            mPreparedModel->executeFenced(request, waitForHandles, measure, deadline,
+                                          loopTimeoutDuration, timeoutDurationAfterFence);
+
+    if (n != ANEURALNETWORKS_NO_ERROR) {
+        VLOG(EXECUTION) << "**executeFenced failed**";
+        return {n, -1, nullptr, timing};
+    }
+
+    int syncFenceFd = -1;
+    if (syncFence.getNativeHandle()) {
+        syncFenceFd = dup(syncFence.getNativeHandle()->data[0]);
+        if (syncFenceFd < 0) {
+            LOG(ERROR) << "Failed to dup the file descriptor";
+            return {ANEURALNETWORKS_OP_FAILED, -1, nullptr, timing};
+        }
+    }
+    // If output buffer is provided as a malloc pointer, wait for the execution to finish.
+    // Then copy the output data from shared memory to the output buffers.
+    if (outputPtrArgsMemory != nullptr) {
+        NNTRACE_RT_SWITCH(NNTRACE_PHASE_RESULTS, "DriverPreparedModel::executeFenced");
+        if (syncFenceFd > 0) {
+            int r = sync_wait(syncFenceFd, -1);
+            if (r < 0) {
+                LOG(ERROR) << "sync wait failed, fd: " << syncFenceFd;
+                return {ANEURALNETWORKS_OP_FAILED, syncFenceFd, nullptr, timing};
+            }
+        }
+        uint32_t ptrOutputIndex = 0;
+        for (const auto& info : outputs) {
+            if (info.state == ModelArgumentInfo::POINTER) {
+                const DataLocation& loc = outputPtrArgsLocations[ptrOutputIndex++];
+                const uint8_t* const data = outputPtrArgsMemory->getPointer();
+                memcpy(info.buffer, data + loc.offset, loc.length);
+            }
+        }
+    }
+
+    VLOG(EXECUTION) << "DriverPreparedModel::executeFenced completed";
+    return {ANEURALNETWORKS_NO_ERROR, syncFenceFd, executeFencedCallback, timing};
 }
 
 // A special abstracted device for the CPU. Only one instance of this class will exist.
@@ -412,12 +562,21 @@ class CpuDevice : public Device {
     PerformanceInfo getRelaxedFloat32toFloat16PerformanceTensor() const override {
         return kPerformance;
     }
+    PerformanceInfo getIfPerformance() const override { return kPerformance; }
+    PerformanceInfo getWhilePerformance() const override { return kPerformance; }
     bool isCachingSupported() const override { return false; }
+    int wait() const override { return ANEURALNETWORKS_NO_ERROR; }
 
     std::pair<int, std::shared_ptr<PreparedModel>> prepareModel(
-            const ModelFactory& makeModel, ExecutionPreference preference,
-            const std::string& cacheDir,
+            const ModelFactory& makeModel, ExecutionPreference preference, Priority priority,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<CacheToken>& maybeToken) const override;
+
+    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor&) const override {
+        // CpuDevice does not have a preferred memory domain or data layout, return failure to
+        // fallback to ashmem.
+        return {ANEURALNETWORKS_OP_FAILED, nullptr};
+    }
 
    private:
     CpuDevice() = default;
@@ -438,16 +597,28 @@ class CpuPreparedModel : public PreparedModel {
     // and nullptr otherwise.
     static std::pair<int, std::shared_ptr<PreparedModel>> create(Model hidlModel);
 
+    const Device* getDevice() const override { return CpuDevice::get().get(); }
+    std::shared_ptr<VersionedIPreparedModel> getInterface() const override { return nullptr; }
+
     std::tuple<int, std::vector<OutputShape>, Timing> execute(
             const std::vector<ModelArgumentInfo>& inputs,
             const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
-            const std::shared_ptr<ExecutionBurstController>& burstController,
-            MeasureTiming measure) const override;
+            const std::shared_ptr<ExecutionBurstController>& burstController, MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const OptionalTimeoutDuration& loopTimeoutDuration) const override;
 
     std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
             bool /*preferPowerOverLatency*/) const override {
         return nullptr;
     }
+
+    std::tuple<int, int, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
+            const std::vector<ModelArgumentInfo>& inputs,
+            const std::vector<ModelArgumentInfo>& outputs, const MemoryTracker& memories,
+            const std::vector<int>& wait_for, MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const OptionalTimeoutDuration& loopTimeoutDuration,
+            const hal::OptionalTimeoutDuration& timeoutDurationAfterFence) const override;
 
     // Prefer to use CpuPreparedModel::create.
     CpuPreparedModel(Model model, std::vector<RunTimePoolInfo> poolInfos)
@@ -460,13 +631,13 @@ class CpuPreparedModel : public PreparedModel {
 
 std::vector<bool> CpuDevice::getSupportedOperations(const MetaModel& metaModel) const {
     const Model& hidlModel = metaModel.getModel();
-    const size_t count = hidlModel.operations.size();
+    const size_t count = hidlModel.main.operations.size();
     std::vector<bool> result(count, false);
     for (size_t i = 0; i < count; i++) {
         // TODO(b/119870033): Decide whether and how post-P operations would be supported on CPU.
         //                    We may want to use the slicer for CpuDevice just as we do for
         //                    DriverDevice.
-        OperationType operationType = hidlModel.operations[i].type;
+        OperationType operationType = hidlModel.main.operations[i].type;
         result[i] = !isExtensionOperationType(operationType) &&
                     operationType != OperationType::OEM_OPERATION;
     }
@@ -474,14 +645,19 @@ std::vector<bool> CpuDevice::getSupportedOperations(const MetaModel& metaModel) 
 }
 
 std::pair<int, std::shared_ptr<PreparedModel>> CpuDevice::prepareModel(
-        const ModelFactory& makeModel, ExecutionPreference preference,
-        const std::string& /*cacheDir*/, const std::optional<CacheToken>& maybeToken) const {
+        const ModelFactory& makeModel, ExecutionPreference preference, Priority priority,
+        const std::optional<Deadline>& deadline, const std::string& /*cacheDir*/,
+        const std::optional<CacheToken>& maybeToken) const {
     CHECK(!maybeToken.has_value())
             << "Should never call prepareModel with cache information on CpuDevice";
 
     const Model model = makeModel();
-    if (!validateModel(model) || !validateExecutionPreference(preference)) {
+    if (!validateModel(model) || !validateExecutionPreference(preference) ||
+        !validatePriority(priority)) {
         return {ANEURALNETWORKS_OP_FAILED, nullptr};
+    }
+    if (hasDeadlinePassed(deadline)) {
+        return {ANEURALNETWORKS_MISSED_DEADLINE_PERSISTENT, nullptr};
     }
 
     return CpuPreparedModel::create(model);
@@ -501,12 +677,54 @@ std::pair<int, std::shared_ptr<PreparedModel>> CpuPreparedModel::create(Model hi
 static std::tuple<int, std::vector<OutputShape>, Timing> computeOnCpu(
         const Model& model, const Request& request,
         const std::vector<RunTimePoolInfo>& modelPoolInfos,
-        const std::vector<RunTimePoolInfo>& requestPoolInfos) {
+        const std::vector<RunTimePoolInfo>& requestPoolInfos,
+        const std::optional<Deadline>& deadline,
+        const OptionalTimeoutDuration& loopTimeoutDuration) {
     NNTRACE_RT(NNTRACE_PHASE_EXECUTION, "computeOnCpu");
     CpuExecutor executor;
+    if (loopTimeoutDuration.getDiscriminator() !=
+        OptionalTimeoutDuration::hidl_discriminator::none) {
+        executor.setLoopTimeout(loopTimeoutDuration.nanoseconds());
+    }
+    if (deadline.has_value()) {
+        executor.setDeadline(*deadline);
+    }
     int err = executor.run(model, request, modelPoolInfos, requestPoolInfos);
     const auto& outputShapes = executor.getOutputShapes();
     return {err, outputShapes, kNoTiming};
+}
+
+std::tuple<int, int, sp<hal::IFencedExecutionCallback>, hal::Timing>
+CpuPreparedModel::executeFenced(const std::vector<ModelArgumentInfo>& inputs,
+                                const std::vector<ModelArgumentInfo>& outputs,
+                                const MemoryTracker& memories, const std::vector<int>& waitFor,
+                                hal::MeasureTiming measure, const std::optional<Deadline>& deadline,
+                                const OptionalTimeoutDuration& loopTimeoutDuration,
+                                const hal::OptionalTimeoutDuration& duration) const {
+    VLOG(EXECUTION)
+            << "CpuPreparedModel::executeFenced wait for sync fences to signal before execution";
+    for (int syncFd : waitFor) {
+        if (syncFd > 0) {
+            int r = sync_wait(syncFd, -1);
+            if (r < 0) {
+                LOG(ERROR) << "sync wait failed, fd: " << syncFd;
+                return {ANEURALNETWORKS_OP_FAILED, -1, nullptr, {UINT64_MAX, UINT64_MAX}};
+            }
+        }
+    }
+
+    // Update deadline if the timeout duration is closer than the deadline.
+    auto closestDeadline = deadline;
+    if (duration.getDiscriminator() != OptionalTimeoutDuration::hidl_discriminator::none) {
+        const auto timeoutDurationDeadline = makeDeadline(duration.nanoseconds());
+        if (!closestDeadline.has_value() || *closestDeadline > timeoutDurationDeadline) {
+            closestDeadline = timeoutDurationDeadline;
+        }
+    }
+
+    const auto [result, outputShapes, timing] = execute(inputs, outputs, memories, nullptr, measure,
+                                                        closestDeadline, loopTimeoutDuration);
+    return {result, -1, nullptr, timing};
 }
 
 // Perform computation on NNAPI CPU reference implementation.
@@ -520,7 +738,12 @@ std::tuple<int, std::vector<OutputShape>, Timing> CpuPreparedModel::execute(
         const std::vector<ModelArgumentInfo>& inputs, const std::vector<ModelArgumentInfo>& outputs,
         const MemoryTracker& memories,
         const std::shared_ptr<ExecutionBurstController>& /*burstController*/,
-        MeasureTiming /*measure*/) const {
+        MeasureTiming /*measure*/, const std::optional<Deadline>& deadline,
+        const OptionalTimeoutDuration& loopTimeoutDuration) const {
+    if (hasDeadlinePassed(deadline)) {
+        return {ANEURALNETWORKS_MISSED_DEADLINE_PERSISTENT, {}, kNoTiming};
+    }
+
     std::vector<RunTimePoolInfo> requestPoolInfos;
     requestPoolInfos.reserve(memories.size());
     for (const Memory* mem : memories) {
@@ -551,21 +774,23 @@ std::tuple<int, std::vector<OutputShape>, Timing> CpuPreparedModel::execute(
     const std::vector<DataLocation> outputPtrArgsLocations = fixPointerArguments(outputs);
 
     Request request;
-    setRequestArgumentArray(inputs, inputPtrArgsLocations, &request.inputs);
-    setRequestArgumentArray(outputs, outputPtrArgsLocations, &request.outputs);
+    request.inputs = createRequestArguments(inputs, inputPtrArgsLocations);
+    request.outputs = createRequestArguments(outputs, outputPtrArgsLocations);
 
     if (!DeviceManager::get()->syncExecCpu()) {
         // TODO: use a thread pool
         // TODO(mikie): this could have NNTRACE so we could measure the overhead
         //              of spinning up a new thread.
         std::tuple<int, std::vector<OutputShape>, Timing> result = {};
-        std::thread([this, &request, &requestPoolInfos, &result] {
-            result = computeOnCpu(mModel, request, mModelPoolInfos, requestPoolInfos);
+        std::thread([this, &request, &requestPoolInfos, &deadline, &loopTimeoutDuration, &result] {
+            result = computeOnCpu(mModel, request, mModelPoolInfos, requestPoolInfos, deadline,
+                                  loopTimeoutDuration);
         }).join();
         return result;
     }
 
-    return computeOnCpu(mModel, request, mModelPoolInfos, requestPoolInfos);
+    return computeOnCpu(mModel, request, mModelPoolInfos, requestPoolInfos, deadline,
+                        loopTimeoutDuration);
 }
 
 DeviceManager* DeviceManager::get() {

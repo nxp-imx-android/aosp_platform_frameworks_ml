@@ -31,6 +31,7 @@
 
 #include "Callbacks.h"
 #include "HalInterfaces.h"
+#include "Utils.h"
 
 namespace android {
 namespace nn {
@@ -84,12 +85,22 @@ class VersionedIDevice {
      * VersionedIDevice will default to using the latest version of all IDevice
      * interface methods automatically.
      *
+     * @param capabilities Performance capabilities of the driver.
+     * @param supportedExtensions Extensions supported by the driver.
+     * @param type The device type of the driver.
+     * @param versionString The version string of the driver.
+     * @param numberOfCacheFilesNeeded Number of model cache and data cache
+     *     files needed by the driver.
      * @param serviceName The name of the service that provides core.getDevice<V1_0::IDevice>().
      * @param core An object that encapsulates a V1_0::IDevice, any appropriate downcasts to
      *             newer interfaces, and a hidl_death_recipient that will proactively handle
      *             the case when the service containing the IDevice object crashes.
      */
-    VersionedIDevice(std::string serviceName, Core core);
+    VersionedIDevice(hal::Capabilities capabilities,
+                     std::vector<hal::Extension> supportedExtensions, int32_t type,
+                     std::string versionString,
+                     std::pair<uint32_t, uint32_t> numberOfCacheFilesNeeded,
+                     std::string serviceName, Core core);
 
     /**
      * Gets the capabilities of a driver.
@@ -181,6 +192,11 @@ class VersionedIDevice {
      *     execution.
      * @param preference Indicates the intended execution behavior of a prepared
      *     model.
+     * @param priority Priority of the prepared model relative to other prepared
+     *     models owned by an application.
+     * @param deadline Optional time point. If provided, prepareModel is
+     *     expected to complete by this time point. If it is not able to be
+     *     completed by the deadline, the execution may be aborted.
      * @param cacheDir String specifying the cache directory.
      * @param maybeToken An optional caching token of length
      *     Constant::BYTE_SIZE_OF_CACHE_TOKEN identifying the prepared model.
@@ -202,8 +218,9 @@ class VersionedIDevice {
      *         that has been prepared for execution, else nullptr.
      */
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
-            const hal::ModelFactory& makeModel, hal::ExecutionPreference preference,
-            const std::string& cacheDir, const std::optional<hal::CacheToken>& maybeToken) const;
+            const hal::ModelFactory& makeModel, hal::ExecutionPreference preference, hal::Priority,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
+            const std::optional<hal::CacheToken>& maybeToken) const;
 
     /**
      * Returns the current status of a driver.
@@ -306,32 +323,88 @@ class VersionedIDevice {
      */
     const std::string& getName() const;
 
+    /**
+     * Allocates a driver-managed buffer with the properties specified by the descriptor as well as
+     * the input and output roles of prepared models.
+     *
+     * The allocate function must verify the inputs to the allocate function are correct. If there
+     * is an error, or if a certain role or property is not supported by the driver, the allocate
+     * function must return with an appropriate ErrorStatus, a nullptr as the IBuffer, and 0 as the
+     * buffer token. If the allocation is successful, this method must return with ErrorStatus::NONE
+     * and the produced IBuffer with a positive token identifying the allocated buffer. A successful
+     * allocation must accommodate all of the specified roles and buffer properties.
+     *
+     * The buffer is allocated as an uninitialized state. An uninitialized buffer may only be used
+     * in ways that are specified by outputRoles. A buffer is initialized after it is used as an
+     * output in a successful execution, or after a successful invocation of IBuffer::copyFrom on
+     * the buffer. An initialized buffer may be used according to all roles specified in inputRoles
+     * and outputRoles. A buffer will return to the uninitialized state if it is used as an output
+     * in a failed execution, or after a failed invocation of IBuffer::copyFrom on the buffer.
+     *
+     * The driver may deduce the dimensions of the buffer according to the buffer descriptor as
+     * well as the input and output roles. The dimensions or rank of the buffer may be unknown at
+     * this stage. As such, some driver services may only create a placeholder and defer the actual
+     * allocation until execution time. Note that the same buffer may be used for different shapes
+     * of outputs on different executions. When the buffer is used as an input, the input shape
+     * must be the same as the output shape from the last execution using this buffer as an output.
+     *
+     * The driver must apply proper validatation upon every usage of the buffer, and fail the
+     * execution immediately if the usage is illegal.
+     *
+     * @param desc A buffer descriptor specifying the properties of the buffer to allocate.
+     * @param preparedModels A vector of IPreparedModel objects. Must only contain IPreparedModel
+     *     objects from the same IDevice as this method invoked on.
+     * @param inputRoles A vector of roles with each specifying an input to a prepared model.
+     * @param outputRoles A vector of roles with each specifying an output to a prepared model.
+     *     Each role specified in inputRoles and outputRoles must be unique. The corresponding
+     *     model operands of the roles must have the same OperandType, scale, zero point, and
+     *     ExtraParams. The dimensions of the operands and the dimensions specified in the buffer
+     *     descriptor must be compatible with each other. Two dimensions are incompatible if there
+     *     is at least one axis that is fully specified in both but has different values.
+     * @return A tuple consisting of:
+     *     - Error status of the buffer allocation. Must be:
+     *         - NONE if successful
+     *         - DEVICE_UNAVAILABLE if driver is offline or busy
+     *         - GENERAL_FAILURE if a certain buffer property or a certain role is not supported,
+     *           or if there is an unspecified error
+     *         - INVALID_ARGUMENT if one of the input arguments is invalid
+     *     - The allocated IBuffer object. If the buffer was unable to be allocated
+     *       due to an error, nullptr must be returned.
+     *     - A positive token identifying the allocated buffer. The same token will be
+     *       provided when referencing the buffer as one of the memory pools in the request of an
+     *       execution. If the buffer was unable to be allocated due to an error, the token must be
+     *       0.
+     */
+    std::tuple<hal::ErrorStatus, sp<hal::IBuffer>, uint32_t> allocate(
+            const hal::BufferDesc& desc,
+            const std::vector<std::shared_ptr<VersionedIPreparedModel>>& preparedModels,
+            const hal::hidl_vec<hal::BufferRole>& inputRoles,
+            const hal::hidl_vec<hal::BufferRole>& outputRoles) const;
+
+    /**
+     * Blocks until the device is not in a bad state.
+     *
+     * @return Error code after waiting. ANEURALNETWORKS_NO_ERROR if device is
+     *     not in a bad state.
+     */
+    int wait() const;
+
    private:
-    // initializeInternal is called once during VersionedIDevice creation.
-    // 'true' indicates successful initialization.
-    bool initializeInternal();
-
-    // internal helper methods
-    std::pair<hal::ErrorStatus, hal::Capabilities> getCapabilitiesInternal() const;
-    std::pair<hal::ErrorStatus, hal::hidl_vec<hal::Extension>> getSupportedExtensionsInternal()
-            const;
-    int32_t getTypeInternal() const;
-    std::pair<hal::ErrorStatus, hal::hidl_string> getVersionStringInternal() const;
-    std::tuple<hal::ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeededInternal() const;
-
-    // internal members for the cached results of the internal methods above
-    hal::Capabilities mCapabilities;
-    std::vector<hal::Extension> mSupportedExtensions;
-    int32_t mType;
-    std::string mVersionString;
-    std::pair<uint32_t, uint32_t> mNumberOfCacheFilesNeeded;
+    // Cached initialization results.
+    const hal::Capabilities kCapabilities;
+    const std::vector<hal::Extension> kSupportedExtensions;
+    const int32_t kType;
+    const std::string kVersionString;
+    const std::pair<uint32_t, uint32_t> kNumberOfCacheFilesNeeded;
 
     // internal methods to prepare a model
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelInternal(
-            const hal::Model& model, hal::ExecutionPreference preference,
-            const std::string& cacheDir, const std::optional<hal::CacheToken>& maybeToken) const;
+            const hal::Model& model, hal::ExecutionPreference preference, hal::Priority priority,
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
+            const std::optional<hal::CacheToken>& maybeToken) const;
     std::pair<int, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCacheInternal(
-            const std::string& cacheDir, const hal::CacheToken& token) const;
+            const std::optional<Deadline>& deadline, const std::string& cacheDir,
+            const hal::CacheToken& token) const;
 
     /**
      * This is a utility class for VersionedIDevice that encapsulates a
@@ -490,7 +563,7 @@ class VersionedIDevice {
             const T_Callback& callback = nullptr) const EXCLUDES(mMutex);
 
     // The name of the service that implements the driver.
-    const std::string mServiceName;
+    const std::string kServiceName;
 
     // Guards access to mCore.
     mutable std::shared_mutex mMutex;
@@ -554,6 +627,13 @@ class VersionedIPreparedModel {
      * (ANEURALNETWORKS_NO_ERROR): There must be no failure unless the device
      * itself is in a bad state.
      *
+     * execute may be called with an optional deadline. If the execution is not
+     * able to be completed before the provided deadline, the execution may be
+     * aborted, and either {@link ErrorStatus::MISSED_DEADLINE_TRANSIENT} or
+     * {@link ErrorStatus::MISSED_DEADLINE_PERSISTENT} must be returned. The
+     * error due to an abort must be sent the same way as other errors,
+     * described above.
+     *
      * Any number of calls to the VersionedIPreparedModel::execute function, in
      * any combination, may be made concurrently, even on the same
      * VersionedIPreparedModel object.
@@ -562,6 +642,17 @@ class VersionedIPreparedModel {
      *     model is to be executed.
      * @param measure Specifies whether or not to measure duration of the
      *     execution.
+     * @param deadline Optional time point. If provided, prepareModel is
+     *     expected to complete by this time point. If it is not able to be
+     *     completed by the deadline, the execution may be aborted.
+     * @param loopTimeoutDuration The maximum amount of time that should be spent
+     *     executing a {@link OperationType::WHILE} operation. If a loop
+     *     condition model does not output false within this duration, the
+     *     execution must be aborted. If the model contains a {@link
+     *     OperationType::WHILE} operation and no loop timeout duration is
+     *     provided, the maximum amount of time is {@link
+     *     LoopTimeoutDurationNs::DEFAULT}. When provided, the duration must not
+     *     exceed {@link LoopTimeoutDurationNs::MAXIMUM}.
      * @param preferSynchronous 'true' to perform synchronous HAL execution when
      *     possible, 'false' to force asynchronous HAL execution.
      * @return A tuple consisting of:
@@ -593,7 +684,9 @@ class VersionedIPreparedModel {
      *         indicating that measurement is not available.
      */
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
-            const hal::Request& request, hal::MeasureTiming measure, bool preferSynchronous) const;
+            const hal::Request& request, hal::MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const hal::OptionalTimeoutDuration& loopTimeoutDuration, bool preferSynchronous) const;
 
     /**
      * Creates a burst controller on a prepared model.
@@ -609,11 +702,99 @@ class VersionedIPreparedModel {
     std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
             bool preferPowerOverLatency) const;
 
+    /**
+     * Launch a fenced asynchronous execution on a prepared model.
+     *
+     * The execution is performed asynchronously with respect to the caller.
+     * executeFenced must fully validate the request. If there is an error during validation,
+     * executeFenced must immediately return with the corresponding ErrorStatus. If the inputs
+     * to the function are valid and there is no error and there is no error launching,
+     * executeFenced must dispatch an asynchronous task to perform the execution in the
+     * background, and immediately return with ErrorStatus::NONE, a sync fence that will be
+     * signaled once the execution is completed, and a callback that can be used by the client
+     * to query the duration and runtime error status. If the task has finished
+     * before the call returns, empty handle may be returned for the syncFence. If the
+     * asynchronous task fails to launch, executeFenced must immediately return with
+     * ErrorStatus::GENERAL_FAILURE, an empty handle for the syncFence, and nullptr
+     * for callback. The execution must wait for all the sync fences (if any) in waitFor to be
+     * signaled before starting the actual execution.
+     *
+     * If any of sync fences in waitFor changes to error status after the executeFenced
+     * call succeeds, the driver must immediately set the returned syncFence to error status.
+     *
+     * When the asynchronous task has finished its execution, it must
+     * immediately signal the syncFence returned from executeFenced call. After
+     * the syncFence is signaled, the task must not modify the content of
+     * any data object referenced by 'request' (described by the
+     * {@link @1.0::DataLocation} of a {@link @1.0::RequestArgument}).
+     *
+     * executeFenced may be called with an optional deadline and an optional
+     * timeoutDurationAfterFence. If the execution is not able to be completed
+     * before the provided deadline or within the timeoutDurationAfterFence,
+     * whichever comes earlier, the execution may be aborted, and either {@link
+     * ErrorStatus::MISSED_DEADLINE_TRANSIENT} or {@link
+     * ErrorStatus::MISSED_DEADLINE_PERSISTENT} may be returned. The error due
+     * to an abort must be sent the same way as other errors, described above.
+     *
+     * Any number of calls to the executeFenced, execute* and executeSynchronously*
+     * functions, in any combination, may be made concurrently, even on the same
+     * IPreparedModel object.
+     *
+     * @param request The input and output information on which the prepared
+     *                model is to be executed.
+     * @param waitFor A vector of sync fence file descriptors. The execution must
+     *                wait for all sync fence to be signaled before starting the
+     *                task.
+     * @param measure Specifies whether or not to measure duration of the execution.
+     * @param deadline The time by which execution is expected to complete. If
+     *                 the execution cannot be finished by the deadline, the
+     *                 execution may be aborted.
+     * @param loopTimeoutDuration The maximum amount of time that should be spent
+     *     executing a {@link OperationType::WHILE} operation. If a loop
+     *     condition model does not output false within this duration, the
+     *     execution must be aborted. If the model contains a {@link
+     *     OperationType::WHILE} operation and no loop timeout duration is
+     *     provided, the maximum amount of time is {@link
+     *     LoopTimeoutDurationNs::DEFAULT}. When provided, the duration must not
+     *     exceed {@link LoopTimeoutDurationNs::MAXIMUM}.
+     * @param timeoutDurationAfterFence The timeout duration within which the
+     *                                  execution is expected to complete after
+     *                                  all sync fences in waitFor are signaled.
+     * @return A tuple consisting of:
+     *         - Error code of the dispatch call.
+     *         - A sync_fence that will be triggered when the task is completed.
+     *           The sync_fence will be set to error if critical error occurs when doing
+     *           actual evaluation.
+     *         - A callback can be used to query information like duration
+     *           and detailed runtime error status when the task is completed.
+     *         - Optional timing information. Only useful if the call is simulated using
+     *           sync execution. Either IFencedExecutionCallback will be
+     *           returned or optional timing information is returned
+     */
+    std::tuple<int, hal::hidl_handle, sp<hal::IFencedExecutionCallback>, hal::Timing> executeFenced(
+            const hal::Request& request, const hal::hidl_vec<hal::hidl_handle>& waitFor,
+            hal::MeasureTiming measure, const std::optional<Deadline>& deadline,
+            const hal::OptionalTimeoutDuration& loopTimeoutDuration,
+            const hal::OptionalTimeoutDuration& timeoutDurationAfterFence);
+
    private:
+    friend class VersionedIDevice;
+
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeAsynchronously(
-            const hal::Request& request, hal::MeasureTiming timing) const;
+            const hal::Request& request, hal::MeasureTiming timing,
+            const std::optional<Deadline>& deadline,
+            const hal::OptionalTimeoutDuration& loopTimeoutDuration) const;
     std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeSynchronously(
-            const hal::Request& request, hal::MeasureTiming measure) const;
+            const hal::Request& request, hal::MeasureTiming measure,
+            const std::optional<Deadline>& deadline,
+            const hal::OptionalTimeoutDuration& loopTimeoutDuration) const;
+
+    /**
+     * Returns sp<V1_3::IPreparedModel> that is a downcast of the sp<V1_0::IPreparedModel>
+     * passed to the constructor.  This will be nullptr if that IPreparedModel is
+     * not actually of the specified downcast type.
+     */
+    sp<hal::V1_3::IPreparedModel> getV1_3() const { return mPreparedModelV1_3; }
 
     /**
      * All versions of IPreparedModel are necessary because the preparedModel could be v1.0,

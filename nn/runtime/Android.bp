@@ -19,6 +19,10 @@ cc_library_headers {
     host_supported: false,
     vendor_available: true,
     export_include_dirs: ["include"],
+    apex_available: [
+        "com.android.neuralnetworks",
+        "test_com.android.neuralnetworks",
+    ],
 }
 
 cc_library_headers {
@@ -27,14 +31,12 @@ cc_library_headers {
     export_include_dirs: ["."],
 }
 
-cc_library {
-    name: "libneuralnetworks",
-    defaults: ["neuralnetworks_defaults"],
-    use_version_lib: true,
+cc_defaults {
+    name: "libneuralnetworks_defaults",
     host_supported: false,
+    use_version_lib: true,
     // b/109953668, disable OpenMP
     // openmp: true,
-
     srcs: [
         "BurstBuilder.cpp",
         "Callbacks.cpp",
@@ -50,12 +52,6 @@ cc_library {
         "VersionedInterfaces.cpp",
     ],
 
-    stubs: {
-        versions: [
-            "30",
-        ],
-        symbol_file: "libneuralnetworks.map.txt",
-    },
     target: {
         android: {
             version_script: "libneuralnetworks.map.txt",
@@ -81,7 +77,6 @@ cc_library {
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
         "libbase",
-        "libbinderthreadstate",
         "libcrypto_static",
         "libcutils",
         "libfmq",
@@ -91,6 +86,7 @@ cc_library {
         "libmath",
         "libneuralnetworks_common",
         "libprocessgroup",
+        "libsync",
         "libtextclassifier_hash_static",
         "libutils",
     ],
@@ -113,6 +109,35 @@ cc_library {
     export_header_lib_headers: [
         "libneuralnetworks_headers",
     ],
+}
+
+cc_library_shared {
+    name: "libneuralnetworks",
+    defaults: [
+        "libneuralnetworks_defaults",
+        "neuralnetworks_defaults",
+    ],
+    apex_available: [
+        "com.android.neuralnetworks",
+        "test_com.android.neuralnetworks",
+    ],
+
+    stubs: {
+        versions: [
+            "30",
+        ],
+        symbol_file: "libneuralnetworks.map.txt",
+    },
+}
+
+// Required for tests (b/147158681)
+cc_library_static {
+    name: "libneuralnetworks_static",
+    defaults: [
+        "libneuralnetworks_defaults",
+        "neuralnetworks_defaults",
+    ],
+    apex_available: ["//apex_available:platform"],
 }
 
 ndk_headers {

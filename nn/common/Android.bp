@@ -31,8 +31,11 @@ cc_defaults {
         "operations/Comparisons.cpp",
         "operations/Concatenation.cpp",
         "operations/Conv2D.cpp",
+        "operations/DepthwiseConv2D.cpp",
         "operations/Dequantize.cpp",
         "operations/Elementwise.cpp",
+        "operations/Elu.cpp",
+        "operations/Fill.cpp",
         "operations/FullyConnected.cpp",
         "operations/Gather.cpp",
         "operations/GenerateProposals.cpp",
@@ -45,7 +48,9 @@ cc_defaults {
         "operations/Neg.cpp",
         "operations/PRelu.cpp",
         "operations/Pooling.cpp",
+        "operations/QLSTM.cpp",
         "operations/Quantize.cpp",
+        "operations/Rank.cpp",
         "operations/Reduce.cpp",
         "operations/ResizeImageOps.cpp",
         "operations/RoiAlign.cpp",
@@ -55,6 +60,7 @@ cc_defaults {
         "operations/Softmax.cpp",
         "operations/Squeeze.cpp",
         "operations/StridedSlice.cpp",
+        "operations/TopK_V2.cpp",
         "operations/Transpose.cpp",
         "operations/TransposeConv2D.cpp",
         "operations/UnidirectionalSequenceLSTM.cpp",
@@ -70,6 +76,11 @@ cc_library_static {
     ],
     host_supported: false,
     vendor_available: true,
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.neuralnetworks",
+        "test_com.android.neuralnetworks",
+    ],
     export_include_dirs: ["include"],
     srcs: [
         "ExecutionBurstController.cpp",
@@ -119,6 +130,11 @@ cc_library_static {
         "neuralnetworks_defaults",
         "neuralnetworks_operations",
     ],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.neuralnetworks",
+        "test_com.android.neuralnetworks",
+    ],
     host_supported: false,
     vendor_available: true,
     // b/109953668, disable OpenMP
@@ -127,6 +143,7 @@ cc_library_static {
         "include",
     ],
     srcs: [
+        "BufferTracker.cpp",
         "CpuExecutor.cpp",
         "ExecutionBurstController.cpp",
         "ExecutionBurstServer.cpp",
@@ -135,13 +152,13 @@ cc_library_static {
         "MemoryUtils.cpp",
         "MetaModel.cpp",
         "OperationsUtils.cpp",
+        "QuantUtils.cpp",
         "TokenHasher.cpp",
         "Utils.cpp",
         "ValidateHal.cpp",
         "operations/ArgMinMax.cpp",
         "operations/BidirectionalSequenceLSTM.cpp",
         "operations/Cast.cpp",
-        "operations/DepthwiseConv2D.cpp",
         "operations/EmbeddingLookup.cpp",
         "operations/ExpandDims.cpp",
         "operations/GroupedConv2D.cpp",
@@ -159,7 +176,6 @@ cc_library_static {
         "operations/SimpleMath.cpp",
         "operations/Split.cpp",
         "operations/Tile.cpp",
-        "operations/TopK_V2.cpp",
     ],
     shared_libs: [
         "android.hardware.neuralnetworks@1.0",
@@ -169,14 +185,12 @@ cc_library_static {
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
         "libbase",
-        "libcrypto",
         "libcutils",
         "libfmq",
         "libhidlbase",
         "libhidlmemory",
         "liblog",
         "libnativewindow",
-        "libtextclassifier_hash",
         "libutils",
     ],
     header_libs: [
@@ -192,7 +206,10 @@ cc_library_static {
         "libtflite_kernel_utils",
         "philox_random",
     ],
-
+    static_libs: [
+        "libcrypto_static",
+        "libtextclassifier_hash_static",
+    ],
     cflags: [
         "-DNAMESPACE_FOR_HASH_FUNCTIONS=farmhash",
         "-DNN_INCLUDE_CPU_IMPLEMENTATION",
@@ -213,6 +230,7 @@ cc_library_static {
 
 cc_defaults {
     name: "NeuralNetworksTest_common",
+    defaults: ["neuralnetworks_float16"],
     shared_libs: [
         "android.hidl.allocator@1.0",
         "android.hidl.memory@1.0",
@@ -245,6 +263,7 @@ cc_test {
         "operations/*Test.cpp",
     ],
     header_libs: [
+        "gemmlowp_headers",
         "libeigen",
         "philox_random_headers",
         "tensorflow_headers",
@@ -262,9 +281,12 @@ cc_test {
         "UtilsTest.cpp",
     ],
     header_libs: [
+        "gemmlowp_headers",
+        "libeigen",
         "tensorflow_headers",
     ],
     cflags: [
+        "-Wno-unused-parameter",
         "-Wno-unused-variable",
     ],
 }

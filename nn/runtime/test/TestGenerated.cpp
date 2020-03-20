@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-#include "TestGenerated.h"
-
+#include <android-base/logging.h>
+#include <android-base/mapped_file.h>
+#include <android-base/unique_fd.h>
+#include <android/sharedmem.h>
 #include <ftw.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
@@ -26,10 +28,13 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
+#include "GeneratedTestUtils.h"
 #include "TestHarness.h"
 #include "TestNeuralNetworksWrapper.h"
 
@@ -71,6 +76,7 @@ class GeneratedTests : public GeneratedTestBase {
     bool mTestDynamicOutputShape = false;
     bool mExpectFailure = false;
     bool mTestQuantizationCoupling = false;
+    bool mTestDeviceMemory = false;
 };
 
 // Tag for the dynamic output shape tests
@@ -79,98 +85,24 @@ class DynamicOutputShapeTest : public GeneratedTests {
     DynamicOutputShapeTest() { mTestDynamicOutputShape = true; }
 };
 
+// Tag for the fenced execute tests
+class FencedComputeTest : public GeneratedTests {};
+
 // Tag for the generated validation tests
 class GeneratedValidationTests : public GeneratedTests {
    protected:
     GeneratedValidationTests() { mExpectFailure = true; }
 };
 
-class DISABLED_QuantizationCouplingTest : public GeneratedTests {
+class QuantizationCouplingTest : public GeneratedTests {
    protected:
-    DISABLED_QuantizationCouplingTest() { mTestQuantizationCoupling = true; }
+    QuantizationCouplingTest() { mTestQuantizationCoupling = true; }
 };
 
-static OperandType getOperandType(const TestOperand& op, bool testDynamicOutputShape) {
-    auto dims = op.dimensions;
-    if (testDynamicOutputShape && op.lifetime == TestOperandLifeTime::MODEL_OUTPUT) {
-        dims.assign(dims.size(), 0);
-    }
-    if (op.type == TestOperandType::TENSOR_QUANT8_SYMM_PER_CHANNEL) {
-        return OperandType(
-                static_cast<Type>(op.type), dims,
-                SymmPerChannelQuantParams(op.channelQuant.scales, op.channelQuant.channelDim));
-    } else {
-        return OperandType(static_cast<Type>(op.type), dims, op.scale, op.zeroPoint);
-    }
-}
-
-void createModel(const TestModel& testModel, bool testDynamicOutputShape, Model* model) {
-    ASSERT_NE(nullptr, model);
-
-    // Operands.
-    for (const auto& operand : testModel.operands) {
-        auto type = getOperandType(operand, testDynamicOutputShape);
-        auto index = model->addOperand(&type);
-
-        switch (operand.lifetime) {
-            case TestOperandLifeTime::CONSTANT_COPY:
-            case TestOperandLifeTime::CONSTANT_REFERENCE:
-                model->setOperandValue(index, operand.data.get<void>(), operand.data.size());
-                break;
-            case TestOperandLifeTime::NO_VALUE:
-                model->setOperandValue(index, nullptr, 0);
-                break;
-            case TestOperandLifeTime::MODEL_INPUT:
-            case TestOperandLifeTime::MODEL_OUTPUT:
-            case TestOperandLifeTime::TEMPORARY_VARIABLE:
-                // Nothing to do here.
-                break;
-        }
-    }
-
-    // Operations.
-    for (const auto& operation : testModel.operations) {
-        model->addOperation(static_cast<int>(operation.type), operation.inputs, operation.outputs);
-    }
-
-    // Inputs and outputs.
-    model->identifyInputsAndOutputs(testModel.inputIndexes, testModel.outputIndexes);
-
-    // Relaxed computation.
-    model->relaxComputationFloat32toFloat16(testModel.isRelaxed);
-
-    ASSERT_TRUE(model->isValid());
-}
-
-static void createRequest(const TestModel& testModel, Execution* execution,
-                          std::vector<TestBuffer>* outputs) {
-    ASSERT_NE(nullptr, execution);
-    ASSERT_NE(nullptr, outputs);
-
-    // Model inputs.
-    for (uint32_t i = 0; i < testModel.inputIndexes.size(); i++) {
-        const auto& operand = testModel.operands[testModel.inputIndexes[i]];
-        ASSERT_EQ(Result::NO_ERROR,
-                  execution->setInput(i, operand.data.get<void>(), operand.data.size()));
-    }
-
-    // Model outputs.
-    for (uint32_t i = 0; i < testModel.outputIndexes.size(); i++) {
-        const auto& operand = testModel.operands[testModel.outputIndexes[i]];
-
-        // In the case of zero-sized output, we should at least provide a one-byte buffer.
-        // This is because zero-sized tensors are only supported internally to the runtime, or
-        // reported in output shapes. It is illegal for the client to pre-specify a zero-sized
-        // tensor as model output. Otherwise, we will have two semantic conflicts:
-        // - "Zero dimension" conflicts with "unspecified dimension".
-        // - "Omitted operand buffer" conflicts with "zero-sized operand buffer".
-        const size_t bufferSize = std::max<size_t>(operand.data.size(), 1);
-
-        outputs->emplace_back(bufferSize);
-        ASSERT_EQ(Result::NO_ERROR,
-                  execution->setOutput(i, outputs->back().getMutable<void>(), bufferSize));
-    }
-}
+class DeviceMemoryTest : public GeneratedTests {
+   protected:
+    DeviceMemoryTest() { mTestDeviceMemory = true; }
+};
 
 std::optional<Compilation> GeneratedTests::compileModel(const Model& model) {
     NNTRACE_APP(NNTRACE_PHASE_COMPILATION, "compileModel");
@@ -199,31 +131,177 @@ std::optional<Compilation> GeneratedTests::compileModel(const Model& model) {
     }
 }
 
+static void computeWithPtrs(const TestModel& testModel, Execution* execution, Result* result,
+                            std::vector<TestBuffer>* outputs) {
+    {
+        NNTRACE_APP(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "computeWithPtrs example");
+        createRequest(testModel, execution, outputs);
+    }
+    *result = execution->compute();
+}
+
+// Convenience class to manage the file, mapping, and memory object.
+class TestAshmem {
+   public:
+    TestAshmem(::android::base::unique_fd fd, std::unique_ptr<::android::base::MappedFile> mapped,
+               Memory memory)
+        : mFd(std::move(fd)), mMapped(std::move(mapped)), mMemory(std::move(memory)) {}
+
+    // Factory function for TestAshmem; prefer this over the raw constructor
+    static std::unique_ptr<TestAshmem> createFrom(const TestBuffer& buffer) {
+        // Create ashmem-based fd.
+        int fd = ASharedMemory_create(nullptr, buffer.size());
+        if (fd <= 0) return nullptr;
+        ::android::base::unique_fd managedFd(fd);
+
+        // Map and populate ashmem.
+        auto mappedFile =
+                ::android::base::MappedFile::FromFd(fd, 0, buffer.size(), PROT_READ | PROT_WRITE);
+        if (!mappedFile) return nullptr;
+        memcpy(mappedFile->data(), buffer.get<void>(), buffer.size());
+
+        // Create NNAPI memory object.
+        Memory memory(buffer.size(), PROT_READ | PROT_WRITE, fd, 0);
+        if (!memory.isValid()) return nullptr;
+
+        // Store everything in managing class.
+        return std::make_unique<TestAshmem>(std::move(managedFd), std::move(mappedFile),
+                                            std::move(memory));
+    }
+
+    size_t size() { return mMapped->size(); }
+    Memory* get() { return &mMemory; }
+
+    template <typename Type>
+    Type* dataAs() {
+        return static_cast<Type*>(static_cast<void*>(mMapped->data()));
+    }
+
+   private:
+    ::android::base::unique_fd mFd;
+    std::unique_ptr<::android::base::MappedFile> mMapped;
+    Memory mMemory;
+};
+
+static ANeuralNetworksMemory* createDeviceMemoryForInput(const Compilation& compilation,
+                                                         uint32_t index) {
+    ANeuralNetworksMemoryDesc* desc = nullptr;
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_create(&desc), ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_addInputRole(desc, compilation.getHandle(), index, 1.0f),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_finish(desc), ANEURALNETWORKS_NO_ERROR);
+    ANeuralNetworksMemory* memory = nullptr;
+    ANeuralNetworksMemory_createFromDesc(desc, &memory);
+    ANeuralNetworksMemoryDesc_free(desc);
+    return memory;
+}
+
+static ANeuralNetworksMemory* createDeviceMemoryForOutput(const Compilation& compilation,
+                                                          uint32_t index) {
+    ANeuralNetworksMemoryDesc* desc = nullptr;
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_create(&desc), ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_addOutputRole(desc, compilation.getHandle(), index, 1.0f),
+              ANEURALNETWORKS_NO_ERROR);
+    EXPECT_EQ(ANeuralNetworksMemoryDesc_finish(desc), ANEURALNETWORKS_NO_ERROR);
+    ANeuralNetworksMemory* memory = nullptr;
+    ANeuralNetworksMemory_createFromDesc(desc, &memory);
+    ANeuralNetworksMemoryDesc_free(desc);
+    return memory;
+}
+
+// Set result = Result::NO_ERROR and outputs = {} if the test should be skipped.
+static void computeWithDeviceMemories(const Compilation& compilation, const TestModel& testModel,
+                                      Execution* execution, Result* result,
+                                      std::vector<TestBuffer>* outputs) {
+    ASSERT_NE(execution, nullptr);
+    ASSERT_NE(result, nullptr);
+    ASSERT_NE(outputs, nullptr);
+    outputs->clear();
+    std::vector<Memory> inputMemories, outputMemories;
+
+    {
+        NNTRACE_APP(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "computeWithDeviceMemories example");
+        // Model inputs.
+        for (uint32_t i = 0; i < testModel.main.inputIndexes.size(); i++) {
+            SCOPED_TRACE("Input index: " + std::to_string(i));
+            const auto& operand = testModel.main.operands[testModel.main.inputIndexes[i]];
+            // Omitted input.
+            if (operand.data.size() == 0) {
+                ASSERT_EQ(Result::NO_ERROR, execution->setInput(i, nullptr, 0));
+                continue;
+            }
+
+            // Create device memory.
+            ANeuralNetworksMemory* memory = createDeviceMemoryForInput(compilation, i);
+            ASSERT_NE(memory, nullptr);
+            auto& wrapperMemory = inputMemories.emplace_back(memory);
+
+            // Copy data from TestBuffer to device memory.
+            auto ashmem = TestAshmem::createFrom(operand.data);
+            ASSERT_NE(ashmem, nullptr);
+            ASSERT_EQ(ANeuralNetworksMemory_copy(ashmem->get()->get(), memory),
+                      ANEURALNETWORKS_NO_ERROR);
+            ASSERT_EQ(Result::NO_ERROR, execution->setInputFromMemory(i, &wrapperMemory, 0, 0));
+        }
+
+        // Model outputs.
+        for (uint32_t i = 0; i < testModel.main.outputIndexes.size(); i++) {
+            SCOPED_TRACE("Output index: " + std::to_string(i));
+            ANeuralNetworksMemory* memory = createDeviceMemoryForOutput(compilation, i);
+            ASSERT_NE(memory, nullptr);
+            auto& wrapperMemory = outputMemories.emplace_back(memory);
+            ASSERT_EQ(Result::NO_ERROR, execution->setOutputFromMemory(i, &wrapperMemory, 0, 0));
+        }
+    }
+
+    *result = execution->compute();
+
+    // Copy out output results.
+    for (uint32_t i = 0; i < testModel.main.outputIndexes.size(); i++) {
+        SCOPED_TRACE("Output index: " + std::to_string(i));
+        const auto& operand = testModel.main.operands[testModel.main.outputIndexes[i]];
+        const size_t bufferSize = operand.data.size();
+        auto& output = outputs->emplace_back(bufferSize);
+
+        auto ashmem = TestAshmem::createFrom(output);
+        ASSERT_NE(ashmem, nullptr);
+        ASSERT_EQ(ANeuralNetworksMemory_copy(outputMemories[i].get(), ashmem->get()->get()),
+                  ANEURALNETWORKS_NO_ERROR);
+        std::copy(ashmem->dataAs<uint8_t>(), ashmem->dataAs<uint8_t>() + bufferSize,
+                  output.getMutable<uint8_t>());
+    }
+}
+
 void GeneratedTests::executeWithCompilation(const Compilation& compilation,
                                             const TestModel& testModel) {
     NNTRACE_APP(NNTRACE_PHASE_EXECUTION, "executeWithCompilation example");
 
     Execution execution(&compilation);
+    Result result;
     std::vector<TestBuffer> outputs;
-    {
-        NNTRACE_APP(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "executeWithCompilation example");
-        createRequest(testModel, &execution, &outputs);
+
+    if (mTestDeviceMemory) {
+        computeWithDeviceMemories(compilation, testModel, &execution, &result, &outputs);
+    } else {
+        computeWithPtrs(testModel, &execution, &result, &outputs);
     }
 
-    Result result = execution.compute();
-    if (mExpectFailure) {
-        ASSERT_NE(result, Result::NO_ERROR);
+    if (result == Result::NO_ERROR && outputs.empty()) {
         return;
-    } else {
-        ASSERT_EQ(result, Result::NO_ERROR);
     }
 
     {
         NNTRACE_APP(NNTRACE_PHASE_RESULTS, "executeWithCompilation example");
+        if (mExpectFailure) {
+            ASSERT_NE(result, Result::NO_ERROR);
+            return;
+        } else {
+            ASSERT_EQ(result, Result::NO_ERROR);
+        }
 
         // Check output dimensions.
-        for (uint32_t i = 0; i < testModel.outputIndexes.size(); i++) {
-            const auto& output = testModel.operands[testModel.outputIndexes[i]];
+        for (uint32_t i = 0; i < testModel.main.outputIndexes.size(); i++) {
+            const auto& output = testModel.main.operands[testModel.main.outputIndexes[i]];
             if (output.isIgnored) continue;
             std::vector<uint32_t> actualDimensions;
             ASSERT_EQ(Result::NO_ERROR, execution.getOutputOperandDimensions(i, &actualDimensions));
@@ -271,9 +349,10 @@ void GeneratedTests::executeMultithreadedSharedCompilation(const Model& model,
 // Test driver for those generated from ml/nn/runtime/test/spec
 void GeneratedTests::execute(const TestModel& testModel) {
     NNTRACE_APP(NNTRACE_PHASE_OVERALL, "execute");
-    Model model;
+    GeneratedModel model;
     createModel(testModel, mTestDynamicOutputShape, &model);
-    model.finish();
+    ASSERT_EQ(model.finish(), Result::NO_ERROR);
+    ASSERT_TRUE(model.isValid());
     auto executeInternal = [&testModel, &model, this]() {
         SCOPED_TRACE("TestCompilationCaching = " + std::to_string(mTestCompilationCaching));
 #ifndef NNTEST_MULTITHREADED
@@ -344,22 +423,55 @@ TEST_P(GeneratedValidationTests, Test) {
     execute(testModel);
 }
 
-TEST_P(DISABLED_QuantizationCouplingTest, Test) {
+TEST_P(QuantizationCouplingTest, Test) {
     execute(testModel);
     execute(convertQuant8AsymmOperandsToSigned(testModel));
+}
+
+TEST_P(DeviceMemoryTest, Test) {
+    execute(testModel);
+}
+
+TEST_P(FencedComputeTest, Test) {
+    const auto oldComputeMode = Execution::setComputeMode(Execution::ComputeMode::FENCED);
+    execute(testModel);
+    Execution::setComputeMode(oldComputeMode);
 }
 
 INSTANTIATE_GENERATED_TEST(GeneratedTests,
                            [](const TestModel& testModel) { return !testModel.expectFailure; });
 
-INSTANTIATE_GENERATED_TEST(DynamicOutputShapeTest,
-                           [](const TestModel& testModel) { return !testModel.expectFailure; });
+INSTANTIATE_GENERATED_TEST(DynamicOutputShapeTest, [](const TestModel& testModel) {
+    return !testModel.expectFailure && !testModel.hasScalarOutputs();
+});
 
-INSTANTIATE_GENERATED_TEST(GeneratedValidationTests,
-                           [](const TestModel& testModel) { return testModel.expectFailure; });
+INSTANTIATE_GENERATED_TEST(GeneratedValidationTests, [](const TestModel& testModel) {
+    return testModel.expectFailure && !testModel.isInfiniteLoopTimeoutTest();
+});
 
-INSTANTIATE_GENERATED_TEST(DISABLED_QuantizationCouplingTest, [](const TestModel& testModel) {
-    return testModel.hasQuant8AsymmOperands() && testModel.operations.size() == 1;
+INSTANTIATE_GENERATED_TEST(QuantizationCouplingTest, [](const TestModel& testModel) {
+    return testModel.main.operations.size() == 1 && testModel.referenced.size() == 0 &&
+           testModel.hasQuant8CoupledOperands();
+});
+
+INSTANTIATE_GENERATED_TEST(DeviceMemoryTest, [](const TestModel& testModel) {
+    if (!testModel.referenced.empty()) {
+        // TODO(b/149693818): Add control flow support to DeviceMemoryTest.
+        return false;
+    }
+    return !testModel.expectFailure &&
+           std::all_of(testModel.main.outputIndexes.begin(), testModel.main.outputIndexes.end(),
+                       [&testModel](uint32_t index) {
+                           return testModel.main.operands[index].data.size() > 0;
+                       });
+});
+
+INSTANTIATE_GENERATED_TEST(FencedComputeTest, [](const TestModel& testModel) {
+    return !testModel.expectFailure &&
+           std::all_of(testModel.main.outputIndexes.begin(), testModel.main.outputIndexes.end(),
+                       [&testModel](uint32_t index) {
+                           return testModel.main.operands[index].data.size() > 0;
+                       });
 });
 
 }  // namespace android::nn::generated_tests

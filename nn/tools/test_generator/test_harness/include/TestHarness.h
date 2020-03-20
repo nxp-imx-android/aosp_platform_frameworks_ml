@@ -27,6 +27,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <random>
@@ -70,15 +72,23 @@ enum class TestOperandType {
     TENSOR_QUANT16_ASYMM = 12,
     TENSOR_QUANT8_SYMM = 13,
     TENSOR_QUANT8_ASYMM_SIGNED = 14,
+    SUBGRAPH = 15,
 };
 
 enum class TestOperandLifeTime {
     TEMPORARY_VARIABLE = 0,
-    MODEL_INPUT = 1,
-    MODEL_OUTPUT = 2,
+    SUBGRAPH_INPUT = 1,
+    SUBGRAPH_OUTPUT = 2,
     CONSTANT_COPY = 3,
     CONSTANT_REFERENCE = 4,
     NO_VALUE = 5,
+    SUBGRAPH = 6,
+    // DEPRECATED. Use SUBGRAPH_INPUT.
+    // This value is used in pre-1.3 VTS tests.
+    MODEL_INPUT = SUBGRAPH_INPUT,
+    // DEPRECATED. Use SUBGRAPH_OUTPUT.
+    // This value is used in pre-1.3 VTS tests.
+    MODEL_OUTPUT = SUBGRAPH_OUTPUT,
 };
 
 enum class TestOperationType {
@@ -177,6 +187,13 @@ enum class TestOperationType {
     UNIDIRECTIONAL_SEQUENCE_LSTM = 92,
     UNIDIRECTIONAL_SEQUENCE_RNN = 93,
     RESIZE_NEAREST_NEIGHBOR = 94,
+    QUANTIZED_LSTM = 95,
+    IF = 96,
+    WHILE = 97,
+    ELU = 98,
+    HARD_SWISH = 99,
+    FILL = 100,
+    RANK = 101,
 };
 
 enum class TestHalVersion { UNKNOWN, V1_0, V1_1, V1_2, V1_3 };
@@ -257,11 +274,11 @@ struct TestOperand {
     TestOperandLifeTime lifetime;
     TestSymmPerChannelQuantParams channelQuant;
 
-    // For MODEL_OUTPUT only. Set to true to skip the accuracy check on this operand.
+    // For SUBGRAPH_OUTPUT only. Set to true to skip the accuracy check on this operand.
     bool isIgnored = false;
 
-    // For CONSTANT_COPY/REFERENCE and MODEL_INPUT, this is the data set in model and request.
-    // For MODEL_OUTPUT, this is the expected results.
+    // For CONSTANT_COPY/REFERENCE and SUBGRAPH_INPUT, this is the data set in model and request.
+    // For SUBGRAPH_OUTPUT, this is the expected results.
     // For TEMPORARY_VARIABLE and NO_VALUE, this is nullptr.
     TestBuffer data;
 };
@@ -272,11 +289,16 @@ struct TestOperation {
     std::vector<uint32_t> outputs;
 };
 
-struct TestModel {
+struct TestSubgraph {
     std::vector<TestOperand> operands;
     std::vector<TestOperation> operations;
     std::vector<uint32_t> inputIndexes;
     std::vector<uint32_t> outputIndexes;
+};
+
+struct TestModel {
+    TestSubgraph main;
+    std::vector<TestSubgraph> referenced;
     bool isRelaxed = false;
 
     // Additional testing information and flags associated with the TestModel.
@@ -293,22 +315,108 @@ struct TestModel {
     // The minimum supported HAL version.
     TestHalVersion minSupportedVersion = TestHalVersion::UNKNOWN;
 
+    void forEachSubgraph(std::function<void(const TestSubgraph&)> handler) const {
+        handler(main);
+        for (const TestSubgraph& subgraph : referenced) {
+            handler(subgraph);
+        }
+    }
+
+    void forEachSubgraph(std::function<void(TestSubgraph&)> handler) {
+        handler(main);
+        for (TestSubgraph& subgraph : referenced) {
+            handler(subgraph);
+        }
+    }
+
     // Explicitly create a deep copy.
     TestModel copy() const {
         TestModel newTestModel(*this);
-        for (TestOperand& operand : newTestModel.operands) {
-            operand.data = operand.data.copy();
-        }
+        newTestModel.forEachSubgraph([](TestSubgraph& subgraph) {
+            for (TestOperand& operand : subgraph.operands) {
+                operand.data = operand.data.copy();
+            }
+        });
         return newTestModel;
     }
 
-    bool hasQuant8AsymmOperands() const {
-        for (const TestOperand& operand : operands) {
-            if (operand.type == test_helper::TestOperandType::TENSOR_QUANT8_ASYMM) {
-                return true;
+    bool hasQuant8CoupledOperands() const {
+        bool result = false;
+        forEachSubgraph([&result](const TestSubgraph& subgraph) {
+            if (result) {
+                return;
             }
-        }
-        return false;
+            for (const TestOperation& operation : subgraph.operations) {
+                /*
+                 *  There are several ops that are exceptions to the general quant8
+                 *  types coupling:
+                 *  HASHTABLE_LOOKUP -- due to legacy reasons uses
+                 *    TENSOR_QUANT8_ASYMM tensor as if it was TENSOR_BOOL. It
+                 *    doesn't make sense to have coupling in this case.
+                 *  LSH_PROJECTION -- hashes an input tensor treating it as raw
+                 *    bytes. We can't expect same results for coupled inputs.
+                 *  PAD_V2 -- pad_value is set using int32 scalar, so coupling
+                 *    produces a wrong result.
+                 *  CAST -- converts tensors without taking into account input's
+                 *    scale and zero point. Coupled models shouldn't produce same
+                 *    results.
+                 *  QUANTIZED_16BIT_LSTM -- the op is made for a specific use case,
+                 *    supporting signed quantization is not worth the compications.
+                 */
+                if (operation.type == TestOperationType::HASHTABLE_LOOKUP ||
+                    operation.type == TestOperationType::LSH_PROJECTION ||
+                    operation.type == TestOperationType::PAD_V2 ||
+                    operation.type == TestOperationType::CAST ||
+                    operation.type == TestOperationType::QUANTIZED_16BIT_LSTM) {
+                    continue;
+                }
+                for (const auto operandIndex : operation.inputs) {
+                    if (subgraph.operands[operandIndex].type ==
+                        TestOperandType::TENSOR_QUANT8_ASYMM) {
+                        result = true;
+                        return;
+                    }
+                }
+                for (const auto operandIndex : operation.outputs) {
+                    if (subgraph.operands[operandIndex].type ==
+                        TestOperandType::TENSOR_QUANT8_ASYMM) {
+                        result = true;
+                        return;
+                    }
+                }
+            }
+        });
+        return result;
+    }
+
+    bool hasScalarOutputs() const {
+        bool result = false;
+        forEachSubgraph([&result](const TestSubgraph& subgraph) {
+            if (result) {
+                return;
+            }
+            for (const TestOperation& operation : subgraph.operations) {
+                // RANK op returns a scalar and therefore shouldn't be tested
+                // for dynamic output shape support.
+                if (operation.type == TestOperationType::RANK) {
+                    result = true;
+                    return;
+                }
+                // Control flow operations do not support referenced model
+                // outputs with dynamic shapes.
+                if (operation.type == TestOperationType::IF ||
+                    operation.type == TestOperationType::WHILE) {
+                    result = true;
+                    return;
+                }
+            }
+        });
+        return result;
+    }
+
+    bool isInfiniteLoopTimeoutTest() const {
+        // This should only match the TestModel generated from while_infinite_loop.mod.py.
+        return expectFailure && main.operations[0].type == TestOperationType::WHILE;
     }
 };
 
@@ -348,12 +456,76 @@ class TestModelManager {
     std::map<std::string, const TestModel*> mTestModels;
 };
 
+struct AccuracyCriterion {
+    // We expect the driver results to be unbiased.
+    // Formula: abs(sum_{i}(diff) / sum(1)) <= bias, where
+    // * fixed point: diff = actual - expected
+    // * floating point: diff = (actual - expected) / max(1, abs(expected))
+    float bias = std::numeric_limits<float>::max();
+
+    // Set the threshold on Mean Square Error (MSE).
+    // Formula: sum_{i}(diff ^ 2) / sum(1) <= mse
+    float mse = std::numeric_limits<float>::max();
+
+    // We also set accuracy thresholds on each element to detect any particular edge cases that may
+    // be shadowed in bias or MSE. We use the similar approach as our CTS unit tests, but with much
+    // relaxed criterion.
+    // Formula: abs(actual - expected) <= atol + rtol * abs(expected)
+    //   where atol stands for Absolute TOLerance and rtol for Relative TOLerance.
+    float atol = 0.0f;
+    float rtol = 0.0f;
+};
+
+struct AccuracyCriteria {
+    AccuracyCriterion float32;
+    AccuracyCriterion float16;
+    AccuracyCriterion int32;
+    AccuracyCriterion quant8Asymm;
+    AccuracyCriterion quant8AsymmSigned;
+    AccuracyCriterion quant8Symm;
+    AccuracyCriterion quant16Asymm;
+    AccuracyCriterion quant16Symm;
+    float bool8AllowedErrorRatio = 0.1f;
+};
+
 // Check the output results against the expected values in test model by calling
-// GTEST_ASSERT/EXPECT. The index of the results corresponds to the index in model.outputIndexes.
-// E.g., results[i] corresponds to model.outputIndexes[i].
+// GTEST_ASSERT/EXPECT. The index of the results corresponds to the index in
+// model.main.outputIndexes. E.g., results[i] corresponds to model.main.outputIndexes[i].
 void checkResults(const TestModel& model, const std::vector<TestBuffer>& results);
+void checkResults(const TestModel& model, const std::vector<TestBuffer>& results,
+                  const AccuracyCriteria& criteria);
+
+bool isQuantizedType(TestOperandType type);
 
 TestModel convertQuant8AsymmOperandsToSigned(const TestModel& testModel);
+
+const char* toString(TestOperandType type);
+const char* toString(TestOperationType type);
+
+// Dump a test model in the format of a spec file for debugging and visualization purpose.
+class SpecDumper {
+   public:
+    SpecDumper(const TestModel& testModel, std::ostream& os) : kTestModel(testModel), mOs(os) {}
+    void dumpTestModel();
+    void dumpResults(const std::string& name, const std::vector<TestBuffer>& results);
+
+   private:
+    // Dump a test model operand.
+    // e.g. op0 = Input("op0", "TENSOR_FLOAT32", "{1, 2, 6, 1}")
+    // e.g. op1 = Parameter("op1", "INT32", "{}", [2])
+    void dumpTestOperand(const TestOperand& operand, uint32_t index);
+
+    // Dump a test model operation.
+    // e.g. model = model.Operation("CONV_2D", op0, op1, op2, op3, op4, op5, op6).To(op7)
+    void dumpTestOperation(const TestOperation& operation);
+
+    // Dump a test buffer as a python 1D list.
+    // e.g. [1, 2, 3, 4, 5]
+    void dumpTestBuffer(TestOperandType type, const TestBuffer& buffer);
+
+    const TestModel& kTestModel;
+    std::ostream& mOs;
+};
 
 }  // namespace test_helper
 

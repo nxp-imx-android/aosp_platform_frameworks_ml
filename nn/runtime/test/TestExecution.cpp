@@ -33,6 +33,7 @@
 #include "NeuralNetworks.h"
 #include "SampleDriver.h"
 #include "TestNeuralNetworksWrapper.h"
+#include "Utils.h"
 #include "ValidateHal.h"
 
 namespace android {
@@ -51,6 +52,7 @@ using WrapperExecution = nn::test_wrapper::Execution;
 using WrapperModel = nn::test_wrapper::Model;
 using WrapperOperandType = nn::test_wrapper::OperandType;
 using WrapperType = nn::test_wrapper::Type;
+using nn::convertToV1_0;
 
 template <typename T>
 using MQDescriptorSync = hardware::MQDescriptorSync<T>;
@@ -72,55 +74,73 @@ class TestPreparedModelLatest : public IPreparedModel {
           mPreparedModelV1_3(V1_3::IPreparedModel::castFrom(preparedModel).withDefault(nullptr)),
           mErrorStatus(errorStatus) {}
 
-    Return<ErrorStatus> execute(const Request& request,
-                                const sp<V1_0::IExecutionCallback>& callback) override {
+    Return<V1_0::ErrorStatus> execute(const V1_0::Request& request,
+                                      const sp<V1_0::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_0 != nullptr) << "V1_0 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
             return mPreparedModelV1_0->execute(request, callback);
         } else {
-            callback->notify(mErrorStatus);
-            return ErrorStatus::NONE;
+            callback->notify(convertToV1_0(mErrorStatus));
+            return V1_0::ErrorStatus::NONE;
         }
     }
 
-    Return<ErrorStatus> execute_1_2(const Request& request, MeasureTiming measure,
-                                    const sp<V1_2::IExecutionCallback>& callback) override {
+    Return<V1_0::ErrorStatus> execute_1_2(const V1_0::Request& request, MeasureTiming measure,
+                                          const sp<V1_2::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
             return mPreparedModelV1_2->execute_1_2(request, measure, callback);
         } else if (mErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
             OutputShape shape = {.dimensions = {1}, .isSufficient = false};
-            callback->notify_1_2(mErrorStatus, {shape}, kBadTiming);
-            return ErrorStatus::NONE;
+            callback->notify_1_2(convertToV1_0(mErrorStatus), {shape}, kBadTiming);
+            return V1_0::ErrorStatus::NONE;
         } else {
-            callback->notify_1_2(mErrorStatus, {}, kBadTiming);
-            return ErrorStatus::NONE;
+            callback->notify_1_2(convertToV1_0(mErrorStatus), {}, kBadTiming);
+            return V1_0::ErrorStatus::NONE;
         }
     }
 
-    Return<ErrorStatus> execute_1_3(const Request& request, MeasureTiming measure,
-                                    const sp<V1_2::IExecutionCallback>& callback) override {
+    Return<V1_3::ErrorStatus> execute_1_3(const V1_3::Request& request, MeasureTiming measure,
+                                          const OptionalTimePoint& deadline,
+                                          const OptionalTimeoutDuration& loopTimeoutDuration,
+                                          const sp<V1_3::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_3 != nullptr) << "V1_3 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
-            return mPreparedModelV1_3->execute_1_3(request, measure, callback);
+            return mPreparedModelV1_3->execute_1_3(request, measure, deadline, loopTimeoutDuration,
+                                                   callback);
         } else if (mErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
             OutputShape shape = {.dimensions = {1}, .isSufficient = false};
-            callback->notify_1_2(mErrorStatus, {shape}, kBadTiming);
-            return ErrorStatus::NONE;
+            callback->notify_1_3(mErrorStatus, {shape}, kBadTiming);
+            return V1_3::ErrorStatus::NONE;
         } else {
-            callback->notify_1_2(mErrorStatus, {}, kBadTiming);
-            return ErrorStatus::NONE;
+            callback->notify_1_3(mErrorStatus, {}, kBadTiming);
+            return V1_3::ErrorStatus::NONE;
         }
     }
 
-    Return<void> executeSynchronously(const Request& request, MeasureTiming measure,
+    Return<void> executeSynchronously(const V1_0::Request& request, MeasureTiming measure,
                                       executeSynchronously_cb cb) override {
         CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
         if (mErrorStatus == ErrorStatus::NONE) {
-            return mPreparedModelV1_2->executeSynchronously(
-                    request, measure,
-                    [&cb](ErrorStatus error, const hidl_vec<OutputShape>& outputShapes,
-                          const Timing& timing) { cb(error, outputShapes, timing); });
+            return mPreparedModelV1_2->executeSynchronously(request, measure, cb);
+        } else if (mErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
+            OutputShape shape = {.dimensions = {1}, .isSufficient = false};
+            cb(convertToV1_0(mErrorStatus), {shape}, kBadTiming);
+            return Void();
+        } else {
+            cb(convertToV1_0(mErrorStatus), {}, kBadTiming);
+            return Void();
+        }
+    }
+
+    Return<void> executeSynchronously_1_3(const V1_3::Request& request, MeasureTiming measure,
+                                          const OptionalTimePoint& deadline,
+                                          const OptionalTimeoutDuration& loopTimeoutDuration,
+                                          executeSynchronously_1_3_cb cb) override {
+        CHECK(mPreparedModelV1_3 != nullptr) << "V1_3 prepared model is nullptr.";
+        if (mErrorStatus == ErrorStatus::NONE) {
+            return mPreparedModelV1_3->executeSynchronously_1_3(request, measure, deadline,
+                                                                loopTimeoutDuration, cb);
         } else if (mErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) {
             OutputShape shape = {.dimensions = {1}, .isSufficient = false};
             cb(mErrorStatus, {shape}, kBadTiming);
@@ -141,9 +161,15 @@ class TestPreparedModelLatest : public IPreparedModel {
             return mPreparedModelV1_2->configureExecutionBurst(callback, requestChannel,
                                                                resultChannel, cb);
         } else {
-            cb(mErrorStatus, nullptr);
+            cb(convertToV1_0(mErrorStatus), nullptr);
             return Void();
         }
+    }
+    Return<void> executeFenced(const V1_3::Request&, const hidl_vec<hidl_handle>&, MeasureTiming,
+                               const OptionalTimePoint&, const OptionalTimeoutDuration&,
+                               const OptionalTimeoutDuration&, executeFenced_cb cb) override {
+        cb(ErrorStatus::DEVICE_UNAVAILABLE, hidl_handle(nullptr), nullptr);
+        return Void();
     }
 
    private:
@@ -161,17 +187,17 @@ class TestPreparedModel12 : public V1_2::IPreparedModel {
     TestPreparedModel12(sp<V1_0::IPreparedModel> preparedModel, ErrorStatus errorStatus)
         : mLatestPreparedModel(new TestPreparedModelLatest(preparedModel, errorStatus)) {}
 
-    Return<ErrorStatus> execute(const Request& request,
-                                const sp<V1_0::IExecutionCallback>& callback) override {
+    Return<V1_0::ErrorStatus> execute(const V1_0::Request& request,
+                                      const sp<V1_0::IExecutionCallback>& callback) override {
         return mLatestPreparedModel->execute(request, callback);
     }
 
-    Return<ErrorStatus> execute_1_2(const Request& request, MeasureTiming measure,
-                                    const sp<V1_2::IExecutionCallback>& callback) override {
+    Return<V1_0::ErrorStatus> execute_1_2(const V1_0::Request& request, MeasureTiming measure,
+                                          const sp<V1_2::IExecutionCallback>& callback) override {
         return mLatestPreparedModel->execute_1_2(request, measure, callback);
     }
 
-    Return<void> executeSynchronously(const Request& request, MeasureTiming measure,
+    Return<void> executeSynchronously(const V1_0::Request& request, MeasureTiming measure,
                                       executeSynchronously_cb cb) override {
         return mLatestPreparedModel->executeSynchronously(request, measure, cb);
     }
@@ -195,8 +221,8 @@ class TestPreparedModel10 : public V1_0::IPreparedModel {
     TestPreparedModel10(sp<V1_0::IPreparedModel> preparedModel, ErrorStatus errorStatus)
         : mLatestPreparedModel(new TestPreparedModelLatest(preparedModel, errorStatus)) {}
 
-    Return<ErrorStatus> execute(const Request& request,
-                                const sp<V1_0::IExecutionCallback>& callback) override {
+    Return<V1_0::ErrorStatus> execute(const V1_0::Request& request,
+                                      const sp<V1_0::IExecutionCallback>& callback) override {
         return mLatestPreparedModel->execute(request, callback);
     }
 
@@ -223,31 +249,32 @@ class TestDriver13 : public SampleDriver {
                 .relaxedFloat32toFloat16PerformanceScalar = kPerf,
                 .relaxedFloat32toFloat16PerformanceTensor = kPerf,
                 .operandPerformance =
-                        nn::nonExtensionOperandPerformance<nn::HalVersion::V1_3>(kPerf)};
-        _hidl_cb(ErrorStatus::NONE, capabilities);
+                        nn::nonExtensionOperandPerformance<nn::HalVersion::V1_3>(kPerf),
+                .ifPerformance = kPerf,
+                .whilePerformance = kPerf};
+        _hidl_cb(V1_3::ErrorStatus::NONE, capabilities);
         return Void();
     }
 
     Return<void> getSupportedOperations_1_3(const HidlModel& model,
                                             getSupportedOperations_1_3_cb cb) override {
         if (nn::validateModel(model)) {
-            std::vector<bool> supported(model.operations.size(), true);
-            cb(ErrorStatus::NONE, supported);
+            std::vector<bool> supported(model.main.operations.size(), true);
+            cb(V1_3::ErrorStatus::NONE, supported);
         } else {
-            std::vector<bool> supported;
-            cb(ErrorStatus::INVALID_ARGUMENT, supported);
+            cb(V1_3::ErrorStatus::INVALID_ARGUMENT, {});
         }
         return Void();
     }
 
-    Return<ErrorStatus> prepareModel_1_3(
-            const HidlModel& model, ExecutionPreference preference,
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const CacheToken& token,
+    Return<V1_3::ErrorStatus> prepareModel_1_3(
+            const HidlModel& model, ExecutionPreference preference, Priority priority,
+            const OptionalTimePoint& deadline, const hidl_vec<hidl_handle>& modelCache,
+            const hidl_vec<hidl_handle>& dataCache, const CacheToken& token,
             const sp<V1_3::IPreparedModelCallback>& actualCallback) override {
         sp<PreparedModelCallback> localCallback = new PreparedModelCallback;
-        Return<ErrorStatus> prepareModelReturn = SampleDriver::prepareModel_1_3(
-                model, preference, modelCache, dataCache, token, localCallback);
+        Return<V1_3::ErrorStatus> prepareModelReturn = SampleDriver::prepareModel_1_3(
+                model, preference, priority, deadline, modelCache, dataCache, token, localCallback);
         if (!prepareModelReturn.isOkUnchecked()) {
             return prepareModelReturn;
         }
@@ -264,67 +291,69 @@ class TestDriver13 : public SampleDriver {
                     V1_3::IPreparedModel::castFrom(localCallback->getPreparedModel()));
         } else {
             actualCallback->notify_1_3(
-                    ErrorStatus::NONE,
+                    V1_3::ErrorStatus::NONE,
                     new TestPreparedModel13(localCallback->getPreparedModel(), mErrorStatus));
         }
         return prepareModelReturn;
     }
 
-    Return<ErrorStatus> prepareModel_1_2(
+    Return<V1_0::ErrorStatus> prepareModel_1_2(
             const V1_2::Model& model, ExecutionPreference preference,
             const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
             const CacheToken& token,
             const sp<V1_2::IPreparedModelCallback>& actualCallback) override {
         sp<PreparedModelCallback> localCallback = new PreparedModelCallback;
-        Return<ErrorStatus> prepareModelReturn = SampleDriver::prepareModel_1_2(
+        Return<V1_0::ErrorStatus> prepareModelReturn = SampleDriver::prepareModel_1_2(
                 model, preference, modelCache, dataCache, token, localCallback);
         if (!prepareModelReturn.isOkUnchecked()) {
             return prepareModelReturn;
         }
-        if (prepareModelReturn != ErrorStatus::NONE) {
+        if (prepareModelReturn != V1_0::ErrorStatus::NONE) {
             actualCallback->notify_1_2(
-                    localCallback->getStatus(),
+                    convertToV1_0(localCallback->getStatus()),
                     V1_2::IPreparedModel::castFrom(localCallback->getPreparedModel()));
             return prepareModelReturn;
         }
         localCallback->wait();
         if (localCallback->getStatus() != ErrorStatus::NONE) {
             actualCallback->notify_1_2(
-                    localCallback->getStatus(),
+                    convertToV1_0(localCallback->getStatus()),
                     V1_2::IPreparedModel::castFrom(localCallback->getPreparedModel()));
         } else {
             actualCallback->notify_1_2(
-                    ErrorStatus::NONE,
+                    V1_0::ErrorStatus::NONE,
                     new TestPreparedModel12(localCallback->getPreparedModel(), mErrorStatus));
         }
         return prepareModelReturn;
     }
 
-    Return<ErrorStatus> prepareModel_1_1(
+    Return<V1_0::ErrorStatus> prepareModel_1_1(
             const V1_1::Model& model, ExecutionPreference preference,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         sp<PreparedModelCallback> localCallback = new PreparedModelCallback;
-        Return<ErrorStatus> prepareModelReturn =
+        Return<V1_0::ErrorStatus> prepareModelReturn =
                 SampleDriver::prepareModel_1_1(model, preference, localCallback);
         if (!prepareModelReturn.isOkUnchecked()) {
             return prepareModelReturn;
         }
-        if (prepareModelReturn != ErrorStatus::NONE) {
-            actualCallback->notify(localCallback->getStatus(), localCallback->getPreparedModel());
+        if (prepareModelReturn != V1_0::ErrorStatus::NONE) {
+            actualCallback->notify(convertToV1_0(localCallback->getStatus()),
+                                   localCallback->getPreparedModel());
             return prepareModelReturn;
         }
         localCallback->wait();
         if (localCallback->getStatus() != ErrorStatus::NONE) {
-            actualCallback->notify(localCallback->getStatus(), localCallback->getPreparedModel());
+            actualCallback->notify(convertToV1_0(localCallback->getStatus()),
+                                   localCallback->getPreparedModel());
         } else {
             actualCallback->notify(
-                    ErrorStatus::NONE,
+                    V1_0::ErrorStatus::NONE,
                     new TestPreparedModel10(localCallback->getPreparedModel(), mErrorStatus));
         }
         return prepareModelReturn;
     }
 
-    Return<ErrorStatus> prepareModel(
+    Return<V1_0::ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return prepareModel_1_1(nn::convertToV1_1(model), ExecutionPreference::FAST_SINGLE_ANSWER,
@@ -361,7 +390,7 @@ class TestDriver12 : public V1_2::IDevice {
                                         getSupportedOperations_cb _hidl_cb) override {
         return mLatestDriver->getSupportedOperations(model, _hidl_cb);
     }
-    Return<ErrorStatus> prepareModel_1_2(
+    Return<V1_0::ErrorStatus> prepareModel_1_2(
             const V1_2::Model& model, ExecutionPreference preference,
             const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
             const CacheToken& token,
@@ -369,12 +398,12 @@ class TestDriver12 : public V1_2::IDevice {
         return mLatestDriver->prepareModel_1_2(model, preference, modelCache, dataCache, token,
                                                actualCallback);
     }
-    Return<ErrorStatus> prepareModel_1_1(
+    Return<V1_0::ErrorStatus> prepareModel_1_1(
             const V1_1::Model& model, ExecutionPreference preference,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
     }
-    Return<ErrorStatus> prepareModel(
+    Return<V1_0::ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return mLatestDriver->prepareModel(model, actualCallback);
@@ -390,10 +419,9 @@ class TestDriver12 : public V1_2::IDevice {
     Return<void> getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeeded_cb _hidl_cb) {
         return mLatestDriver->getNumberOfCacheFilesNeeded(_hidl_cb);
     }
-    Return<ErrorStatus> prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
-                                              const hidl_vec<hidl_handle>& dataCache,
-                                              const CacheToken& token,
-                                              const sp<V1_2::IPreparedModelCallback>& callback) {
+    Return<V1_0::ErrorStatus> prepareModelFromCache(
+            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
+            const CacheToken& token, const sp<V1_2::IPreparedModelCallback>& callback) {
         return mLatestDriver->prepareModelFromCache(modelCache, dataCache, token, callback);
     }
 
@@ -413,7 +441,7 @@ class TestDriver11 : public V1_1::IDevice {
                                             getSupportedOperations_1_1_cb _hidl_cb) override {
         return mLatestDriver->getSupportedOperations_1_1(model, _hidl_cb);
     }
-    Return<ErrorStatus> prepareModel_1_1(
+    Return<V1_0::ErrorStatus> prepareModel_1_1(
             const V1_1::Model& model, ExecutionPreference preference,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
@@ -426,7 +454,7 @@ class TestDriver11 : public V1_1::IDevice {
                                         getSupportedOperations_cb _hidl_cb) override {
         return mLatestDriver->getSupportedOperations(model, _hidl_cb);
     }
-    Return<ErrorStatus> prepareModel(
+    Return<V1_0::ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return mLatestDriver->prepareModel(model, actualCallback);
@@ -448,7 +476,7 @@ class TestDriver10 : public V1_0::IDevice {
                                         getSupportedOperations_cb _hidl_cb) override {
         return mLatestDriver->getSupportedOperations(model, _hidl_cb);
     }
-    Return<ErrorStatus> prepareModel(
+    Return<V1_0::ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
         return mLatestDriver->prepareModel(model, actualCallback);

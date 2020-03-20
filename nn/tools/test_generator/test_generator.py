@@ -65,7 +65,8 @@ def Quantize(v, ty):
     v += ty.zeroPoint
     if not ty.IsFloat():
         v = np.round(v)
-        v = int(v) if np.isscalar(v) else v.astype(int)
+        v = v.astype(int)
+
     if ty.type == "TENSOR_QUANT8_ASYMM":
         v = np.minimum(np.maximum(v, 0), 255)
     elif ty.type == "TENSOR_QUANT16_ASYMM":
@@ -74,6 +75,8 @@ def Quantize(v, ty):
         v = np.minimum(np.maximum(v, -127), 127)
     elif ty.type == "UINT32":
         v = np.maximum(v, 0)
+    elif ty.type == "TENSOR_QUANT8_ASYMM_SIGNED":
+        v = np.minimum(np.maximum(v, -128), 127)
     return v
 
 # Tracking objects inside a model with a unique name
@@ -145,8 +148,10 @@ class Type(NamedVariable):
         "TENSOR_QUANT16_SYMM": "int16_t",
         "TENSOR_BOOL8": "bool8",
         "TENSOR_QUANT8_SYMM_PER_CHANNEL": "int8_t",
+        "TENSOR_QUANT8_ASYMM_SIGNED": "int8_t",
     #     "OEM_SCALAR": this is service-defined.
         "TENSOR_OEM_BYTE": "uint8_t",
+        "SUBGRAPH": "uint32_t",  # Index into TestModel::referenced.
     }
 
     # types are named as "type0", "type1", ...
@@ -163,6 +168,8 @@ class Type(NamedVariable):
     # not have a match with all existing types
     @staticmethod
     def GetType(vt, dimensions, scale=0, zeroPoint=0, extraParams=None):
+        assert isinstance(dimensions, (list, tuple)), \
+            'dimensions must be a list or tuple, got {}'.format(type(dimensions))
         key = ",".join([vt, str(dimensions), str(scale), str(zeroPoint), str(extraParams)])
         if key not in Type.typesMap:
             Type.typesMap[key] = Type(vt, dimensions, scale, zeroPoint, extraParams=extraParams)
@@ -330,7 +337,7 @@ class InOut(Operand):
 
     def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
         Operand.__init__(self, name, opType, backward, None, skipRenaming=skipRenaming, extraParams=extraParams)
-        self.lifetime = "MODEL_INPUT"
+        self.lifetime = "SUBGRAPH_INPUT"
         self.index = 0
 
     def Feed(self, value):
@@ -341,19 +348,19 @@ class InOut(Operand):
 class Input(InOut):
     def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
         InOut.__init__(self, name, opType, backward, skipRenaming=skipRenaming, extraParams=extraParams)
-        self.lifetime = "MODEL_INPUT"
+        self.lifetime = "SUBGRAPH_INPUT"
 
 # A user-declared output operand
 class Output(InOut):
     def __init__(self, name, opType, backward=None, skipRenaming=False):
         InOut.__init__(self, name, opType, backward, skipRenaming=skipRenaming)
-        self.lifetime = "MODEL_OUTPUT"
+        self.lifetime = "SUBGRAPH_OUTPUT"
 
 # An output that we don't want to compare the results
 class IgnoredOutput(Output):
     def __init__(self, name, opType, backward=None, skipRenaming=False):
         Output.__init__(self, name, opType, backward, skipRenaming=skipRenaming)
-        self.lifetime = "MODEL_OUTPUT"
+        self.lifetime = "SUBGRAPH_OUTPUT"
     def Feed(self, value):
         numElements = reduce(lambda x,y: x*y, self.type.dimensions, 1)
         self.value = [0 for x in range(numElements)]
@@ -419,6 +426,15 @@ class Float32Vector(Parameter, ImplicitParameter):
             return False
         return all(type(i) is float for i in value)
 
+# A shortcut for a SUBGRAPH parameter
+class SubgraphReference(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("SUBGRAPH", []), value)
+        self.lifetime = "SUBGRAPH"
+    @staticmethod
+    def IsCompatible(value):
+        return type(value) is Model
+
 # An explicitly declared intermediate result
 class Internal(Operand):
     def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
@@ -461,6 +477,7 @@ class Model:
         self.compiled = False
         self.dumped = False
         self.version = FileNames.version
+        self.referenced_models = None
         Model.models.append(self)
 
     def WithSuffix(self, *args):
@@ -469,14 +486,35 @@ class Model:
         self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name, *args)
         return self
 
+    def AddOperand(self, operand):
+        if operand not in self.operands:
+            self.operands.append(operand)
+        return self
+
+    # Makes sure the model contains all (and only) the given inputs in the
+    # specified order.
+    def IdentifyInputs(self, *args):
+        for arg in args:
+            self.AddOperand(arg)
+        inputs = tuple(self.GetInputs())
+        assert inputs == args, '{} vs {}'.format(inputs, args)
+        return self
+
+    # Makes sure the model contains all (and only) the given outputs in the
+    # specified order.
+    def IdentifyOutputs(self, *args):
+        for arg in args:
+            self.AddOperand(arg)
+        outputs = tuple(self.GetOutputs())
+        assert outputs == args, '{} vs {}'.format(outputs, args)
+        return self
+
     def AddOperation(self, operation):
         self.operations.append(operation)
         for i in operation.ins:
-            if i not in self.operands:
-                self.operands.append(i)
+            self.AddOperand(i)
         for o in operation.outs:
-            if o not in self.operands:
-                self.operands.append(o)
+            self.AddOperand(o)
         return self
 
     def Operation(self, op_name, *args):
@@ -490,8 +528,7 @@ class Model:
             outs = args
         self.operations[-1].SetOutputs(outs)
         for o in outs:
-            if o not in self.operands:
-                self.operands.append(o)
+            self.AddOperand(o)
         return self
 
     def RelaxedExecution(self, isRelaxed):
@@ -526,6 +563,10 @@ class Model:
 
     def GetParameters(self):
         return [p for p in self.operands if isinstance(p, Parameter)]
+
+    def GetReferencedModels(self):
+        assert self.compiled
+        return self.referenced_models
 
     def GetEquivalentOperands(self, targets):
         return [self.operands[self.operands.index(t)] for t in targets]
@@ -577,12 +618,30 @@ class Model:
         for op in operations:
             self.TopologicalSortHelper(op, deps, visited)
 
-    def Compile(self):
+    def CompileReferencedModels(self, referenced_models, referenced_model_to_index):
+        for operand in self.operands:
+            if operand.lifetime != "SUBGRAPH":
+                continue
+            model = operand.value[0]
+            key = id(model)
+            if key not in referenced_model_to_index:
+                referenced_model_to_index[key] = len(referenced_model_to_index)
+                referenced_models.append(model)
+                model.Compile(referenced_models, referenced_model_to_index)
+            operand.value = [referenced_model_to_index[key]]
+
+    def Compile(self, referenced_models=None, referenced_model_to_index=None):
         if self.compiled:
             return self
+        if referenced_models is None:
+            # This is the main model.
+            referenced_models = []
+            referenced_model_to_index = {}
+            self.referenced_models = referenced_models
         self.SetOperandIndex()
         self.SetOperandInsAndOuts()
         self.TopologicalSort()
+        self.CompileReferencedModels(referenced_models, referenced_model_to_index)
         # Do not check compliance for relaxed mode tests.
         if self.isRelaxed:
             self.IntroducedIn(None)
@@ -617,6 +676,7 @@ class SkipVariation(Exception):
 
 # The base class for model variations
 class ModelVariation:
+    supportsSubgraphs = False
 
     def __init__(self, name=None):
         self.targetOperands = {}
@@ -626,6 +686,11 @@ class ModelVariation:
     def ApplyTo(self, model):
         assert not model.compiled
         assert not model.dumped
+
+        if not self.supportsSubgraphs:
+          containsSubgraphs = any(operand.lifetime == "SUBGRAPH" for operand in model.operands)
+          assert not containsSubgraphs, "Variation {} does not support subgraphs".format(
+              self.__class__.__name__)
 
         if not self.targetOperands:
             self.AutoIdentify(model)
@@ -666,6 +731,7 @@ class ModelVariation:
 
 # Default variation that does nothing
 class DefaultVariation(ModelVariation):
+    supportsSubgraphs = True
 
     def __init__(self, name=None):
         ModelVariation.__init__(self, name=name)
@@ -693,6 +759,8 @@ class DataTypeConverter(ModelVariation, ImplicitVariation):
             self.name = "channelQuant8"
         elif "TENSOR_QUANT8_ASYMM" in targetTypes:
             self.name = "quant8"
+        elif "TENSOR_QUANT8_ASYMM_SIGNED" in targetTypes:
+            self.name = "quant8_signed"
         elif "TENSOR_INT32" in targetTypes:
             self.name = "int32"
         elif "TENSOR_FLOAT16" in targetTypes:
@@ -728,6 +796,7 @@ class DataTypeConverter(ModelVariation, ImplicitVariation):
 
 # Convert model to turn on/off relaxed computation
 class RelaxedModeConverter(ModelVariation, ImplicitVariation):
+    supportsSubgraphs = True
 
     def __init__(self, isRelaxed=True, name=None):
         ModelVariation.__init__(self, name=name)
@@ -882,6 +951,7 @@ class ActivationConverter(ModelVariation, ImplicitVariation):
 
 # Convert all constant tensors as model inputs.
 class AllTensorsAsInputsConverter(ModelVariation):
+    supportsSubgraphs = True
 
     def __init__(self, name=None):
         ModelVariation.__init__(self, name=name)
@@ -910,6 +980,7 @@ class AllTensorsAsInputsConverter(ModelVariation):
 
 # Add a dummy ADD operation before each model input to make it as an internal operand.
 class AllInputsAsInternalCoverter(ModelVariation):
+    supportsSubgraphs = True
 
     def __init__(self, name=None):
         ModelVariation.__init__(self, name=name)
@@ -925,7 +996,8 @@ class AllInputsAsInternalCoverter(ModelVariation):
         # Find all input tensors that can be an output of the ADD operation.
         # Currently ADD only support FLOAT32/16 and QUANT8_ASYMM tensors with rank <= 4.
         CompatibleWithADD = lambda op: len(op.type.dimensions) <= 4 and len(op.value) > 0 and \
-            op.type.type in ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_FLOAT16"]
+            op.type.type in ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM",
+                             "TENSOR_FLOAT16", "TENSOR_QUANT8_ASYMM_SIGNED"]
         modelInputs = [i for i in model.GetInputs() if CompatibleWithADD(i)]
         if not modelInputs:
             raise SkipVariation
@@ -1277,6 +1349,7 @@ def GetExecScope():
         Output=Output,
         Parameter=Parameter,
         RelaxedModeConverter=RelaxedModeConverter,
+        SubgraphReference=SubgraphReference,
         SymmPerChannelQuantParams=SymmPerChannelQuantParams)
 
 def ArgumentParser():

@@ -45,11 +45,11 @@ enum PaddingScheme {
 
 // Stores operand type information. "Shape" is a historical name.
 struct Shape {
-    hal::OperandType type;
+    hal::OperandType type = hal::OperandType::FLOAT32;
     std::vector<uint32_t> dimensions;
-    float scale;
-    int32_t offset;
-    hal::Operand::ExtraParams extraParams;
+    float scale = 0.0f;
+    int32_t offset = 0;
+    hal::OperandExtraParams extraParams;
 };
 
 // Provides information available during graph creation to validate an operation.
@@ -78,7 +78,7 @@ class IOperationValidationContext {
     virtual uint32_t getNumInputs() const = 0;
     virtual hal::OperandType getInputType(uint32_t index) const = 0;
     virtual Shape getInputShape(uint32_t index) const = 0;
-    virtual const hal::Operand::ExtraParams getInputExtraParams(uint32_t index) const = 0;
+    virtual const hal::OperandExtraParams getInputExtraParams(uint32_t index) const = 0;
 
     virtual uint32_t getNumOutputs() const = 0;
     virtual hal::OperandType getOutputType(uint32_t index) const = 0;
@@ -94,7 +94,7 @@ class IOperationExecutionContext {
     virtual hal::OperandType getInputType(uint32_t index) const = 0;
     virtual Shape getInputShape(uint32_t index) const = 0;
     virtual const void* getInputBuffer(uint32_t index) const = 0;
-    virtual const hal::Operand::ExtraParams getInputExtraParams(uint32_t index) const = 0;
+    virtual const hal::OperandExtraParams getInputExtraParams(uint32_t index) const = 0;
 
     virtual uint32_t getNumOutputs() const = 0;
     virtual hal::OperandType getOutputType(uint32_t index) const = 0;
@@ -141,10 +141,6 @@ bool SameShape(const Shape& in1, const Shape& in2);
 
 // Sets out to the same shape as in.
 bool SetShape(const Shape& in, Shape* out);
-
-// Combine two tensor dimensions, both can have unspecified dimensions.
-bool combineDimensions(const std::vector<uint32_t>& lhs, const std::vector<uint32_t>& rhs,
-                       std::vector<uint32_t>* combined);
 
 // Return the total number of elements, i.e. all the dimensions multiplied
 // together. For a scalar, returns one.
@@ -291,7 +287,8 @@ inline int32_t ClampedIndex(int32_t index, int dim, bool pos_stride) {
 bool calculateBroadcastedShape(const Shape& in1, const Shape& in2, Shape* out);
 
 // Dequantizes a value and quantizes it back using new scale and offset.
-uint8_t requantize(uint8_t value, const Shape& oldShape, const Shape& newShape);
+template <typename T>
+T requantize(T value, const Shape& oldShape, const Shape& newShape);
 
 // Preparation functions for the corresponding ops
 bool floorPrepare(const Shape& input, Shape* output);
@@ -396,6 +393,19 @@ inline bool mergeThirdDimension(const T* bufferA, const std::vector<uint32_t>& d
         }
     }
     return true;
+}
+
+template <typename T>
+inline T saturateCast(int32_t val);
+
+template <>
+inline uint8_t saturateCast<uint8_t>(int32_t val) {
+    return static_cast<int8_t>(std::max(0, std::min(255, val)));
+}
+
+template <>
+inline int8_t saturateCast<int8_t>(int32_t val) {
+    return static_cast<int8_t>(std::max(-128, std::min(127, val)));
 }
 
 }  // namespace nn
