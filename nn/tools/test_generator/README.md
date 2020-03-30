@@ -110,7 +110,7 @@ Example((input1, output1), example2_values, model=model, name="example_name")
 
 ### Specifying Variations
 
-You can add variations to the example so that the test generator can automatically create multiple tests. Currently, 6 types of variation are supported:
+You can add variations to the example so that the test generator can automatically create multiple tests. The following variations are supported:
 
 - DefaultVariation, i.e. no variation
 - DataTypeConverter
@@ -118,6 +118,7 @@ You can add variations to the example so that the test generator can automatical
 - AxisConverter
 - RelaxedModeConverter
 - ActivationConverter
+- AllOutputsAsInternalCoverter
 
 #### DataTypeConverter
 
@@ -192,6 +193,10 @@ converter = ActivationConverter(name="variation_name").Identify(
     [op1, op2, ..., act_parameter]
 )
 ```
+
+#### AllOutputsAsInternalCoverter
+
+Add a dummy ADD operation after each model output to make it as an internal operand. Will skip if the model does not have any output tensor that is compatible with the ADD operation or if the model has more than one operation.
 
 #### Add variation to example
 
@@ -348,8 +353,8 @@ model inputs and outputs. This is particularly useful for models referenced by
 IF and WHILE operations.
 
 ```Python
-DataType = ["TENSOR_INT32", "{1}"]
-BoolType = ["TENSOR_BOOL8", "{1}"]
+DataType = ["TENSOR_INT32", [1]]
+BoolType = ["TENSOR_BOOL8", [1]]
 
 def MakeConditionModel():
   a = Input("a", DataType)
@@ -393,11 +398,11 @@ Example.ExpectFailure()
 
 ```Python
 # Declare input, output, and parameters
-i1 = Input("op1", "TENSOR_FLOAT32", "{1, 3, 4, 1}")
-f1 = Parameter("op2", "TENSOR_FLOAT32", "{1, 3, 3, 1}", [1, 4, 7, 2, 5, 8, 3, 6, 9])
-b1 = Parameter("op3", "TENSOR_FLOAT32", "{1}", [-200])
+i1 = Input("op1", ("TENSOR_FLOAT32", [1, 3, 4, 1]))
+f1 = Parameter("op2", ("TENSOR_FLOAT32", [1, 3, 3, 1]), [1, 4, 7, 2, 5, 8, 3, 6, 9])
+b1 = Parameter("op3", ("TENSOR_FLOAT32", [1]), [-200])
 act = Int32Scalar("act", 0)
-o1 = Output("op4", "TENSOR_FLOAT32", "{1, 3, 4, 1}")
+o1 = Output("op4", ("TENSOR_FLOAT32", [1, 3, 4, 1]))
 
 # Instantiate a model and add CONV_2D operation
 # Use implicit parameter for implicit padding and strides
