@@ -978,7 +978,7 @@ typedef enum {
     ANEURALNETWORKS_HASHTABLE_LOOKUP = 10,
 
     /**
-     * Applies L2 normalization along the depth dimension.
+     * Applies L2 normalization along the axis dimension.
      *
      * The values in the output tensor are computed as:
      *
@@ -986,8 +986,7 @@ typedef enum {
      *         input[batch, row, col, channel] /
      *         sqrt(sum_{c} pow(input[batch, row, col, c], 2))
      *
-     * For input tensor with rank less than 4, independently normalizes each
-     * 1-D slice along dimension dim.
+     * By default the axis dimension is the last dimension of the input tensor.
      *
      * Supported tensor {@link OperandCode}:
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16} (since API level 29)
@@ -1012,6 +1011,10 @@ typedef enum {
      *      the scale must be 1.f / 128 and the zeroPoint must be 128.
      *      For {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED},
      *      the scale must be 1.f / 128 and the zeroPoint must be 0.
+     *
+     *      NOTE: Before API level 30, if the elements along an axis are all zeros,
+     *      the result is undefined. Since API level 30, if the elements along an axis
+     *      are all zeros, the result is logical zero.
      *
      * Available since API level 27.
      */
@@ -4346,7 +4349,8 @@ typedef enum {
      * * 1: A scalar {@link ANEURALNETWORKS_INT32}, specifying the number of
      *      independent samples to draw for each row slice.
      * * 2: A 1-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor with shape [2],
-     *      specifying seeds used to initialize the random distribution.
+     *      specifying seeds used to initialize the random distribution. If both
+     *      provided seeds are 0, both will be randomly generated.
      * Outputs:
      * * 0: A 2-D {@link ANEURALNETWORKS_TENSOR_INT32} tensor with shape
      *      [batches, samples], containing the drawn samples.
@@ -5515,6 +5519,8 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      *
+     * Supported tensor rank: from 1.
+     *
      * Inputs:
      * * 0: A tensor, specifying the input. May be zero-sized.
      * * 1: A scalar, specifying the alpha parameter.
@@ -5546,6 +5552,8 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED}
      *
+     * Supported tensor rank: from 1.
+     *
      * Inputs:
      * * 0: A tensor, specifying the input. May be zero-sized.
      *
@@ -5565,6 +5573,8 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
      * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
      * * {@link ANEURALNETWORKS_TENSOR_INT32}
+     *
+     * Supported tensor rank: from 1.
      *
      * Inputs:
      * * 0: A 1-D tensor, specifying the desired output tensor shape.
@@ -5600,6 +5610,8 @@ typedef enum {
      * * {@link ANEURALNETWORKS_TENSOR_QUANT16_ASYMM}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_SYMM}
      * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED}
+     *
+     * Supported tensor rank: from 1.
      *
      * Inputs:
      * * 0: The input tensor.
@@ -6565,7 +6577,8 @@ int ANeuralNetworks_getDevice(uint32_t devIndex, ANeuralNetworksDevice** device)
  * @param device The representation of the specified device.
  * @param name   The returned name of the specified device. The name will be in UTF-8
  *               and will be null-terminated. It will be recognizable as a known device name
- *               rather than a cryptic string. For devices with feature level 29 and above, the
+ *               rather than a cryptic string. For devices with feature level reported by
+ *               {@link ANeuralNetworksDevice_getFeatureLevel} that is 29 and above, the
  *               format of the name is {VENDOR}-{DEVICE}. For devices with feature level 28
  *               or lower, the format of the name is undefined.
  *               The name will remain valid for the duration of the application.
@@ -6758,7 +6771,9 @@ int ANeuralNetworksCompilation_setCaching(ANeuralNetworksCompilation* compilatio
  * If {@link ANeuralNetworksExecution_setTimeout} was called on this execution,
  * and the execution is not able to complete before the timeout duration is
  * exceeded, then execution may be aborted, in which case
- * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned.
+ * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned. If the device has
+ * a feature level reported by {@link ANeuralNetworksDevice_getFeatureLevel}
+ * that is lower than 30, then the timeout duration hint will be ignored.
  *
  * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
  * the condition model does not output false within the loop timeout duration,
@@ -6875,7 +6890,9 @@ void ANeuralNetworksBurst_free(ANeuralNetworksBurst* burst) __INTRODUCED_IN(29);
  * If the execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
  * the condition model does not output false within the loop timeout duration,
  * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
- * will be returned.
+ * will be returned. If the device has a feature level reported by
+ * {@link ANeuralNetworksDevice_getFeatureLevel} that is lower than 30, then the
+ * timeout duration hint will be ignored.
  *
  * <p>There must be at most one {@link ANeuralNetworksExecution} processing at
  * any given time for any given burst object. Any
@@ -6946,6 +6963,9 @@ int ANeuralNetworksMemory_createFromAHardwareBuffer(const AHardwareBuffer* ahwb,
  * The {@link ANeuralNetworksExecution} must have been created from an
  * {@link ANeuralNetworksCompilation} which in turn was created from
  * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1.
+ * If the device has a feature level reported by
+ * {@link ANeuralNetworksDevice_getFeatureLevel} that is lower than 29, then the
+ * duration will not be measured.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
@@ -6968,9 +6988,12 @@ int ANeuralNetworksExecution_setMeasureTiming(ANeuralNetworksExecution* executio
  * @param execution The execution to be queried.
  * @param durationCode The measurement to be queried, specified by {@link DurationCode}.
  * @param duration The returned duration. If no measurement was requested by
- *                 {@link ANeuralNetworksExecution_setMeasureTiming}, or for some other
- *                 reason the duration is not available, UINT64_MAX will be returned.
- *                 A particular device need not support any given measurement.
+ *                 {@link ANeuralNetworksExecution_setMeasureTiming}, if the
+ *                 device is has a feature level reported by
+ *                 {@link ANeuralNetworksDevice_getFeatureLevel} that is lower
+ *                 than 29, or for some other reason the duration is not
+ *                 available, UINT64_MAX will be returned. A particular device
+ *                 need not support any given measurement.
  *
  * @return ANEURALNETWORKS_NO_ERROR if successful.
  */
@@ -7497,12 +7520,25 @@ int ANeuralNetworksCompilation_setPriority(ANeuralNetworksCompilation* compilati
  * duration, the compilation may be aborted. The timeout duration begins at the
  * call to {@link ANeuralNetworksCompilation_finish}.
  *
+ * This timeout duration acts as a hint to drivers, and can be used to both free
+ * up compute resources within the driver and return control back to the
+ * application quicker than is possible without the hint. It enables drivers
+ * that are able to estimate how long a compilation will take to abort the
+ * compilation before it has even started if the driver believes the compilation
+ * cannot be completed within the timeout duration. Similarly, it enables
+ * drivers to abort an ongoing compilation if it is taking too long. However,
+ * this call does not guarantee that the compilation will complete or abort
+ * within the timeout duration.
+ *
  * By default (i.e., unless ANeuralNetworksCompilation_setTimeout is called),
  * the timeout duration for compiling the model is considered infinite.
  *
  * The {@link ANeuralNetworksCompilation} must have been created with
  * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
- * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA. If the
+ * device has a feature level reported by
+ * {@link ANeuralNetworksDevice_getFeatureLevel} that is lower than 30, then the
+ * timeout duration hint will be ignored.
  *
  * See {@link ANeuralNetworksCompilation} for information on multithreaded usage.
  *
@@ -7776,7 +7812,10 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution* execu
  * and the execution is not able to complete before the timeout duration is
  * exceeded, then execution may be aborted, in which case
  * {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be returned through
- * {@link ANeuralNetworksEvent_wait} on the event object.
+ * {@link ANeuralNetworksExecution_startCompute} or
+ * {@link ANeuralNetworksEvent_wait} on the event object. If the device has a
+ * feature level reported by {@link ANeuralNetworksDevice_getFeatureLevel} that
+ * is lower than 30, then the timeout duration hint will be ignored.
  *
  * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
  * the condition model does not output false within the loop timeout duration,
@@ -7819,13 +7858,26 @@ int ANeuralNetworksExecution_startCompute(ANeuralNetworksExecution* execution,
  * - {@link ANeuralNetworksExecution_startCompute}
  * - {@link ANeuralNetworksExecution_startComputeWithDependencies}
  *
+ * This timeout duration acts as a hint to drivers, and can be used to both free
+ * up compute resources within the driver and return control back to the
+ * application quicker than is possible without the hint. It enables drivers
+ * that are able to estimate how long an execution will take to abort the
+ * execution before it has even started if the driver believes the execution
+ * cannot be completed within the timeout duration. Similarly, it enables
+ * drivers to abort an ongoing execution if it is taking too long. However, this
+ * call does not guarantee that the execution will complete or abort within the
+ * timeout duration.
+ *
  * By default (i.e., unless ANeuralNetworksExecution_setTimeout is called),
  * the timeout duration for execution is considered infinite.
  *
  * The {@link ANeuralNetworksExecution} must have been created from an
  * {@link ANeuralNetworksCompilation} which in turn was created from
  * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
- * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA. If the
+ * device has a feature level reported by
+ * {@link ANeuralNetworksDevice_getFeatureLevel} that is lower than 30, then the
+ * timeout duration hint will be ignored.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
@@ -7846,7 +7898,7 @@ int ANeuralNetworksExecution_setTimeout(ANeuralNetworksExecution* execution, uin
  *
  * This is a fuzzy per-loop timeout intended to prevent infinite loops.
  *
- * If a WHILE loop termination condition is not reached within the specified
+ * If a WHILE loop condition model does not output false within the specified
  * duration, the execution will be aborted.
  *
  * See {@link ANeuralNetworks_getDefaultLoopTimeout} and
@@ -7979,6 +8031,10 @@ int ANeuralNetworksEvent_getSyncFenceFd(const ANeuralNetworksEvent* event, int* 
  * starting the evaluation. Once the execution has completed and the outputs
  * are ready to be consumed, the returned event will be signaled. Depending on which
  * devices are handling the execution, the event could be backed by a sync fence.
+ * Use {@link ANeuralNetworksEvent_wait} to wait for that event.
+ *
+ * ANeuralNetworksEvent_wait must be called to recurperate the resources used
+ * by the execution.
  *
  * If parts of the execution are scheduled on devices that do not support fenced execution,
  * the function call may wait for such parts to finish before returning.
@@ -7991,15 +8047,31 @@ int ANeuralNetworksEvent_getSyncFenceFd(const ANeuralNetworksEvent* event, int* 
  * The function will return an error if any of the execution outputs has a tensor operand type
  * that is not fully specified.
  *
- * The function can be passed a timeout duration in nanoseconds.
- * The duration begins when all waitFor sync fences have been signaled, and can be used
+ * The function can be passed a timeout duration in nanoseconds. This timeout
+ * duration acts as a hint to drivers in the same way that the timeout durations
+ * in {@link ANeuralNetworksCompilation_setTimeout} and {@link
+ * ANeuralNetworksExecution_setTimeout} act as hints to drivers. The duration
+ * begins when all waitFor sync fences have been signaled, and can be used
  * together with {@link ANeuralNetworksExecution_setTimeout} which specifies the
  * maximum timeout duration beginning at the call to
  * {@link ANeuralNetworksExecution_startComputeWithDependencies}.
  * If the duration is non-zero, the {@link ANeuralNetworksExecution} must have been created
  * from an {@link ANeuralNetworksCompilation} which in turn was created from
  * {@link ANeuralNetworksCompilation_createForDevices} with numDevices = 1,
- * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA.
+ * otherwise this function will fail with ANEURALNETWORKS_BAD_DATA. If either
+ * the timeout duration from {@link ANeuralNetworksExecution_setTimeout} or the
+ * timeout duration passed to this call is exceeded, the execution may be
+ * aborted, in which case {@link ANEURALNETWORKS_MISSED_DEADLINE_*} will be
+ * returned through {@link ANeuralNetworksExecution_startComputeWithDependencies}
+ * or {@link ANeuralNetworksEvent_wait} on the event object. If the device has a
+ * feature level reported by {@link ANeuralNetworksDevice_getFeatureLevel} that
+ * is lower than 30, then the timeout duration hints will be ignored.
+ *
+ * If this execution contains a {@link ANEURALNETWORKS_WHILE} operation, and
+ * the condition model does not output false within the loop timeout duration,
+ * then execution will be aborted and {@link ANEURALNETWORKS_MISSED_DEADLINE_*}
+ * will be returned through {@link ANeuralNetworksEvent_wait} on the event
+ * object.
  *
  * See {@link ANeuralNetworksExecution} for information on multithreaded usage.
  *
@@ -8011,9 +8083,10 @@ int ANeuralNetworksEvent_getSyncFenceFd(const ANeuralNetworksEvent* event, int* 
  * @param dependencies A set of depending events. The actual evaluation will not start
  *                     until all the events are signaled.
  * @param num_dependencies The number of events in the dependencies set.
- * @param duration The maximum length of time in nanoseconds within which execution must
- *                 complete after all dependencies are signaled. If set to 0, the timeout
- *                 duration is considered infinite.
+ * @param duration The maximum amount of time in nanoseconds that is expected to
+ *                 be spent executing the model after all dependencies are
+ *                 signaled. If set to 0, the timeout duration is considered
+ *                 infinite.
  * @param event The event that will be signaled on completion. event is set to
  *              NULL if there's an error.
  *

@@ -32,6 +32,7 @@
 #include <utility>
 #include <vector>
 
+#include "CpuExecutor.h"
 #include "HalInterfaces.h"
 #include "NeuralNetworks.h"
 #include "Utils.h"
@@ -90,8 +91,6 @@ class ObjectTracker {
     // A faster way to see if we already have an object than doing find().
     std::unordered_map<const ObjectType*, uint32_t> mKnown;
 };
-
-enum class IOType { INPUT = 0, OUTPUT = 1 };
 
 using CompilationRole = std::tuple<const CompilationBuilder*, IOType, uint32_t>;
 using StepRoleCallback = std::function<void(const PreparedModel*, IOType, uint32_t)>;
@@ -170,6 +169,7 @@ class Memory {
     const hal::hidl_memory& getHidlMemory() const { return kHidlMemory; }
     const sp<hal::IBuffer>& getIBuffer() const { return kBuffer; }
     virtual uint32_t getSize() const { return getHidlMemory().size(); }
+    virtual std::optional<RunTimePoolInfo> getRunTimePoolInfo() const;
 
     MemoryValidatorBase& getValidator() const {
         CHECK(mValidator != nullptr);
@@ -214,6 +214,9 @@ class Memory {
     mutable std::unordered_map<const ExecutionBurstController*,
                                std::weak_ptr<ExecutionBurstController>>
             mUsedBy;
+
+    mutable std::optional<RunTimePoolInfo> mCachedRunTimePoolInfo;
+    mutable bool mHasCachedRunTimePoolInfo = false;
 };
 
 class MemoryBuilder {
@@ -247,7 +250,17 @@ class MemoryBuilder {
     // Once the descriptor has been finished, we should not allow further modifications.
     bool mFinished = false;
 
+    // The following fields are only valid when finished.
+
+    // The chosen device to allocate the memory. Set to nullptr if there are multiple devices.
     const Device* mAllocator = nullptr;
+
+    // Whether BLOB mode AHWB is supported on all of the relevant devices of the roles.
+    bool mSupportsAhwb = false;
+
+    // If set to true, allocate() will fallback to Ashmem or AHardwareBuffer if the memory
+    // allocation fails on the chosen device, or if there is no device chosen.
+    bool mShouldFallback = true;
 };
 
 class MemoryAshmem : public Memory {
@@ -265,6 +278,10 @@ class MemoryAshmem : public Memory {
     // valid for the lifetime of the MemoryAshmem object. This call always
     // returns non-null because it was validated during MemoryAshmem::create.
     uint8_t* getPointer() const;
+
+    std::optional<RunTimePoolInfo> getRunTimePoolInfo() const override {
+        return RunTimePoolInfo::createFromExistingBuffer(getPointer(), kHidlMemory.size());
+    }
 
     // prefer using MemoryAshmem::create
     MemoryAshmem(sp<hal::IMemory> mapped, hal::hidl_memory memory);
@@ -297,10 +314,37 @@ class MemoryAHWB : public Memory {
     // On error, returns the appropriate NNAPI error code and nullptr.
     static std::pair<int, std::unique_ptr<MemoryAHWB>> create(const AHardwareBuffer& ahwb);
 
-    // TODO(miaowang): consider separate blob and non-blob into different classes.
     // prefer using MemoryAHWB::create
     MemoryAHWB(hal::hidl_memory memory, std::unique_ptr<MemoryValidatorBase> validator)
         : Memory(std::move(memory), std::move(validator)) {}
+};
+
+class MemoryRuntimeAHWB : public Memory {
+   public:
+    // Create a memory object containing a new BLOB-mode AHardwareBuffer memory
+    // object of the size specified in bytes. The created memory is managed and
+    // owned by the NNAPI runtime.
+    //
+    // On success, returns ANEURALNETWORKS_NO_ERROR and a memory object.
+    // On error, returns the appropriate NNAPI error code and nullptr.
+    static std::pair<int, std::unique_ptr<MemoryRuntimeAHWB>> create(uint32_t size);
+
+    // Get a pointer to the content of the memory. The returned pointer is
+    // valid for the lifetime of the MemoryRuntimeAHWB object. This call always
+    // returns non-null because it was validated during MemoryRuntimeAHWB::create.
+    uint8_t* getPointer() const { return mBuffer; }
+
+    std::optional<RunTimePoolInfo> getRunTimePoolInfo() const override {
+        return RunTimePoolInfo::createFromExistingBuffer(getPointer(), kHidlMemory.size());
+    }
+
+    // prefer using MemoryRuntimeAHWB::create
+    MemoryRuntimeAHWB(hal::hidl_memory memory, AHardwareBuffer* ahwb, uint8_t* buffer);
+    ~MemoryRuntimeAHWB();
+
+   private:
+    AHardwareBuffer* const mAhwb;
+    uint8_t* const mBuffer;
 };
 
 class MemoryFromDevice : public Memory {
