@@ -14,30 +14,32 @@
 # limitations under the License.
 #
 
-# Model: z = if (x) then (y + 100) else (y - 100)
+# Model: z = if (cond) then (x + y) else (x - y)
+#        where cond has no value
 
-input_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-output_add = [y + 100 for y in input_data]
-output_sub = [y - 100 for y in input_data]
+x_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+y_data = [8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3]
 
 ValueType = ["TENSOR_FLOAT32", [3, 4]]
 BoolType = ["TENSOR_BOOL8", [1]]
 
 def MakeBranchModel(operation_name):
+  x = Input("x", ValueType)
   y = Input("y", ValueType)
   z = Output("z", ValueType)
-  return Model().Operation(operation_name, y, [100.0], 0).To(z)
+  return Model().Operation(operation_name, x, y, 0).To(z)
 
-def Test(x, y, z, name):
-  x_data, y_data, z_data = x, y, z
-  x = Input("x", BoolType)
+def Test():
+  x = Input("x", ValueType)
   y = Input("y", ValueType)
   z = Output("z", ValueType)
+  cond = Parameter("cond", BoolType, value=None)
   then_model = MakeBranchModel("ADD")
   else_model = MakeBranchModel("SUB")
-  model = Model().Operation("IF", x, then_model, else_model, y).To(z)
-  example = Example({x: [x_data], y: y_data, z: z_data}, name=name)
-  example.AddVariations(AllOutputsAsInternalCoverter())
+  model = Model().Operation("IF", cond, then_model, else_model, x, y).To(z)
+  example = Example({x: x_data, y: y_data, z: y_data})
+  example.DisableLifeTimeVariation()
+  example.AddVariations(AllTensorsAsInputsConverter())
+  example.ExpectFailure()
 
-Test(x=True, y=input_data, z=output_add, name="true")
-Test(x=False, y=input_data, z=output_sub, name="false")
+Test()
