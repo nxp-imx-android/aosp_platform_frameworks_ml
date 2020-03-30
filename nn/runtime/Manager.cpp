@@ -40,6 +40,7 @@
 #include "MetaModel.h"
 #include "ModelArgumentInfo.h"
 #include "Tracing.h"
+#include "TypeManager.h"
 #include "Utils.h"
 #include "VersionedInterfaces.h"
 
@@ -101,7 +102,8 @@ class DriverDevice : public Device {
             const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<CacheToken>& maybeToken) const override;
 
-    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor& desc) const override;
+    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor& desc,
+                                                     hal::OperandType) const override;
 
    private:
     const std::shared_ptr<VersionedIDevice> kInterface;
@@ -248,7 +250,8 @@ std::pair<int, std::shared_ptr<PreparedModel>> DriverDevice::prepareModel(
     return {ANEURALNETWORKS_NO_ERROR, std::make_shared<DriverPreparedModel>(this, preparedModel)};
 }
 
-std::pair<int, std::unique_ptr<Memory>> DriverDevice::allocate(const MemoryDescriptor& desc) const {
+std::pair<int, std::unique_ptr<Memory>> DriverDevice::allocate(const MemoryDescriptor& desc,
+                                                               hal::OperandType) const {
     const BufferDesc hidlDesc = {.dimensions = desc.dimensions};
     std::vector<std::shared_ptr<VersionedIPreparedModel>> preparedModels(
             desc.preparedModels.size());
@@ -279,14 +282,13 @@ allocatePointerArgumentsToPool(const std::vector<ModelArgumentInfo>& args,
     const uint32_t nextPoolIndex = memories->size();
     int64_t total = 0;
     for (const auto& info : args) {
-        if (info.state == ModelArgumentInfo::POINTER) {
-            const DataLocation& loc = info.locationAndLength;
+        if (info.state() == ModelArgumentInfo::POINTER) {
             // TODO Good enough alignment?
-            total += alignBytesNeeded(static_cast<uint32_t>(total), loc.length);
+            total += alignBytesNeeded(static_cast<uint32_t>(total), info.length());
             ptrArgsLocations.push_back({.poolIndex = nextPoolIndex,
                                         .offset = static_cast<uint32_t>(total),
-                                        .length = loc.length});
-            total += loc.length;
+                                        .length = info.length()});
+            total += info.length();
         }
     };
     if (total > 0xFFFFFFFF) {
@@ -345,10 +347,10 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
     if (inputPtrArgsMemory != nullptr) {
         uint32_t ptrInputIndex = 0;
         for (const auto& info : inputs) {
-            if (info.state == ModelArgumentInfo::POINTER) {
+            if (info.state() == ModelArgumentInfo::POINTER) {
                 const DataLocation& loc = inputPtrArgsLocations[ptrInputIndex++];
                 uint8_t* const data = inputPtrArgsMemory->getPointer();
-                memcpy(data + loc.offset, info.buffer, loc.length);
+                memcpy(data + loc.offset, info.buffer(), loc.length);
             }
         }
     }
@@ -409,10 +411,10 @@ std::tuple<int, std::vector<OutputShape>, Timing> DriverPreparedModel::execute(
     if (outputPtrArgsMemory != nullptr) {
         uint32_t ptrOutputIndex = 0;
         for (const auto& info : outputs) {
-            if (info.state == ModelArgumentInfo::POINTER) {
+            if (info.state() == ModelArgumentInfo::POINTER) {
                 const DataLocation& loc = outputPtrArgsLocations[ptrOutputIndex++];
                 const uint8_t* const data = outputPtrArgsMemory->getPointer();
-                memcpy(info.buffer, data + loc.offset, loc.length);
+                memcpy(info.buffer(), data + loc.offset, loc.length);
             }
         }
     }
@@ -454,10 +456,10 @@ DriverPreparedModel::executeFenced(
     if (inputPtrArgsMemory != nullptr) {
         uint32_t ptrInputIndex = 0;
         for (const auto& info : inputs) {
-            if (info.state == ModelArgumentInfo::POINTER) {
+            if (info.state() == ModelArgumentInfo::POINTER) {
                 const DataLocation& loc = inputPtrArgsLocations[ptrInputIndex++];
                 uint8_t* const data = inputPtrArgsMemory->getPointer();
-                memcpy(data + loc.offset, info.buffer, loc.length);
+                memcpy(data + loc.offset, info.buffer(), loc.length);
             }
         }
     }
@@ -525,10 +527,10 @@ DriverPreparedModel::executeFenced(
         }
         uint32_t ptrOutputIndex = 0;
         for (const auto& info : outputs) {
-            if (info.state == ModelArgumentInfo::POINTER) {
+            if (info.state() == ModelArgumentInfo::POINTER) {
                 const DataLocation& loc = outputPtrArgsLocations[ptrOutputIndex++];
                 const uint8_t* const data = outputPtrArgsMemory->getPointer();
-                memcpy(info.buffer, data + loc.offset, loc.length);
+                memcpy(info.buffer(), data + loc.offset, loc.length);
             }
         }
     }
@@ -572,11 +574,8 @@ class CpuDevice : public Device {
             const std::optional<Deadline>& deadline, const std::string& cacheDir,
             const std::optional<CacheToken>& maybeToken) const override;
 
-    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor&) const override {
-        // CpuDevice does not have a preferred memory domain or data layout, return failure to
-        // fallback to ashmem.
-        return {ANEURALNETWORKS_OP_FAILED, nullptr};
-    }
+    std::pair<int, std::unique_ptr<Memory>> allocate(const MemoryDescriptor& desc,
+                                                     OperandType type) const override;
 
    private:
     CpuDevice() = default;
@@ -663,6 +662,16 @@ std::pair<int, std::shared_ptr<PreparedModel>> CpuDevice::prepareModel(
     return CpuPreparedModel::create(model);
 }
 
+std::pair<int, std::unique_ptr<Memory>> CpuDevice::allocate(const MemoryDescriptor& desc,
+                                                            OperandType type) const {
+    uint32_t size = TypeManager::get()->getSizeOfData(type, desc.dimensions);
+    if (size == 0) {
+        LOG(ERROR) << "CpuDevice::allocate -- does not support unknown dimensions.";
+        return {ANEURALNETWORKS_OP_FAILED, nullptr};
+    }
+    return MemoryAshmem::create(size);
+}
+
 std::pair<int, std::shared_ptr<PreparedModel>> CpuPreparedModel::create(Model hidlModel) {
     std::vector<RunTimePoolInfo> poolInfos;
     if (!setRunTimePoolInfosFromHidlMemories(&poolInfos, hidlModel.pools)) {
@@ -747,8 +756,7 @@ std::tuple<int, std::vector<OutputShape>, Timing> CpuPreparedModel::execute(
     std::vector<RunTimePoolInfo> requestPoolInfos;
     requestPoolInfos.reserve(memories.size());
     for (const Memory* mem : memories) {
-        if (std::optional<RunTimePoolInfo> poolInfo =
-                    RunTimePoolInfo::createFromHidlMemory(mem->getHidlMemory())) {
+        if (std::optional<RunTimePoolInfo> poolInfo = mem->getRunTimePoolInfo()) {
             requestPoolInfos.emplace_back(*poolInfo);
         } else {
             return {ANEURALNETWORKS_UNMAPPABLE, {}, kNoTiming};
@@ -759,13 +767,13 @@ std::tuple<int, std::vector<OutputShape>, Timing> CpuPreparedModel::execute(
             [&requestPoolInfos](const std::vector<ModelArgumentInfo>& argumentInfos) {
                 std::vector<DataLocation> ptrArgsLocations;
                 for (const ModelArgumentInfo& argumentInfo : argumentInfos) {
-                    if (argumentInfo.state == ModelArgumentInfo::POINTER) {
+                    if (argumentInfo.state() == ModelArgumentInfo::POINTER) {
                         ptrArgsLocations.push_back(
                                 {.poolIndex = static_cast<uint32_t>(requestPoolInfos.size()),
                                  .offset = 0,
-                                 .length = argumentInfo.locationAndLength.length});
+                                 .length = argumentInfo.length()});
                         requestPoolInfos.emplace_back(RunTimePoolInfo::createFromExistingBuffer(
-                                static_cast<uint8_t*>(argumentInfo.buffer)));
+                                static_cast<uint8_t*>(argumentInfo.buffer())));
                     }
                 }
                 return ptrArgsLocations;
