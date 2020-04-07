@@ -32,6 +32,9 @@
 #include <utility>
 #include <vector>
 
+#include <errno.h>
+#include <poll.h>
+
 #include "ControlFlow.h"
 #include "NeuralNetworks.h"
 #include "NeuralNetworksOEM.h"
@@ -357,21 +360,46 @@ bool nonExtensionOperandTypeIsScalar(int type) {
 uint32_t nonExtensionOperandSizeOfData(OperandType type, const std::vector<uint32_t>& dimensions) {
     CHECK(!isExtensionOperandType(type)) << "Size of extension operand data is unknown";
     int n = static_cast<int>(type);
+    uint32_t sizeOfElement = tableLookup(kSizeOfDataType, kSizeOfDataTypeOEM, n);
+    return tableLookup(kScalarDataType, kScalarDataTypeOEM, n)
+                   ? sizeOfElement
+                   : sizeOfTensorData(sizeOfElement, dimensions);
+}
 
-    uint32_t size = tableLookup(kSizeOfDataType, kSizeOfDataTypeOEM, n);
-
-    if (tableLookup(kScalarDataType, kScalarDataTypeOEM, n) == true) {
-        return size;
-    }
-
+// Returns a pair of {false, size} on success, {true, 0} if size overflows uint32_t.
+static std::pair<bool, uint32_t> sizeOfTensorDataHelper(uint32_t sizeOfElement,
+                                                        const std::vector<uint32_t>& dimensions) {
     if (dimensions.empty()) {
-        return 0;
+        return {false, 0};
     }
-
-    for (auto d : dimensions) {
+    uint64_t size = static_cast<uint64_t>(sizeOfElement);
+    constexpr uint64_t kMaxSize = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
+    for (uint32_t d : dimensions) {
         size *= d;
+        if (size > kMaxSize) return {true, 0};
     }
+    return {false, static_cast<uint32_t>(size)};
+}
+
+uint32_t sizeOfTensorData(uint32_t sizeOfElement, const std::vector<uint32_t>& dimensions) {
+    const auto [overflow, size] = sizeOfTensorDataHelper(sizeOfElement, dimensions);
+    CHECK(!overflow);
     return size;
+}
+
+bool nonExtensionOperandSizeOfDataOverflowsUInt32(hal::OperandType type,
+                                                  const std::vector<uint32_t>& dimensions) {
+    CHECK(!isExtensionOperandType(type)) << "Size of extension operand data is unknown";
+    int n = static_cast<int>(type);
+    uint32_t sizeOfElement = tableLookup(kSizeOfDataType, kSizeOfDataTypeOEM, n);
+    return tableLookup(kScalarDataType, kScalarDataTypeOEM, n)
+                   ? false
+                   : sizeOfTensorDataOverflowsUInt32(sizeOfElement, dimensions);
+}
+
+bool sizeOfTensorDataOverflowsUInt32(uint32_t sizeOfElement,
+                                     const std::vector<uint32_t>& dimensions) {
+    return sizeOfTensorDataHelper(sizeOfElement, dimensions).first;
 }
 
 bool tensorHasUnspecifiedDimensions(int type, const uint32_t* dim, uint32_t dimCount) {
@@ -524,14 +552,26 @@ static bool validateNoQuantParams(const ANeuralNetworksOperandType& type, const 
     return true;
 }
 
-static bool validateTensorDimensions(const ANeuralNetworksOperandType& type, const char* tag,
-                                     bool allowPartial) {
-    if (allowPartial) {
-        return true;
+static bool validateTensorDimensions(
+        const ANeuralNetworksOperandType& type,
+        const Extension::OperandTypeInformation* const extensionOperandTypeInfo, const char* tag,
+        bool allowPartial) {
+    if (!allowPartial) {
+        NN_RET_CHECK_GT(type.dimensionCount, 0u) << tag << " invalid operand dimensions";
     }
-    NN_RET_CHECK_GT(type.dimensionCount, 0u) << tag << " invalid operand dimensions";
+    uint64_t size =
+            isExtensionOperandType(type.type)
+                    ? extensionOperandTypeInfo->byteSize
+                    : tableLookup(kSizeOfDataType, kSizeOfDataTypeOEM, static_cast<int>(type.type));
+    constexpr uint64_t kMaxSize = std::numeric_limits<uint32_t>::max();
     for (uint32_t i = 0; i < type.dimensionCount; i++) {
-        NN_RET_CHECK_NE(type.dimensions[i], 0u) << tag << " invalid operand dimensions";
+        if (!allowPartial) {
+            NN_RET_CHECK_NE(type.dimensions[i], 0u) << tag << " invalid operand dimensions";
+        }
+        if (type.dimensions[i] != 0) {
+            size *= type.dimensions[i];
+            NN_RET_CHECK_LE(size, kMaxSize) << tag << " operand byte size exceeds " << kMaxSize;
+        }
     }
     return true;
 }
@@ -544,7 +584,8 @@ static bool validateOperandTypeHelper(
     if (isExtensionOperandType(type.type)) {
         NN_RET_CHECK(extensionOperandTypeInfo != nullptr);
         if (extensionOperandTypeInfo->isTensor) {
-            NN_RET_CHECK(validateTensorDimensions(type, tag, allowPartial));
+            NN_RET_CHECK(
+                    validateTensorDimensions(type, extensionOperandTypeInfo, tag, allowPartial));
         } else {
             NN_RET_CHECK(validateScalarDimensions(type, tag));
         }
@@ -563,7 +604,7 @@ static bool validateOperandTypeHelper(
             NN_RET_CHECK(validateNoQuantParams(type, tag));
         }
     } else {
-        NN_RET_CHECK(validateTensorDimensions(type, tag, allowPartial));
+        NN_RET_CHECK(validateTensorDimensions(type, extensionOperandTypeInfo, tag, allowPartial));
         if (type.type == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM) {
             NN_RET_CHECK(validateQuant8AsymmParams(type, tag));
         } else if (type.type == ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED) {
@@ -3142,6 +3183,41 @@ V1_3::Request convertToV1_3(const V1_0::Request& request) {
 
 V1_3::Request convertToV1_3(const V1_3::Request& request) {
     return request;
+}
+
+FenceState syncWait(int fd, int timeout) {
+    // This implementation is directly based on the ::sync_wait() implementation.
+
+    struct pollfd fds;
+    int ret;
+
+    if (fd < 0) {
+        errno = EINVAL;
+        return FenceState::UNKNOWN;
+    }
+
+    fds.fd = fd;
+    fds.events = POLLIN;
+
+    do {
+        ret = poll(&fds, 1, timeout);
+        if (ret > 0) {
+            if (fds.revents & POLLNVAL) {
+                errno = EINVAL;
+                return FenceState::UNKNOWN;
+            }
+            if (fds.revents & POLLERR) {
+                errno = EINVAL;
+                return FenceState::ERROR;
+            }
+            return FenceState::SIGNALED;
+        } else if (ret == 0) {
+            errno = ETIME;
+            return FenceState::ACTIVE;
+        }
+    } while (ret == -1 && (errno == EINTR || errno == EAGAIN));
+
+    return FenceState::UNKNOWN;
 }
 
 #ifdef NN_DEBUGGABLE
