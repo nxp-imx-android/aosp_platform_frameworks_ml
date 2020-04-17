@@ -495,6 +495,7 @@ struct AccuracyCriteria {
     AccuracyCriterion quant16Asymm;
     AccuracyCriterion quant16Symm;
     float bool8AllowedErrorRatio = 0.1f;
+    bool allowInvalidFpValues = true;
 };
 
 // Check the output results against the expected values in test model by calling
@@ -535,6 +536,14 @@ class SpecDumper {
     const TestModel& kTestModel;
     std::ostream& mOs;
 };
+
+// Convert the test model to an equivalent float32 model. It will return std::nullopt if the
+// conversion is not supported, or if there is no equivalent float32 model.
+std::optional<TestModel> convertToFloat32Model(const TestModel& testModel);
+
+// Used together with convertToFloat32Model. Convert the results computed from the float model to
+// the actual data type in the original model.
+void setExpectedOutputsFromFloat32Results(const std::vector<TestBuffer>& results, TestModel* model);
 
 }  // namespace test_helper
 
