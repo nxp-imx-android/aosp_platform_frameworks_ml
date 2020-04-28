@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
-#include <algorithm>
-#include <vector>
-
 #include "CpuOperationUtils.h"
 #include "Operations.h"
 
-#include <tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h>
-#include <tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h>
+#include "tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
+#include "tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
 
 #include "Tracing.h"
 
@@ -82,21 +77,20 @@ bool depthwiseConvFloat32(const float* inputData, const Shape& inputShape, const
     CalculateActivationRangeFloat(activation, &output_activation_min, &output_activation_max);
 
     tflite::DepthwiseParams params{
-            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight),
-                               0 /*width_offset*/, 0 /*height_offset*/},
+            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight)},
             .stride_width = static_cast<int16>(strideWidth),
             .stride_height = static_cast<int16>(strideHeight),
-            .dilation_width_factor = static_cast<int16>(dilationWidthFactor),
-            .dilation_height_factor = static_cast<int16>(dilationHeightFactor),
             .depth_multiplier = static_cast<int16>(depthMultiplier),
             .float_activation_min = output_activation_min,
             .float_activation_max = output_activation_max,
+            .dilation_width_factor = static_cast<int16>(dilationWidthFactor),
+            .dilation_height_factor = static_cast<int16>(dilationHeightFactor),
     };
     NNTRACE_COMP_SWITCH("optimized_ops::DepthwiseConv");
-    tflite::optimized_ops::DepthwiseConv(
-            params, convertShapeToTflshape(inputShape), inputData,
-            convertShapeToTflshape(filterShape), filterData, convertShapeToTflshape(biasShape),
-            biasData, convertShapeToTflshape(outputShape), outputData, {false /*neon_dotprod*/});
+    tflite::optimized_ops::DepthwiseConv(params, convertShapeToTflshape(inputShape), inputData,
+                                         convertShapeToTflshape(filterShape), filterData,
+                                         convertShapeToTflshape(biasShape), biasData,
+                                         convertShapeToTflshape(outputShape), outputData);
 
     return true;
 }
@@ -127,23 +121,22 @@ bool depthwiseConvQuant8(const uint8_t* inputData, const Shape& inputShape,
                                   &output_activation_max);
 
     tflite::DepthwiseParams params{
-            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight),
-                               0 /*width_offset*/, 0 /*height_offset*/},
+            .padding_values = {static_cast<int16>(paddingWidth), static_cast<int16>(paddingHeight)},
             .stride_width = static_cast<int16>(strideWidth),
             .stride_height = static_cast<int16>(strideHeight),
+            .depth_multiplier = static_cast<int16>(depthMultiplier),
+            .quantized_activation_min = output_activation_min,
+            .quantized_activation_max = output_activation_max,
             .dilation_width_factor = static_cast<int16>(dilationWidthFactor),
             .dilation_height_factor = static_cast<int16>(dilationHeightFactor),
-            .depth_multiplier = static_cast<int16>(depthMultiplier),
             .input_offset = -inputShape.offset,
             .weights_offset = -filterShape.offset,
             .output_offset = outputShape.offset,
-            .output_multiplier = output_multiplier,
             .output_shift = -output_shift,
-            .quantized_activation_min = output_activation_min,
-            .quantized_activation_max = output_activation_max,
+            .output_multiplier = output_multiplier,
     };
     NNTRACE_COMP_SWITCH("optimized_ops::DepthwiseConv");
-    tflite::reference_ops::DepthwiseConv(params, convertShapeToTflshape(inputShape), inputData,
+    tflite::optimized_ops::DepthwiseConv(params, convertShapeToTflshape(inputShape), inputData,
                                          convertShapeToTflshape(filterShape), filterData,
                                          convertShapeToTflshape(biasShape), biasData,
                                          convertShapeToTflshape(outputShape), outputData);

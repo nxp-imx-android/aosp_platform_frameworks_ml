@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#define LOG_TAG "Operations"
-
 #include "CpuOperationUtils.h"
-#include "HalInterfaces.h"
 #include "IndexedShapeWrapper.h"
 #include "OperationResolver.h"
 
@@ -36,8 +32,6 @@ constexpr uint32_t kSizeTensor = 2;
 
 constexpr uint32_t kNumOutputs = 1;
 constexpr uint32_t kOutputTensor = 0;
-
-using namespace hal;
 
 namespace {
 

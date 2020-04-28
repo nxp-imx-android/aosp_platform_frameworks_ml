@@ -30,8 +30,8 @@ cc_test {
     ],
 
     static_libs: [
-        "libBlobCache",
         "lib_nnCache",
+        "libBlobCache",
     ],
 }
 

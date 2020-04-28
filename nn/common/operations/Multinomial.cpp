@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
 #include "Multinomial.h"
 
 #include "CpuExecutor.h"
@@ -27,14 +25,12 @@
 #include "philox_random.h"
 #include "simple_philox.h"
 
-#include <unsupported/Eigen/CXX11/Tensor>
+#include "unsupported/Eigen/CXX11/Tensor"
 
 namespace android {
 namespace nn {
 
 namespace {
-
-using namespace hal;
 
 template <typename T>
 inline T* GetBuffer(RunTimeOperandInfo* operand) {

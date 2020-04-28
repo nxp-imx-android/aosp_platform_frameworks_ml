@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_INDEXED_SHAPE_WRAPPER_H
-#define ANDROID_FRAMEWORKS_ML_NN_COMMON_INDEXED_SHAPE_WRAPPER_H
+#ifndef FRAMEWORKS_ML_NN_INDEXED_SHAPE_WRAPPER_H
+#define FRAMEWORKS_ML_NN_INDEXED_SHAPE_WRAPPER_H
 
 #include "OperationsUtils.h"
 
@@ -62,4 +62,4 @@ class IndexedShapeWrapper {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_INDEXED_SHAPE_WRAPPER_H
+#endif  // FRAMEWORKS_ML_NN_INDEXED_SHAPE_WRAPPER_H

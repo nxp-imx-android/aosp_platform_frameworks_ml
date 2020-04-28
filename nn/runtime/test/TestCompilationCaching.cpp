@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-#include <android-base/scopeguard.h>
-#include <gtest/gtest.h>
-
-#include <cstdlib>
-#include <filesystem>
-#include <numeric>
-#include <string>
-#include <string_view>
-#include <tuple>
-#include <vector>
-
-#include "HalInterfaces.h"
 #include "Manager.h"
 #include "SampleDriver.h"
 #include "TestNeuralNetworksWrapper.h"
 
+#include <gtest/gtest.h>
+#include <cstdlib>
+#include <filesystem>
+#include <numeric>
+
 using namespace android::nn;
-using namespace hal;
 using Result = test_wrapper::Result;
 using Type = test_wrapper::Type;
+using HidlToken = hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
 const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 template <typename T>
 using MQDescriptorSync = ::android::hardware::MQDescriptorSync<T>;
@@ -50,32 +43,13 @@ namespace {
 
 enum class HasCalledPrepareModel { NO, WITHOUT_CACHING, WITH_CACHING };
 
-// Print HasCalledPrepareModel enum for better GTEST failure messages
-std::ostream& operator<<(std::ostream& os, HasCalledPrepareModel hasCalledPrepareModel) {
-    switch (hasCalledPrepareModel) {
-        case HasCalledPrepareModel::NO:
-            return os << "NO";
-        case HasCalledPrepareModel::WITHOUT_CACHING:
-            return os << "WITHOUT_CACHING";
-        case HasCalledPrepareModel::WITH_CACHING:
-            return os << "WITH_CACHING";
-    }
-    CHECK(false) << "HasCalledPrepareModel print called with invalid code "
-                 << static_cast<int>(hasCalledPrepareModel);
-    return os;
-}
-
-// Whether the driver is expected to be registered because it can pass initialization.
-bool canDeviceBeRegistered(ErrorStatus error, uint32_t numModelCache, uint32_t numDataCache) {
-    constexpr uint32_t maxNumCacheFiles =
-            static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES);
-    return error == ErrorStatus::NONE && numModelCache <= maxNumCacheFiles &&
-           numDataCache <= maxNumCacheFiles;
-}
-
 // Whether the driver supports caching based on the returns from getNumberOfCacheFilesNeeded.
-bool isCachingSupported(uint32_t numModelCache, uint32_t numDataCache) {
-    return numModelCache != 0 || numDataCache != 0;
+bool isCachingSupportedAndNoError(ErrorStatus error, uint32_t numModelCache,
+                                  uint32_t numDataCache) {
+    return error == ErrorStatus::NONE &&
+           numModelCache <= static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES) &&
+           numDataCache <= static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES) &&
+           (numModelCache != 0 || numDataCache != 0);
 }
 
 // This is an IDevice for testing purposes which overrides several methods from sample driver:
@@ -120,10 +94,9 @@ class CachingDriver : public sample_driver::SampleDriver {
     };
 
    public:
-    CachingDriver(std::string_view name, ErrorStatus errorStatusGetNumCacheFiles,
-                  uint32_t numModelCache, uint32_t numDataCache,
-                  ErrorStatus errorStatusPrepareFromCache)
-        : SampleDriver(name.data()),
+    CachingDriver(const char* name, ErrorStatus errorStatusGetNumCacheFiles, uint32_t numModelCache,
+                  uint32_t numDataCache, ErrorStatus errorStatusPrepareFromCache)
+        : SampleDriver(name),
           mErrorStatusGetNumCacheFiles(errorStatusGetNumCacheFiles),
           mNumModelCache(numModelCache),
           mNumDataCache(numDataCache),
@@ -136,19 +109,19 @@ class CachingDriver : public sample_driver::SampleDriver {
     ~CachingDriver() override {}
 
     // Reports faster than cpu.
-    Return<void> getCapabilities_1_3(getCapabilities_1_3_cb cb) override {
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb cb) override {
         android::nn::initVLogMask();
         const PerformanceInfo kPerf = {.execTime = 0.1, .powerUsage = 0.1};
         Capabilities capabilities = {
                 .relaxedFloat32toFloat16PerformanceScalar = kPerf,
                 .relaxedFloat32toFloat16PerformanceTensor = kPerf,
-                .operandPerformance = nonExtensionOperandPerformance<HalVersion::V1_3>(kPerf)};
+                .operandPerformance = android::nn::nonExtensionOperandPerformance(kPerf)};
         cb(ErrorStatus::NONE, capabilities);
         return Void();
     }
 
     // Reports supporting all operations.
-    Return<void> getSupportedOperations_1_3(const Model& model,
+    Return<void> getSupportedOperations_1_2(const Model& model,
                                             getSupportedOperations_cb cb) override {
         std::vector<bool> supported(model.operations.size(), true);
         cb(ErrorStatus::NONE, supported);
@@ -163,10 +136,10 @@ class CachingDriver : public sample_driver::SampleDriver {
 
     // Generates CachingPreparedModel.
     // Writes the cache entry per mCacheXData and sets mHasCalledPrepareModel.
-    Return<ErrorStatus> prepareModel_1_3(const Model&, ExecutionPreference,
+    Return<ErrorStatus> prepareModel_1_2(const Model&, ExecutionPreference,
                                          const hidl_vec<hidl_handle>& modelCacheHandle,
                                          const hidl_vec<hidl_handle>& dataCacheHandle,
-                                         const CacheToken&,
+                                         const HidlToken&,
                                          const sp<IPreparedModelCallback>& cb) override {
         checkNumberOfCacheHandles(modelCacheHandle.size(), dataCacheHandle.size());
         if (modelCacheHandle.size() != 0 || dataCacheHandle.size() != 0) {
@@ -184,7 +157,7 @@ class CachingDriver : public sample_driver::SampleDriver {
     // mErrorStatusPrepareFromCache, sets mHasCalledPrepareModelFromCache.
     Return<ErrorStatus> prepareModelFromCache(
             const hidl_vec<hidl_handle>& modelCacheHandle,
-            const hidl_vec<hidl_handle>& dataCacheHandle, const CacheToken&,
+            const hidl_vec<hidl_handle>& dataCacheHandle, const HidlToken&,
             const sp<V1_2::IPreparedModelCallback>& callback) override {
         readFromCache(modelCacheHandle, mModelCacheData);
         readFromCache(dataCacheHandle, mDataCacheData);
@@ -203,7 +176,8 @@ class CachingDriver : public sample_driver::SampleDriver {
    private:
     // Checks the number of cache files passed to the driver from runtime.
     void checkNumberOfCacheHandles(size_t modelCache, size_t dataCache) {
-        if (isCachingSupported(mNumModelCache, mNumDataCache)) {
+        if (isCachingSupportedAndNoError(mErrorStatusGetNumCacheFiles, mNumModelCache,
+                                         mNumDataCache)) {
             if (modelCache != 0 || dataCache != 0) {
                 ASSERT_EQ(modelCache, mNumModelCache);
                 ASSERT_EQ(dataCache, mNumDataCache);
@@ -260,69 +234,12 @@ void CreateBroadcastAddModel(test_wrapper::Model* model) {
     ASSERT_EQ(model->finish(), Result::NO_ERROR);
 }
 
-void getDeviceWithName(std::string_view deviceName, const ANeuralNetworksDevice** outputDevice) {
-    uint32_t numDevices = 0;
-    ASSERT_EQ(ANeuralNetworks_getDeviceCount(&numDevices), ANEURALNETWORKS_NO_ERROR);
-    EXPECT_GE(numDevices, (uint32_t)1);
-
-    int numMatchingDevices = 0;
-    for (uint32_t i = 0; i < numDevices; i++) {
-        ANeuralNetworksDevice* device = nullptr;
-        ASSERT_EQ(ANeuralNetworks_getDevice(i, &device), ANEURALNETWORKS_NO_ERROR);
-
-        const char* buffer = nullptr;
-        ASSERT_EQ(ANeuralNetworksDevice_getName(device, &buffer), ANEURALNETWORKS_NO_ERROR);
-        if (deviceName == buffer) {
-            *outputDevice = device;
-            numMatchingDevices++;
-        }
-    }
-
-    EXPECT_LE(numMatchingDevices, 1);
-}
-
-// Test device registration with a driver parameterized with
+// Test model compilation with a driver parameterized with
 // - ErrorStatus returning from getNumberOfCacheFilesNeeded
 // - Number of model cache files returning from getNumberOfCacheFilesNeeded
 // - Number of data cache files returning from getNumberOfCacheFilesNeeded
-using DeviceRegistrationTestParam = std::tuple<ErrorStatus, uint32_t, uint32_t>;
-
-class DeviceRegistrationTest : public ::testing::TestWithParam<DeviceRegistrationTestParam> {
-   protected:
-    static constexpr std::string_view kDeviceName = "deviceTestCompilationCaching";
-    const ErrorStatus kErrorStatusGetNumCacheFiles = std::get<0>(GetParam());
-    const uint32_t kNumModelCache = std::get<1>(GetParam());
-    const uint32_t kNumDataCache = std::get<2>(GetParam());
-    const sp<CachingDriver> kDriver =
-            new CachingDriver(kDeviceName, kErrorStatusGetNumCacheFiles, kNumModelCache,
-                              kNumDataCache, ErrorStatus::NONE);
-};
-
-TEST_P(DeviceRegistrationTest, CachingFailure) {
-    if (DeviceManager::get()->getUseCpuOnly()) {
-        return;
-    }
-
-    DeviceManager::get()->forTest_registerDevice(kDeviceName.data(), kDriver);
-    const auto cleanup = android::base::make_scope_guard(
-            [] { DeviceManager::get()->forTest_reInitializeDeviceList(); });
-
-    // get device
-    const ANeuralNetworksDevice* device = nullptr;
-    getDeviceWithName(kDeviceName, &device);
-
-    // check if device registeration matches expectations
-    const bool isDeviceRegistered = (device != nullptr);
-    const bool expectDeviceToBeRegistered =
-            canDeviceBeRegistered(kErrorStatusGetNumCacheFiles, kNumModelCache, kNumDataCache);
-    ASSERT_EQ(isDeviceRegistered, expectDeviceToBeRegistered);
-}
-
-// Test model compilation with a driver parameterized with
-// - Number of model cache files returning from getNumberOfCacheFilesNeeded
-// - Number of data cache files returning from getNumberOfCacheFilesNeeded
 // - ErrorStatus returning from prepareModelFromCache
-using CompilationCachingTestParam = std::tuple<uint32_t, uint32_t, ErrorStatus>;
+using CompilationCachingTestParam = std::tuple<ErrorStatus, uint32_t, uint32_t, ErrorStatus>;
 
 class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachingTestParam> {
    protected:
@@ -332,6 +249,9 @@ class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachin
         ASSERT_NE(cacheDir, nullptr);
         mCacheDir = cacheDir;
         CreateBroadcastAddModel(&mModel);
+        mToken = std::vector<uint8_t>(ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN, 0);
+        mIsCachingSupportedAndNoError = isCachingSupportedAndNoError(kErrorStatusGetNumCacheFiles,
+                                                                     kNumModelCache, kNumDataCache);
     }
 
     virtual void TearDown() override {
@@ -341,26 +261,38 @@ class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachin
     }
 
     void compileModel(const sp<CachingDriver>& driver, bool withToken) {
-        DeviceManager::get()->forTest_registerDevice(kDeviceName.data(), driver);
-        const auto cleanup = android::base::make_scope_guard(
-                [] { DeviceManager::get()->forTest_reInitializeDeviceList(); });
+        DeviceManager::get()->forTest_registerDevice(kDeviceName, driver);
 
-        // Get a handle to the single driver device matching kDeviceName.
-        const ANeuralNetworksDevice* device = nullptr;
-        getDeviceWithName(kDeviceName, &device);
-        ASSERT_NE(device, nullptr);
+        // Make device list including only a single driver device.
+        uint32_t numDevices = 0;
+        EXPECT_EQ(ANeuralNetworks_getDeviceCount(&numDevices), ANEURALNETWORKS_NO_ERROR);
+        EXPECT_GE(numDevices, (uint32_t)1);
+        std::vector<ANeuralNetworksDevice*> devices;
+        for (uint32_t i = 0; i < numDevices; i++) {
+            ANeuralNetworksDevice* device = nullptr;
+            EXPECT_EQ(ANeuralNetworks_getDevice(i, &device), ANEURALNETWORKS_NO_ERROR);
+            const char* buffer = nullptr;
+            int result = ANeuralNetworksDevice_getName(device, &buffer);
+            if (result == ANEURALNETWORKS_NO_ERROR && strcmp(buffer, kDeviceName) == 0) {
+                devices.push_back(device);
+                break;
+            }
+        }
+        ASSERT_EQ(devices.size(), 1u);
 
         // Compile the model with the device.
         ANeuralNetworksCompilation* compilation = nullptr;
-        ASSERT_EQ(ANeuralNetworksCompilation_createForDevices(mModel.getHandle(), &device, 1,
-                                                              &compilation),
+        ASSERT_EQ(ANeuralNetworksCompilation_createForDevices(mModel.getHandle(), devices.data(),
+                                                              devices.size(), &compilation),
                   ANEURALNETWORKS_NO_ERROR);
         if (withToken) {
             ASSERT_EQ(ANeuralNetworksCompilation_setCaching(compilation, mCacheDir.c_str(),
-                                                            kToken.data()),
+                                                            mToken.data()),
                       ANEURALNETWORKS_NO_ERROR);
         }
         ASSERT_EQ(ANeuralNetworksCompilation_finish(compilation), ANEURALNETWORKS_NO_ERROR);
+
+        DeviceManager::get()->forTest_reInitializeDeviceList();
     }
 
     void createCache() {
@@ -369,29 +301,31 @@ class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachin
         compileModel(driver, /*withToken=*/true);
     }
 
-    static constexpr std::string_view kDeviceName = "deviceTestCompilationCaching";
-    const uint32_t kNumModelCache = std::get<0>(GetParam());
-    const uint32_t kNumDataCache = std::get<1>(GetParam());
-    const ErrorStatus kErrorStatusPrepareFromCache = std::get<2>(GetParam());
-    const bool kIsCachingSupported = isCachingSupported(kNumModelCache, kNumDataCache);
+    static constexpr char kDeviceName[] = "deviceTestCompilationCaching";
+    const ErrorStatus kErrorStatusGetNumCacheFiles = std::get<0>(GetParam());
+    const uint32_t kNumModelCache = std::get<1>(GetParam());
+    const uint32_t kNumDataCache = std::get<2>(GetParam());
+    const ErrorStatus kErrorStatusPrepareFromCache = std::get<3>(GetParam());
+    bool mIsCachingSupportedAndNoError;
     test_wrapper::Model mModel;
     std::string mCacheDir;
-    const CacheToken kToken{};
+    std::vector<uint8_t> mToken;
 };
 
 TEST_P(CompilationCachingTest, TokenProvidedAndCacheNotExist) {
     if (DeviceManager::get()->getUseCpuOnly()) {
         return;
     }
-    sp<CachingDriver> driver = new CachingDriver(kDeviceName, ErrorStatus::NONE, kNumModelCache,
-                                                 kNumDataCache, kErrorStatusPrepareFromCache);
+    sp<CachingDriver> driver =
+            new CachingDriver(kDeviceName, kErrorStatusGetNumCacheFiles, kNumModelCache,
+                              kNumDataCache, kErrorStatusPrepareFromCache);
     compileModel(driver, /*withToken=*/true);
 
     // When cache file does not exist, the runtime should never call prepareModelFromCache.
-    EXPECT_FALSE(driver->hasCalledPrepareModelFromCache());
+    EXPECT_EQ(driver->hasCalledPrepareModelFromCache(), false);
 
     // The runtime should call prepareModel_1_2. It should request caching iff caching supported.
-    EXPECT_EQ(driver->hasCalledPrepareModel(), kIsCachingSupported
+    EXPECT_EQ(driver->hasCalledPrepareModel(), mIsCachingSupportedAndNoError
                                                        ? HasCalledPrepareModel::WITH_CACHING
                                                        : HasCalledPrepareModel::WITHOUT_CACHING);
 }
@@ -401,15 +335,16 @@ TEST_P(CompilationCachingTest, TokenProvidedAndCacheExist) {
         return;
     }
     createCache();
-    sp<CachingDriver> driver = new CachingDriver(kDeviceName, ErrorStatus::NONE, kNumModelCache,
-                                                 kNumDataCache, kErrorStatusPrepareFromCache);
+    sp<CachingDriver> driver =
+            new CachingDriver(kDeviceName, kErrorStatusGetNumCacheFiles, kNumModelCache,
+                              kNumDataCache, kErrorStatusPrepareFromCache);
     compileModel(driver, /*withToken=*/true);
 
     // When cache files exist, the runtime should call prepareModelFromCache iff caching supported.
-    EXPECT_EQ(driver->hasCalledPrepareModelFromCache(), kIsCachingSupported);
+    EXPECT_EQ(driver->hasCalledPrepareModelFromCache(), mIsCachingSupportedAndNoError);
 
     HasCalledPrepareModel expectHasCalledPrepareModel;
-    if (kIsCachingSupported) {
+    if (mIsCachingSupportedAndNoError) {
         if (kErrorStatusPrepareFromCache == ErrorStatus::NONE) {
             // The runtime should not call prepareModel_1_2 iff caching supported and
             // prepareModelFromCache succeeds.
@@ -430,13 +365,14 @@ TEST_P(CompilationCachingTest, TokenNotProvided) {
     if (DeviceManager::get()->getUseCpuOnly()) {
         return;
     }
-    sp<CachingDriver> driver = new CachingDriver(kDeviceName, ErrorStatus::NONE, kNumModelCache,
-                                                 kNumDataCache, kErrorStatusPrepareFromCache);
+    sp<CachingDriver> driver =
+            new CachingDriver(kDeviceName, kErrorStatusGetNumCacheFiles, kNumModelCache,
+                              kNumDataCache, kErrorStatusPrepareFromCache);
     compileModel(driver, /*withToken=*/false);
 
     // When no NDK token is provided by the client, the runtime should never call
     // prepareModelFromCache or request caching with prepareModel_1_2.
-    EXPECT_FALSE(driver->hasCalledPrepareModelFromCache());
+    EXPECT_EQ(driver->hasCalledPrepareModelFromCache(), false);
     EXPECT_EQ(driver->hasCalledPrepareModel(), HasCalledPrepareModel::WITHOUT_CACHING);
 }
 
@@ -445,18 +381,12 @@ static const auto kErrorStatusGetNumCacheFilesChoices =
 static const auto kNumCacheChoices =
         testing::Values(0ul, 1ul, static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES),
                         static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES) + 1);
-static const auto kNumValidCacheChoices =
-        testing::Values(0ul, 1ul, static_cast<uint32_t>(Constant::MAX_NUMBER_OF_CACHE_FILES));
 static const auto kErrorStatusPrepareFromCacheChoices =
         testing::Values(ErrorStatus::NONE, ErrorStatus::GENERAL_FAILURE,
                         ErrorStatus::DEVICE_UNAVAILABLE, ErrorStatus::INVALID_ARGUMENT);
 
-INSTANTIATE_TEST_CASE_P(TestCompilationCaching, DeviceRegistrationTest,
-                        testing::Combine(kErrorStatusGetNumCacheFilesChoices, kNumCacheChoices,
-                                         kNumCacheChoices));
-
 INSTANTIATE_TEST_CASE_P(TestCompilationCaching, CompilationCachingTest,
-                        testing::Combine(kNumValidCacheChoices, kNumValidCacheChoices,
-                                         kErrorStatusPrepareFromCacheChoices));
+                        testing::Combine(kErrorStatusGetNumCacheFilesChoices, kNumCacheChoices,
+                                         kNumCacheChoices, kErrorStatusPrepareFromCacheChoices));
 
-}  // namespace
+}  // end namespace

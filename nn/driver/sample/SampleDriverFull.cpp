@@ -18,8 +18,7 @@
 
 #include "SampleDriverFull.h"
 
-#include <vector>
-
+#include "HalInterfaces.h"
 #include "Utils.h"
 #include "ValidateHal.h"
 
@@ -27,22 +26,19 @@ namespace android {
 namespace nn {
 namespace sample_driver {
 
-using namespace hal;
-
-Return<void> SampleDriverFull::getCapabilities_1_3(getCapabilities_1_3_cb cb) {
+Return<void> SampleDriverFull::getCapabilities_1_2(getCapabilities_1_2_cb cb) {
     android::nn::initVLogMask();
-    VLOG(DRIVER) << "getCapabilities_1_3()";
-    Capabilities capabilities = {
-            .relaxedFloat32toFloat16PerformanceScalar = mPerf,
-            .relaxedFloat32toFloat16PerformanceTensor = mPerf,
-            .operandPerformance = nonExtensionOperandPerformance<HalVersion::V1_3>(mPerf)};
+    VLOG(DRIVER) << "getCapabilities_1_2()";
+    Capabilities capabilities = {.relaxedFloat32toFloat16PerformanceScalar = mPerf,
+                                 .relaxedFloat32toFloat16PerformanceTensor = mPerf,
+                                 .operandPerformance = nonExtensionOperandPerformance(mPerf)};
     cb(ErrorStatus::NONE, capabilities);
     return Void();
 }
 
-Return<void> SampleDriverFull::getSupportedOperations_1_3(const V1_3::Model& model,
-                                                          getSupportedOperations_1_3_cb cb) {
-    VLOG(DRIVER) << "getSupportedOperations_1_3()";
+Return<void> SampleDriverFull::getSupportedOperations_1_2(const V1_2::Model& model,
+                                                          getSupportedOperations_1_2_cb cb) {
+    VLOG(DRIVER) << "getSupportedOperations_1_2()";
     if (validateModel(model)) {
         const size_t count = model.operations.size();
         std::vector<bool> supported(count, true);

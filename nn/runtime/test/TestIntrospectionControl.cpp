@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
-#include <chrono>
-#include <iterator>
-#include <map>
-#include <queue>
-#include <set>
-#include <string>
-#include <tuple>
-#include <vector>
-
 #include "CompilationBuilder.h"
 #include "ExecutionBurstServer.h"
 #include "HalInterfaces.h"
@@ -36,18 +25,25 @@
 #include "Utils.h"
 #include "ValidateHal.h"
 
+#include <gtest/gtest.h>
+
+#include <iterator>
+#include <map>
+#include <queue>
+#include <set>
+
 namespace {
 
 using namespace ::android;
-using namespace nn::hal;
 
 using CompilationBuilder = nn::CompilationBuilder;
 using Device = nn::Device;
 using DeviceManager = nn::DeviceManager;
 using ExecutePreference = nn::test_wrapper::ExecutePreference;
 using ExecutionBurstServer = nn::ExecutionBurstServer;
-using HidlModel = V1_3::Model;
-using PreparedModelCallback = nn::PreparedModelCallback;
+using HidlModel = hardware::neuralnetworks::V1_2::Model;
+using HidlToken = hardware::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
+using PreparedModelCallback = hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 using Result = nn::test_wrapper::Result;
 using SampleDriver = nn::sample_driver::SampleDriver;
 using SamplePreparedModel = nn::sample_driver::SamplePreparedModel;
@@ -58,23 +54,22 @@ using WrapperType = nn::test_wrapper::Type;
 template <typename T>
 using MQDescriptorSync = hardware::MQDescriptorSync<T>;
 
-constexpr Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
-constexpr Timing kGoodTiming = {.timeOnDevice = 123, .timeInDriver = 456};
+const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 // This is an IDevice for testing purposes. The test driver has customized
-// getCapabilities_1_3 and getSupportedOperations_1_3.
+// getCapabilities_1_1 and getSupportedOperations_1_2.
 class TestDriver : public SampleDriver {
    public:
     TestDriver(const char* name, Capabilities capabilities, const std::vector<bool>& supportedOps)
         : SampleDriver(name), mCapabilities(capabilities), mSupportedOps(supportedOps) {}
     ~TestDriver() override {}
 
-    Return<void> getCapabilities_1_3(getCapabilities_1_3_cb cb) override {
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb cb) override {
         cb(ErrorStatus::NONE, mCapabilities);
         return Void();
     }
 
-    Return<void> getSupportedOperations_1_3(const Model& model,
+    Return<void> getSupportedOperations_1_2(const Model& model,
                                             getSupportedOperations_cb cb) override {
         if (!android::nn::validateModel(model)) {
             cb(ErrorStatus::INVALID_ARGUMENT, std::vector<bool>());
@@ -114,11 +109,9 @@ class IntrospectionControlTest : public ::testing::Test {
         DeviceSpecification(const std::string& name, float perf, std::vector<bool>& supportedOps)
             : mName(name), mSupportedOps(supportedOps) {
             PerformanceInfo perfInfo = {.execTime = perf, .powerUsage = perf};
-            mCapabilities = {
-                    .relaxedFloat32toFloat16PerformanceScalar = perfInfo,
-                    .relaxedFloat32toFloat16PerformanceTensor = perfInfo,
-                    .operandPerformance =
-                            nn::nonExtensionOperandPerformance<nn::HalVersion::V1_3>(perfInfo)};
+            mCapabilities = {.relaxedFloat32toFloat16PerformanceScalar = perfInfo,
+                             .relaxedFloat32toFloat16PerformanceTensor = perfInfo,
+                             .operandPerformance = nn::nonExtensionOperandPerformance(perfInfo)};
         }
         std::string mName;
         Capabilities mCapabilities;
@@ -229,9 +222,9 @@ TEST_F(IntrospectionControlTest, SimpleAddModel) {
 
     // Verify that the mCompilation is actually using the "test-all" device.
     CompilationBuilder* c = reinterpret_cast<CompilationBuilder*>(mCompilation);
-    const std::string& deviceNameBuffer =
+    const char* deviceNameBuffer =
             c->forTest_getExecutionPlan().forTest_simpleGetDevice()->getName();
-    EXPECT_EQ(driverName, deviceNameBuffer);
+    EXPECT_TRUE(driverName.compare(deviceNameBuffer) == 0);
 
     float input1[2] = {1.0f, 2.0f};
     float input2[2] = {3.0f, 4.0f};
@@ -262,9 +255,24 @@ TEST_F(IntrospectionControlTest, SimpleAddModel) {
     }
 }
 
-/*-- Begin test drivers -------------------------------------------------------------------------*/
+/*-- Begin timing tests -------------------------------------------------------------------------*/
 
-namespace test_drivers {
+namespace timing_tests {
+
+constexpr Timing kGoodTiming = {.timeOnDevice = 123, .timeInDriver = 456};
+
+enum class DriverKind {
+    CPU,
+    OLD,  // too old to support timing (1.1 or earlier)
+    NEW   // new enough to support timing (1.2 or later)
+};
+
+std::ostream& operator<<(std::ostream& os, DriverKind kind) {
+    const char* names[] = {"CPU", "OLD", "NEW"};
+    const uint32_t index = static_cast<uint32_t>(kind);
+    CHECK(index < std::size(names));
+    return os << names[index];
+}
 
 enum class Success {
     // ASYNC: Return ErrorStatus::NONE; notify ErrorStatus::NONE and timing
@@ -305,13 +313,21 @@ std::map<Success, Timing> expectedTimingMap = {
 std::set<Success> expectedPassSet = {Success::PASS_NEITHER, Success::PASS_DEVICE,
                                      Success::PASS_DRIVER, Success::PASS_BOTH, Success::PASS_CPU};
 
+enum class Compute { ASYNC, SYNC, BURST };
+
+std::ostream& operator<<(std::ostream& os, Compute compute) {
+    const char* names[] = {"ASYNC", "SYNC", "BURST"};
+    const uint32_t index = static_cast<uint32_t>(compute);
+    CHECK(index < std::size(names));
+    return os << names[index];
+}
+
 // For these tests we don't care about actually running an inference -- we
 // just want to dummy up execution status and timing results.
 class TestPreparedModel12 : public SamplePreparedModel {
    public:
     TestPreparedModel12(const HidlModel& model, const SampleDriver* driver, Success success)
-        : SamplePreparedModel(model, driver, ExecutionPreference::FAST_SINGLE_ANSWER),
-          mSuccess(success) {}
+        : SamplePreparedModel(model, driver), mSuccess(success) {}
 
     Return<ErrorStatus> execute(const Request&,
                                 const sp<V1_0::IExecutionCallback>& callback) override {
@@ -386,8 +402,8 @@ class TestPreparedModel12 : public SamplePreparedModel {
             const MQDescriptorSync<V1_2::FmqRequestDatum>& requestChannel,
             const MQDescriptorSync<V1_2::FmqResultDatum>& resultChannel,
             configureExecutionBurst_cb cb) override {
-        const sp<V1_2::IBurstContext> burst = ExecutionBurstServer::create(
-                callback, requestChannel, resultChannel, this, std::chrono::microseconds{0});
+        const sp<V1_2::IBurstContext> burst =
+                ExecutionBurstServer::create(callback, requestChannel, resultChannel, this);
 
         cb(burst == nullptr ? ErrorStatus::GENERAL_FAILURE : ErrorStatus::NONE, burst);
         return Void();
@@ -413,36 +429,23 @@ class TestPreparedModel10 : public V1_0::IPreparedModel {
 };
 
 // Behaves like SampleDriver, except that it produces customized IPrepareModel.
-class TestDriver13 : public SampleDriver {
+class TestDriver12 : public SampleDriver {
    public:
-    TestDriver13(const std::string& name, Success success)
+    TestDriver12(const std::string& name, Success success)
         : SampleDriver(name.c_str()), mSuccess(success) {}
 
-    Return<void> getCapabilities_1_3(getCapabilities_1_3_cb _hidl_cb) override {
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb _hidl_cb) override {
         android::nn::initVLogMask();
         const PerformanceInfo kPerf = {.execTime = 0.75f, .powerUsage = 0.75f};
         Capabilities capabilities = {
                 .relaxedFloat32toFloat16PerformanceScalar = kPerf,
                 .relaxedFloat32toFloat16PerformanceTensor = kPerf,
-                .operandPerformance =
-                        nn::nonExtensionOperandPerformance<nn::HalVersion::V1_3>(kPerf)};
+                .operandPerformance = nn::nonExtensionOperandPerformance(kPerf)};
         _hidl_cb(ErrorStatus::NONE, capabilities);
         return Void();
     }
 
-    Return<void> getSupportedOperations_1_3(const HidlModel& model,
-                                            getSupportedOperations_1_3_cb cb) override {
-        if (nn::validateModel(model)) {
-            std::vector<bool> supported(model.operations.size(), true);
-            cb(ErrorStatus::NONE, supported);
-        } else {
-            std::vector<bool> supported;
-            cb(ErrorStatus::INVALID_ARGUMENT, supported);
-        }
-        return Void();
-    }
-
-    Return<void> getSupportedOperations_1_2(const V1_2::Model& model,
+    Return<void> getSupportedOperations_1_2(const HidlModel& model,
                                             getSupportedOperations_1_2_cb cb) override {
         if (nn::validateModel(model)) {
             std::vector<bool> supported(model.operations.size(), true);
@@ -454,20 +457,11 @@ class TestDriver13 : public SampleDriver {
         return Void();
     }
 
-    Return<ErrorStatus> prepareModel_1_3(const HidlModel& model, ExecutionPreference,
+    Return<ErrorStatus> prepareModel_1_2(const HidlModel& model, ExecutionPreference,
                                          const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&,
-                                         const CacheToken&,
+                                         const HidlToken&,
                                          const sp<IPreparedModelCallback>& callback) override {
         callback->notify_1_2(ErrorStatus::NONE, new TestPreparedModel12(model, this, mSuccess));
-        return ErrorStatus::NONE;
-    }
-
-    Return<ErrorStatus> prepareModel_1_2(const V1_2::Model& model, ExecutionPreference,
-                                         const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&,
-                                         const CacheToken&,
-                                         const sp<IPreparedModelCallback>& callback) override {
-        callback->notify_1_2(ErrorStatus::NONE,
-                             new TestPreparedModel12(nn::convertToV1_3(model), this, mSuccess));
         return ErrorStatus::NONE;
     }
 
@@ -475,7 +469,7 @@ class TestDriver13 : public SampleDriver {
             const V1_1::Model& model, ExecutionPreference,
             const sp<V1_0::IPreparedModelCallback>& callback) override {
         callback->notify(ErrorStatus::NONE,
-                         new TestPreparedModel10(nn::convertToV1_3(model), this, mSuccess));
+                         new TestPreparedModel10(nn::convertToV1_2(model), this, mSuccess));
         return ErrorStatus::NONE;
     }
 
@@ -489,138 +483,40 @@ class TestDriver13 : public SampleDriver {
     Success mSuccess;
 };
 
-// Like TestDriver, but implementing 1.2
-class TestDriver12 : public V1_2::IDevice {
-   public:
-    TestDriver12(const std::string& name, Success success)
-        : mLatestDriver(new TestDriver13(name, success)) {}
-    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_2(_hidl_cb);
-    }
-    Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_1(_hidl_cb);
-    }
-    Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities(_hidl_cb);
-    }
-    Return<void> getSupportedOperations_1_2(const V1_2::Model& model,
-                                            getSupportedOperations_1_2_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_2(model, _hidl_cb);
-    }
-    Return<void> getSupportedOperations_1_1(const V1_1::Model& model,
-                                            getSupportedOperations_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_1(model, _hidl_cb);
-    }
-    Return<void> getSupportedOperations(const V1_0::Model& model,
-                                        getSupportedOperations_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations(model, _hidl_cb);
-    }
-    Return<ErrorStatus> prepareModel_1_2(const V1_2::Model& model, ExecutionPreference preference,
-                                         const hidl_vec<hidl_handle>& modelCache,
-                                         const hidl_vec<hidl_handle>& dataCache,
-                                         const CacheToken& token,
-                                         const sp<IPreparedModelCallback>& callback) override {
-        return mLatestDriver->prepareModel_1_2(model, preference, modelCache, dataCache, token,
-                                               callback);
-    }
-    Return<ErrorStatus> prepareModel_1_1(
-            const V1_1::Model& model, ExecutionPreference preference,
-            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
-    }
-    Return<ErrorStatus> prepareModel(
-            const V1_0::Model& model,
-            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel(model, actualCallback);
-    }
-    Return<DeviceStatus> getStatus() override { return mLatestDriver->getStatus(); }
-    Return<void> getVersionString(getVersionString_cb _hidl_cb) override {
-        return mLatestDriver->getVersionString(_hidl_cb);
-    }
-    Return<void> getType(getType_cb _hidl_cb) override { return mLatestDriver->getType(_hidl_cb); }
-    Return<void> getSupportedExtensions(getSupportedExtensions_cb _hidl_cb) {
-        return mLatestDriver->getSupportedExtensions(_hidl_cb);
-    }
-    Return<void> getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeeded_cb _hidl_cb) {
-        return mLatestDriver->getNumberOfCacheFilesNeeded(_hidl_cb);
-    }
-    Return<ErrorStatus> prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
-                                              const hidl_vec<hidl_handle>& dataCache,
-                                              const CacheToken& token,
-                                              const sp<V1_2::IPreparedModelCallback>& callback) {
-        return mLatestDriver->prepareModelFromCache(modelCache, dataCache, token, callback);
-    }
-
-   private:
-    const sp<V1_3::IDevice> mLatestDriver;
-};
-
 // Like TestDriver, but implementing 1.1
 class TestDriver11 : public V1_1::IDevice {
    public:
     TestDriver11(const std::string& name, Success success)
-        : mLatestDriver(new TestDriver13(name, success)) {}
+        : m12Driver(new TestDriver12(name, success)) {}
     Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_1(_hidl_cb);
+        return m12Driver->getCapabilities_1_1(_hidl_cb);
     }
     Return<void> getSupportedOperations_1_1(const V1_1::Model& model,
                                             getSupportedOperations_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_1(model, _hidl_cb);
+        return m12Driver->getSupportedOperations_1_1(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel_1_1(
             const V1_1::Model& model, ExecutionPreference preference,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
+        return m12Driver->prepareModel_1_1(model, preference, actualCallback);
     }
-    Return<DeviceStatus> getStatus() override { return mLatestDriver->getStatus(); }
+    Return<DeviceStatus> getStatus() override { return m12Driver->getStatus(); }
     Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities(_hidl_cb);
+        return m12Driver->getCapabilities(_hidl_cb);
     }
     Return<void> getSupportedOperations(const V1_0::Model& model,
                                         getSupportedOperations_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations(model, _hidl_cb);
+        return m12Driver->getSupportedOperations(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel(model, actualCallback);
+        return m12Driver->prepareModel(model, actualCallback);
     }
 
    private:
-    const sp<V1_3::IDevice> mLatestDriver;
+    const sp<V1_2::IDevice> m12Driver;
 };
-
-}  // namespace test_drivers
-
-/*-- End   test drivers -------------------------------------------------------------------------*/
-
-/*-- Begin timing tests -------------------------------------------------------------------------*/
-
-namespace timing_tests {
-
-using namespace test_drivers;
-
-enum class DriverKind {
-    CPU,
-    OLD,  // too old to support timing (1.1 or earlier)
-    NEW   // new enough to support timing (1.2 or later)
-};
-
-std::ostream& operator<<(std::ostream& os, DriverKind kind) {
-    const char* names[] = {"CPU", "OLD", "NEW"};
-    const uint32_t index = static_cast<uint32_t>(kind);
-    CHECK(index < std::size(names));
-    return os << names[index];
-}
-
-enum class Compute { ASYNC, SYNC, BURST };
-
-std::ostream& operator<<(std::ostream& os, Compute compute) {
-    const char* names[] = {"ASYNC", "SYNC", "BURST"};
-    const uint32_t index = static_cast<uint32_t>(compute);
-    CHECK(index < std::size(names));
-    return os << names[index];
-}
 
 class TimingTest : public IntrospectionControlTest,
                    public ::testing::WithParamInterface<std::tuple<DriverKind, Success, Compute>> {
@@ -655,7 +551,7 @@ TEST_P(TimingTest, Test) {
     switch (kDriverKind) {
         case DriverKind::CPU: {
             // There should be only one driver -- the CPU
-            const std::string& name = DeviceManager::get()->getDrivers()[0]->getName();
+            const char* name = DeviceManager::get()->getDrivers()[0]->getName();
             ASSERT_TRUE(selectDeviceByName(name));
             break;
         }
@@ -822,71 +718,6 @@ INSTANTIATE_TEST_CASE_P(Flavor, TimingTest, kTimingTestValues);
 }  // namespace timing_tests
 
 /*-- End   timing tests -------------------------------------------------------------------------*/
-
-const float kSimpleCeiling = 2.0f;
-
-void createAddMaxModel(WrapperModel* model, bool reverseOrder) {
-    WrapperOperandType type0(WrapperType::TENSOR_FLOAT32, {2});
-    WrapperOperandType type1(WrapperType::INT32, {});
-    // Phase 1, operands
-    auto op1 = model->addOperand(&type0);
-    auto op2 = model->addOperand(&type0);
-    auto act = model->addOperand(&type1);
-    auto op3 = model->addOperand(&type0);
-    auto op4 = model->addOperand(&type0);
-    auto op5 = model->addOperand(&type0);
-    // Phase 2, operations
-    static int32_t act_init[] = {0};
-    model->setOperandValue(act, act_init, sizeof(act_init));
-    static float ceiling[] = {kSimpleCeiling, kSimpleCeiling};
-    model->setOperandValue(op4, ceiling, sizeof(ceiling));
-    if (reverseOrder) {
-        // In this case, add MAXIMUM first, but the execution order is still ADD -> MAXIMUM.
-        model->addOperation(ANEURALNETWORKS_MAXIMUM, {op3, op4}, {op5});
-        model->addOperation(ANEURALNETWORKS_ADD, {op1, op2, act}, {op3});
-    } else {
-        model->addOperation(ANEURALNETWORKS_ADD, {op1, op2, act}, {op3});
-        model->addOperation(ANEURALNETWORKS_MAXIMUM, {op3, op4}, {op5});
-    }
-    // Phase 3, inputs and outputs
-    model->identifyInputsAndOutputs({op1, op2}, {op5});
-    model->finish();
-    ASSERT_TRUE(model->isValid());
-}
-
-TEST_F(IntrospectionControlTest, SlicingAddMax) {
-    // This is needed before we have the CPU fallback path being treated as a Device.
-    // TODO(dgross): remove once b/72506261 is fixed.
-    if (DeviceManager::get()->getUseCpuOnly()) {
-        GTEST_SKIP();
-    }
-
-    using namespace test_drivers;
-
-    static const char name[] = "driver11";
-    DeviceManager::get()->forTest_registerDevice(name, new TestDriver11(name, Success::PASS_BOTH));
-    ASSERT_TRUE(selectDeviceByName(name));
-
-    createAddMaxModel(&mModel, false);
-    EXPECT_TRUE(isSupportedOpListExpected({true, false}));
-}
-
-TEST_F(IntrospectionControlTest, SlicingMaxAdd) {
-    // This is needed before we have the CPU fallback path being treated as a Device.
-    // TODO(dgross): remove once b/72506261 is fixed.
-    if (DeviceManager::get()->getUseCpuOnly()) {
-        GTEST_SKIP();
-    }
-
-    using namespace test_drivers;
-
-    static const char name[] = "driver11";
-    DeviceManager::get()->forTest_registerDevice(name, new TestDriver11(name, Success::PASS_BOTH));
-    ASSERT_TRUE(selectDeviceByName(name));
-
-    createAddMaxModel(&mModel, true);
-    EXPECT_TRUE(isSupportedOpListExpected({false, true}));
-}
 
 const float kSimpleMultiplier = 2.0f;
 

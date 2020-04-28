@@ -18,13 +18,6 @@
 
 #include "ModelBuilder.h"
 
-#include <algorithm>
-#include <map>
-#include <memory>
-#include <set>
-#include <utility>
-#include <vector>
-
 #include "CompilationBuilder.h"
 #include "GraphDump.h"
 #include "Manager.h"
@@ -32,10 +25,11 @@
 #include "Utils.h"
 #include "ValidateHal.h"
 
+#include <map>
+#include <utility>
+
 namespace android {
 namespace nn {
-
-using namespace hal;
 
 // The maximum number of operands and operations that a model may have.
 const uint32_t MAX_NUMBER_OF_OPERANDS = 0xFFFFFFFE;
@@ -70,9 +64,7 @@ int ModelBuilder::addOperand(const ANeuralNetworksOperandType& type) {
         LOG(ERROR) << "Extensions are not supported for this process.";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    bool isOemOperand =
-            operandType == OperandType::OEM || operandType == OperandType::TENSOR_OEM_BYTE;
-    if (isOemOperand && !mHasOEMOperand) {
+    if (operandType == OperandType::OEM || operandType == OperandType::TENSOR_OEM_BYTE) {
         LOG(WARNING) << "OEM data type is deprecated. Use Extensions instead.";
     }
 
@@ -100,7 +92,6 @@ int ModelBuilder::addOperand(const ANeuralNetworksOperandType& type) {
             .location = {.poolIndex = 0, .offset = 0, .length = 0},
             .extraParams = Operand::ExtraParams(),
     });
-    mHasOEMOperand |= isOemOperand;
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -260,12 +251,17 @@ int ModelBuilder::copyLargeValuesToSharedMemory() {
             poolSize += operand.location.length;
         }
 
-        // Allocate the shared memory.
-        int n;
-        std::tie(n, mLargeValueMemory) = MemoryAshmem::create(poolSize);
-        NN_RETURN_IF_ERROR(n);
-        uint8_t* memoryPointer = mLargeValueMemory->getPointer();
-        uint32_t poolIndex = mMemories.add(mLargeValueMemory.get());
+        // Allocated the shared memory.
+        int n = mLargeValueMemory.create(poolSize);
+        if (n != ANEURALNETWORKS_NO_ERROR) {
+            return n;
+        }
+        uint8_t* memoryPointer = nullptr;
+        n = mLargeValueMemory.getPointer(&memoryPointer);
+        if (n != ANEURALNETWORKS_NO_ERROR) {
+            return n;
+        }
+        uint32_t poolIndex = mMemories.add(&mLargeValueMemory);
         VLOG(MODEL) << "Allocated large value pool of size " << poolSize << " at index "
                     << poolIndex;
 
@@ -332,7 +328,7 @@ int ModelBuilder::addOperation(ANeuralNetworksOperationType type, uint32_t input
         LOG(ERROR) << "Extensions are not supported for this process.";
         return ANEURALNETWORKS_BAD_DATA;
     }
-    if (operationType == OperationType::OEM_OPERATION && !mHasOEMOperation) {
+    if (operationType == OperationType::OEM_OPERATION) {
         LOG(WARNING) << "OEM_OPERATION is deprecated. Use Extensions instead.";
     }
 
@@ -460,7 +456,8 @@ int ModelBuilder::finish() {
     // NOTE: Must copyLargeValuesToSharedMemory() before validation; otherwise,
     //       a CONSTANT_REFERENCE operand will not have correct .poolIndex, and
     //       validation will not work properly.
-    const Model modelForValidation = makeHidlModel();
+    Model modelForValidation;
+    setHidlModel(&modelForValidation);
     if (!validateModel(modelForValidation)) {
         LOG(ERROR) << "ANeuralNetworksModel_finish called on invalid model";
         mInvalidModel = true;
@@ -530,23 +527,20 @@ void ModelBuilder::sortIntoRunOrder() {
     mOperations = runOrder;
 }
 
-Model ModelBuilder::makeHidlModel() const {
-    Model model;
-
-    model.operands = mOperands;
-    model.operations = mOperations;
-    model.inputIndexes = mInputIndexes;
-    model.outputIndexes = mOutputIndexes;
-    model.operandValues = mSmallOperandValues;
-    model.relaxComputationFloat32toFloat16 = mRelaxComputationFloat32toFloat16;
-    model.extensionNameToPrefix = getExtensionNameToPrefixMap();
+void ModelBuilder::setHidlModel(Model* model) const {
+    model->operands = mOperands;
+    model->operations = mOperations;
+    model->inputIndexes = mInputIndexes;
+    model->outputIndexes = mOutputIndexes;
+    model->operandValues = mSmallOperandValues;
+    model->relaxComputationFloat32toFloat16 = mRelaxComputationFloat32toFloat16;
+    model->extensionNameToPrefix = getExtensionNameToPrefixMap();
 
     uint32_t count = mMemories.size();
-    model.pools.resize(count);
-    std::transform(mMemories.begin(), mMemories.end(), model.pools.begin(),
-                   [](const Memory* m) { return m->getHidlMemory(); });
-
-    return model;
+    model->pools.resize(count);
+    for (uint32_t i = 0; i < count; i++) {
+        model->pools[i] = mMemories[i]->getHidlMemory();
+    }
 }
 
 std::vector<Model::ExtensionNameAndPrefix> ModelBuilder::getExtensionNameToPrefixMap() const {

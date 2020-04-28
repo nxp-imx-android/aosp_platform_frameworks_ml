@@ -14,59 +14,47 @@
  * limitations under the License.
  */
 
+#include "TestCompliance.h"
+
 #include <gtest/gtest.h>
 
-#include "HalInterfaces.h"
 #include "ModelBuilder.h"
-#include "TestGenerated.h"
 #include "TestNeuralNetworksWrapper.h"
 #include "Utils.h"
 
-namespace android::nn::compliance_test {
+namespace compliance_test {
 
-using namespace hal;
-using namespace test_helper;
-using HidlModel = V1_3::Model;
+using namespace ::android::nn;
+using HidlModel = V1_2::Model;
 using WrapperModel = test_wrapper::Model;
 using WrapperOperandType = test_wrapper::OperandType;
 using WrapperType = test_wrapper::Type;
 
-// Tag for the compilance tests
-class ComplianceTest : public ::testing::Test {};
-
 // Creates a HIDL model from a creator of the wrapper model.
 static HidlModel createHidlModel(std::function<void(WrapperModel*)> createModel) {
+    HidlModel hidlModel;
     WrapperModel wrapperModel;
     createModel(&wrapperModel);
     EXPECT_EQ(wrapperModel.finish(), test_wrapper::Result::NO_ERROR);
     ModelBuilder* modelBuilder = reinterpret_cast<ModelBuilder*>(wrapperModel.getHandle());
-    return modelBuilder->makeHidlModel();
+    modelBuilder->setHidlModel(&hidlModel);
+    return hidlModel;
 }
 
-void testAvailableSinceV1_3(std::function<void(WrapperModel*)> createModel) {
+void ComplianceTest::testAvailableSinceV1_2(std::function<void(WrapperModel*)> createModel) {
     HidlModel model = createHidlModel(createModel);
-    ASSERT_FALSE(compliantWithV1_2(model));
     ASSERT_FALSE(compliantWithV1_1(model));
     ASSERT_FALSE(compliantWithV1_0(model));
 }
 
-void testAvailableSinceV1_2(std::function<void(WrapperModel*)> createModel) {
+void ComplianceTest::testAvailableSinceV1_1(std::function<void(WrapperModel*)> createModel) {
     HidlModel model = createHidlModel(createModel);
-    ASSERT_TRUE(compliantWithV1_2(model));
-    ASSERT_FALSE(compliantWithV1_1(model));
-    ASSERT_FALSE(compliantWithV1_0(model));
-}
-
-void testAvailableSinceV1_1(std::function<void(WrapperModel*)> createModel) {
-    HidlModel model = createHidlModel(createModel);
-    ASSERT_TRUE(compliantWithV1_2(model));
     ASSERT_TRUE(compliantWithV1_1(model));
     ASSERT_FALSE(compliantWithV1_0(model));
 }
 
-void testAvailableSinceV1_0(std::function<void(WrapperModel*)> createModel) {
+void ComplianceTest::testAvailableSinceV1_0(std::function<void(WrapperModel*)> createModel) {
     HidlModel model = createHidlModel(createModel);
-    ASSERT_TRUE(compliantWithV1_2(model));
     ASSERT_TRUE(compliantWithV1_1(model));
     ASSERT_TRUE(compliantWithV1_0(model));
 }
@@ -156,32 +144,4 @@ TEST_F(ComplianceTest, HardwareBuffer) {
     AHardwareBuffer_release(buffer);
 }
 
-class GeneratedComplianceTest : public generated_tests::GeneratedTestBase {};
-
-TEST_P(GeneratedComplianceTest, Test) {
-    const auto createModel = [this](WrapperModel* model) {
-        generated_tests::createModel(testModel, model);
-    };
-    switch (testModel.minSupportedVersion) {
-        case TestHalVersion::V1_0:
-            testAvailableSinceV1_0(createModel);
-            break;
-        case TestHalVersion::V1_1:
-            testAvailableSinceV1_1(createModel);
-            break;
-        case TestHalVersion::V1_2:
-            testAvailableSinceV1_2(createModel);
-            break;
-        case TestHalVersion::V1_3:
-            testAvailableSinceV1_3(createModel);
-            break;
-        case TestHalVersion::UNKNOWN:
-            FAIL();
-    }
-}
-
-INSTANTIATE_GENERATED_TEST(GeneratedComplianceTest, [](const TestModel& testModel) {
-    return !testModel.expectFailure && testModel.minSupportedVersion != TestHalVersion::UNKNOWN;
-});
-
-}  // namespace android::nn::compliance_test
+}  // namespace compliance_test

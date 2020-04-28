@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
 #include "LSTM.h"
 
 #include "CpuExecutor.h"
@@ -30,8 +28,6 @@ namespace android {
 namespace nn {
 
 namespace {
-
-using namespace hal;
 
 template <typename T>
 inline T* GetBuffer(RunTimeOperandInfo* operand) {

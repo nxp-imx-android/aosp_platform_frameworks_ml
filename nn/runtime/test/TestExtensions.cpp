@@ -16,9 +16,6 @@
 
 #include <gtest/gtest.h>
 
-#include <string>
-#include <vector>
-
 #include "HalInterfaces.h"
 #include "Manager.h"
 #include "NeuralNetworks.h"
@@ -31,8 +28,6 @@ namespace {
 using DeviceManager = ::android::nn::DeviceManager;
 using SampleDriver = ::android::nn::sample_driver::SampleDriver;
 using TypeManager = ::android::nn::TypeManager;
-
-using namespace android::nn::hal;
 
 const char* kTestDriverName = "extensions-test-driver";
 const char* kTestExtension1 = "vendor.test.one";
@@ -53,12 +48,12 @@ class TestDriver : public SampleDriver {
         return Void();
     }
 
-    Return<void> getCapabilities_1_3(getCapabilities_1_3_cb cb) override {
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb cb) override {
         cb(ErrorStatus::NONE, {/* Dummy zero-filled capabilities. */});
         return Void();
     }
 
-    Return<void> getSupportedOperations_1_3(const Model&, getSupportedOperations_cb) override {
+    Return<void> getSupportedOperations_1_2(const Model&, getSupportedOperations_cb) override {
         CHECK(false) << "not implemented";
         return Void();
     }

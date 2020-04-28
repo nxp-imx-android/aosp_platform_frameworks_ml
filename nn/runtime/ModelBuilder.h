@@ -17,16 +17,13 @@
 // Class used to build a model through a succession of successive calls
 // to the NN API.
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MODEL_BUILDER_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MODEL_BUILDER_H
+#ifndef ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H
+#define ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H
 
-#include <memory>
 #include "HalInterfaces.h"
 #include "Memory.h"
 #include "NeuralNetworks.h"
 #include "Utils.h"
-
-#include <vector>
 
 namespace android {
 namespace nn {
@@ -71,7 +68,7 @@ class ModelBuilder {
                           const std::vector<std::shared_ptr<Device>>& devices,
                           bool explicitDeviceList = false);
 
-    hal::Model makeHidlModel() const;
+    void setHidlModel(Model* model) const;
 
     uint32_t operandCount() const {
         // We don't allow more than uint32_t worth of operands
@@ -85,18 +82,16 @@ class ModelBuilder {
     uint32_t outputCount() const { return static_cast<uint32_t>(mOutputIndexes.size()); }
     uint32_t getInputOperandIndex(uint32_t i) const { return mInputIndexes[i]; }
     const std::vector<uint32_t>& getInputOperandIndexes() const { return mInputIndexes; }
-    const hal::Operand& getInputOperand(uint32_t i) const {
-        return mOperands[getInputOperandIndex(i)];
-    }
+    const Operand& getInputOperand(uint32_t i) const { return mOperands[getInputOperandIndex(i)]; }
     uint32_t getOutputOperandIndex(uint32_t i) const { return mOutputIndexes[i]; }
     const std::vector<uint32_t>& getOutputOperandIndexes() const { return mOutputIndexes; }
-    const hal::Operand& getOutputOperand(uint32_t i) const {
+    const Operand& getOutputOperand(uint32_t i) const {
         return mOperands[getOutputOperandIndex(i)];
     }
-    const hal::Operand& getOperand(uint32_t index) const { return mOperands[index]; }
-    const hal::Operation& getOperation(uint32_t index) const { return mOperations[index]; }
+    const Operand& getOperand(uint32_t index) const { return mOperands[index]; }
+    const Operation& getOperation(uint32_t index) const { return mOperations[index]; }
     const MemoryTracker& getMemories() const { return mMemories; }
-    const std::vector<hal::Operation>& getOperations() const { return mOperations; }
+    const std::vector<Operation>& getOperations() const { return mOperations; }
     const std::vector<uint32_t>& getSortedOperationMapping() const {
         return mSortedOperationIndexMap;
     }
@@ -114,8 +109,8 @@ class ModelBuilder {
     int findBestDeviceForEachOperation(uint32_t preference,
                                        const std::vector<std::shared_ptr<Device>>& devices,
                                        std::vector<int>* bestDeviceForOperation) const;
-    hal::PerformanceInfo getPerformanceInfo(const std::shared_ptr<Device> device,
-                                            uint32_t operationIndex) const;
+    PerformanceInfo getPerformanceInfo(const std::shared_ptr<Device> device,
+                                       uint32_t operationIndex) const;
 
     // Return true if either mCompleteModel or mInvalidModel is true.
     bool badState(const char* name);
@@ -131,10 +126,10 @@ class ModelBuilder {
     // of operand and operation type values used in the model.
     //
     // Devices rely on this mapping to interpret extension types.
-    std::vector<hal::Model::ExtensionNameAndPrefix> getExtensionNameToPrefixMap() const;
+    std::vector<Model::ExtensionNameAndPrefix> getExtensionNameToPrefixMap() const;
 
     // The operations of the graph.
-    std::vector<hal::Operation> mOperations;
+    std::vector<Operation> mOperations;
     // The mapping from sorted index to the original index of operations in mOperations.
     // mSortedOperationIndexMap is empty before sortIntoRunOrder() is called.
     std::vector<uint32_t> mSortedOperationIndexMap;
@@ -143,9 +138,7 @@ class ModelBuilder {
     // Is at least one of those operations an extension operation?
     bool mHasExtensionOperation = false;
     // The description of the operands of the graph.
-    std::vector<hal::Operand> mOperands;
-    // Is at least one of those operands an OEM operand?
-    bool mHasOEMOperand = false;
+    std::vector<Operand> mOperands;
     // Specifies where to find the list of indexes identifying
     // the inputs and outputs of the model.  The offset is into
     // the mOperandIndexes table.
@@ -165,7 +158,7 @@ class ModelBuilder {
     // Operand index and buffer pointer for all the large operand values of this model.
     std::vector<LargeValue> mLargeOperandValues;
     // The shared memory region that will contain the large values.
-    std::unique_ptr<MemoryAshmem> mLargeValueMemory;
+    Memory mLargeValueMemory;
 
     // Once the model has been finished, we should not allow further
     // modifications to the model.
@@ -174,6 +167,7 @@ class ModelBuilder {
     // Any invalid manipulation of the model will mark the model invalid.
     // No further modifications are allowed to the model.
     bool mInvalidModel = false;
+
 
     // 'true' indicates TENSOR_FLOAT32 may be calculated with range and/or
     // precision as low as that of the IEEE 754 16-bit floating-point format.
@@ -185,4 +179,4 @@ class ModelBuilder {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_MODEL_BUILDER_H
+#endif  // ANDROID_ML_NN_RUNTIME_MODEL_BUILDER_H

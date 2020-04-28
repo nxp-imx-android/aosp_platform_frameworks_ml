@@ -92,11 +92,7 @@ test(
 )
 
 # DEQUANTIZE from TENSOR_QUANT8_ASYMM to TENSOR_FLOAT32 is introduced in V1_0.
-Example.SetVersion("V1_0",
-                   "dequantize_v1_2_1d_quant8_asymm",
-                   "dequantize_v1_2_1d_quant8_asymm_all_inputs_as_internal",
-                   "dequantize_v1_2_2d_quant8_asymm",
-                   "dequantize_v1_2_2d_quant8_asymm_all_inputs_as_internal")
+Example.SetVersion("V1_0", "dequantize_v1_2_1d_quant8_asymm", "dequantize_v1_2_2d_quant8_asymm")
 
 # FLOAT16
 model = Model()
@@ -138,9 +134,10 @@ model = model.Operation("DEQUANTIZE", zero_sized).To(o3)
 
 float16 = DataTypeConverter().Identify({o3: ("TENSOR_FLOAT16",)})
 
+# Create test case with dummy values.
 Example({
     i1: [1],
-    o1: [],
-    o2: [],
-    o3: [],
+    o1: [0],
+    o2: [0],
+    o3: [0],
 }).AddVariations("relaxed", float16)

@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_SVDF_H
-#define ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_SVDF_H
+#ifndef FRAMEWORKS_ML_NN_SVDF_H
+#define FRAMEWORKS_ML_NN_SVDF_H
 
-#include <tensorflow/lite/kernels/internal/tensor_utils.h>
+#include "HalOperation.h"
+#include "tensorflow/lite/kernels/internal/tensor_utils.h"
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
-
-#include "HalInterfaces.h"
 
 namespace android {
 namespace nn {
@@ -38,9 +36,9 @@ struct Shape;
 
 class SVDF {
    public:
-    SVDF(const hal::Operation& operation, std::vector<RunTimeOperandInfo>& operands);
+    SVDF(const Operation& operation, std::vector<RunTimeOperandInfo>& operands);
 
-    static bool Prepare(const hal::Operation& operation, std::vector<RunTimeOperandInfo>& operands,
+    static bool Prepare(const Operation& operation, std::vector<RunTimeOperandInfo>& operands,
                         Shape* stateShape, Shape* outputShape);
     bool Eval();
 
@@ -75,4 +73,4 @@ class SVDF {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_SVDF_H
+#endif

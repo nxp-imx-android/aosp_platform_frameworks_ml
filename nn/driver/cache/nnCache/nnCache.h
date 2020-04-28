@@ -14,8 +14,8 @@
  ** limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_DRIVER_CACHE_NN_CACHE_NN_CACHE_H
-#define ANDROID_FRAMEWORKS_ML_NN_DRIVER_CACHE_NN_CACHE_NN_CACHE_H
+#ifndef ANDROID_NN_CACHE_H
+#define ANDROID_NN_CACHE_H
 
 #include "BlobCache.h"
 
@@ -29,7 +29,8 @@ namespace android {
 // ----------------------------------------------------------------------------
 
 class NNCache {
-   public:
+public:
+
     typedef BlobCache::Select Select;
     typedef BlobCache::Capacity Capacity;
     typedef BlobCache::Policy Policy;
@@ -58,17 +59,19 @@ class NNCache {
     void terminate();
 
     // setBlob attempts to insert a new key/value blob pair into the cache.
-    void setBlob(const void* key, ssize_t keySize, const void* value, ssize_t valueSize);
+    void setBlob(const void* key, ssize_t keySize, const void* value,
+        ssize_t valueSize);
 
     // getBlob attempts to retrieve the value blob associated with a given key
     // blob from cache.
-    ssize_t getBlob(const void* key, ssize_t keySize, void* value, ssize_t valueSize);
-    ssize_t getBlob(const void* key, ssize_t keySize, void** value,
-                    std::function<void*(size_t)> alloc);
+    ssize_t getBlob(const void* key, ssize_t keySize,
+                    void* value, ssize_t valueSize);
+    ssize_t getBlob(const void* key, ssize_t keySize,
+                    void** value,  std::function<void*(size_t)> alloc);
     template <typename T>
-    ssize_t getBlob(const void* key, size_t keySize, T** value,
-                    std::function<void*(size_t)> alloc) {
-        void* valueVoid;
+    ssize_t getBlob(const void* key, size_t keySize,
+                    T** value, std::function<void*(size_t)> alloc) {
+        void *valueVoid;
         const ssize_t size = getBlob(key, keySize, &valueVoid, alloc);
         *value = static_cast<T*>(valueVoid);
         return size;
@@ -78,7 +81,7 @@ class NNCache {
     // cache contents from one program invocation to another.
     void setCacheFilename(const char* filename);
 
-   private:
+private:
     // Creation and (the lack of) destruction is handled internally.
     NNCache();
     ~NNCache();
@@ -150,7 +153,7 @@ class NNCache {
 };
 
 // ----------------------------------------------------------------------------
-};  // namespace android
+}; // namespace android
 // ----------------------------------------------------------------------------
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_DRIVER_CACHE_NN_CACHE_NN_CACHE_H
+#endif // ANDROID_NN_CACHE_H

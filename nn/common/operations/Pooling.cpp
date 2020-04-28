@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
-#include <vector>
-
 #include "CpuOperationUtils.h"
-#include "HalInterfaces.h"
 #include "OperationResolver.h"
 
-#include <tensorflow/lite/kernels/internal/optimized/optimized_ops.h>
+#include "tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
 
 #include "Tracing.h"
 
 namespace android {
 namespace nn {
-
-using namespace hal;
-
 namespace pooling {
 
 constexpr uint32_t kInputTensor = 0;
@@ -102,15 +94,12 @@ struct PoolingParam {
 
     tflite::PoolParams toTfliteParam(const Shape& output) const {
         tflite::PoolParams params = {
-                .padding_values = {.width = static_cast<int16_t>(padding_left),
-                                   .height = static_cast<int16_t>(padding_top),
-                                   .width_offset = 0,
-                                   .height_offset = 0},
                 .stride_height = stride_height,
                 .stride_width = stride_width,
                 .filter_height = filter_height,
                 .filter_width = filter_width,
-        };
+                .padding_values = {.height = static_cast<int16_t>(padding_top),
+                                   .width = static_cast<int16_t>(padding_left)}};
         if (output.type == OperandType::TENSOR_QUANT8_ASYMM) {
             int32_t output_activation_min = 0;
             int32_t output_activation_max = 0;

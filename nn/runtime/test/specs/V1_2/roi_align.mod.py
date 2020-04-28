@@ -236,11 +236,12 @@ quant8 = DataTypeConverter().Identify({
     zero_sized: ("TENSOR_QUANT8_ASYMM", 0.1, 128)
 })
 
+# Create test case with dummy values.
 Example({
     i1: [0],
-    o1: [],
-    o2: [],
-    zero_sized: [],
+    o1: [0],
+    o2: [0],
+    zero_sized: [0],
 }).AddNchw(i1, zero_sized, layout).AddVariations("relaxed", quant8, "float16")
 
 

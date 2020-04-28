@@ -26,10 +26,8 @@ namespace {
 typedef float Matrix3x4[3][4];
 typedef float Matrix4[4];
 
-const int32_t kNoActivation = ANEURALNETWORKS_FUSED_NONE;
-
 class TrivialTest : public ::testing::Test {
-   protected:
+protected:
     virtual void SetUp() {}
 
     const Matrix3x4 matrix1 = {{1.f, 2.f, 3.f, 4.f}, {5.f, 6.f, 7.f, 8.f}, {9.f, 10.f, 11.f, 12.f}};
@@ -37,8 +35,9 @@ class TrivialTest : public ::testing::Test {
                                {500.f, 600.f, 700.f, 800.f},
                                {900.f, 1000.f, 1100.f, 1200.f}};
     const Matrix4 matrix2b = {100.f, 200.f, 300.f, 400.f};
-    const Matrix3x4 matrix3 = {
-            {20.f, 30.f, 40.f, 50.f}, {21.f, 22.f, 23.f, 24.f}, {31.f, 32.f, 33.f, 34.f}};
+    const Matrix3x4 matrix3 = {{20.f, 30.f, 40.f, 50.f},
+                               {21.f, 22.f, 23.f, 24.f},
+                               {31.f, 32.f, 33.f, 34.f}};
     const Matrix3x4 expected2 = {{101.f, 202.f, 303.f, 404.f},
                                  {505.f, 606.f, 707.f, 808.f},
                                  {909.f, 1010.f, 1111.f, 1212.f}};
@@ -52,18 +51,21 @@ class TrivialTest : public ::testing::Test {
     const Matrix3x4 expected3 = {{121.f, 232.f, 343.f, 454.f},
                                  {526.f, 628.f, 730.f, 832.f},
                                  {940.f, 1042.f, 1144.f, 1246.f}};
-    const Matrix3x4 expected3b = {
-            {22.f, 34.f, 46.f, 58.f}, {31.f, 34.f, 37.f, 40.f}, {49.f, 52.f, 55.f, 58.f}};
+    const Matrix3x4 expected3b = {{22.f, 34.f, 46.f, 58.f},
+                                  {31.f, 34.f, 37.f, 40.f},
+                                  {49.f, 52.f, 55.f, 58.f}};
 };
 
 // Create a model that can add two tensors using a one node graph.
 void CreateAddTwoTensorModel(Model* model) {
     OperandType matrixType(Type::TENSOR_FLOAT32, {3, 4});
     OperandType scalarType(Type::INT32, {});
+    int32_t activation(ANEURALNETWORKS_FUSED_NONE);
     auto a = model->addOperand(&matrixType);
     auto b = model->addOperand(&matrixType);
     auto c = model->addOperand(&matrixType);
-    auto d = model->addConstantOperand(&scalarType, kNoActivation);
+    auto d = model->addOperand(&scalarType);
+    model->setOperandValue(d, &activation, sizeof(activation));
     model->addOperation(ANEURALNETWORKS_ADD, {a, b, d}, {c});
     model->identifyInputsAndOutputs({a, b}, {c});
     ASSERT_TRUE(model->isValid());
@@ -75,13 +77,15 @@ void CreateAddTwoTensorModel(Model* model) {
 void CreateAddThreeTensorModel(Model* model, const Matrix3x4 bias) {
     OperandType matrixType(Type::TENSOR_FLOAT32, {3, 4});
     OperandType scalarType(Type::INT32, {});
+    int32_t activation(ANEURALNETWORKS_FUSED_NONE);
     auto a = model->addOperand(&matrixType);
     auto b = model->addOperand(&matrixType);
     auto c = model->addOperand(&matrixType);
     auto d = model->addOperand(&matrixType);
     auto e = model->addOperand(&matrixType);
-    auto f = model->addConstantOperand(&scalarType, kNoActivation);
+    auto f = model->addOperand(&scalarType);
     model->setOperandValue(e, bias, sizeof(Matrix3x4));
+    model->setOperandValue(f, &activation, sizeof(activation));
     model->addOperation(ANEURALNETWORKS_ADD, {a, c, f}, {b});
     model->addOperation(ANEURALNETWORKS_ADD, {b, e, f}, {d});
     model->identifyInputsAndOutputs({c, a}, {d});
@@ -152,8 +156,11 @@ TEST_F(TrivialTest, AddThree) {
 
 TEST_F(TrivialTest, BroadcastAddTwo) {
     Model modelBroadcastAdd2;
+    // activation: NONE.
+    int32_t activation_init[] = {ANEURALNETWORKS_FUSED_NONE};
     OperandType scalarType(Type::INT32, {});
-    auto activation = modelBroadcastAdd2.addConstantOperand(&scalarType, kNoActivation);
+    auto activation = modelBroadcastAdd2.addOperand(&scalarType);
+    modelBroadcastAdd2.setOperandValue(activation, activation_init, sizeof(int32_t) * 1);
 
     OperandType matrixType(Type::TENSOR_FLOAT32, {1, 1, 3, 4});
     OperandType matrixType2(Type::TENSOR_FLOAT32, {4});
@@ -181,8 +188,11 @@ TEST_F(TrivialTest, BroadcastAddTwo) {
 
 TEST_F(TrivialTest, BroadcastMulTwo) {
     Model modelBroadcastMul2;
+    // activation: NONE.
+    int32_t activation_init[] = {ANEURALNETWORKS_FUSED_NONE};
     OperandType scalarType(Type::INT32, {});
-    auto activation = modelBroadcastMul2.addConstantOperand(&scalarType, kNoActivation);
+    auto activation = modelBroadcastMul2.addOperand(&scalarType);
+    modelBroadcastMul2.setOperandValue(activation, activation_init, sizeof(int32_t) * 1);
 
     OperandType matrixType(Type::TENSOR_FLOAT32, {1, 1, 3, 4});
     OperandType matrixType2(Type::TENSOR_FLOAT32, {4});

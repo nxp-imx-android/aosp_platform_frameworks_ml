@@ -15,11 +15,12 @@
  */
 #include "LSTM.h"
 
-#include "NeuralNetworksWrapper.h"
-
 #include <android-base/logging.h>
-#include <gmock/gmock-matchers.h>
-#include <gtest/gtest.h>
+
+#include "NeuralNetworksWrapper.h"
+#include "gmock/gmock-matchers.h"
+#include "gtest/gtest.h"
+
 #include <sstream>
 #include <string>
 #include <vector>

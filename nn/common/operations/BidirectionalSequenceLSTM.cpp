@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
 #include "BidirectionalSequenceLSTM.h"
-
-#include <algorithm>
-#include <vector>
 
 #include "CpuExecutor.h"
 #include "CpuOperationUtils.h"
 #include "HalInterfaces.h"
 #include "OperationsUtils.h"
+
 #include "Tracing.h"
 
 namespace android {
 namespace nn {
 
 namespace {
-
-using namespace hal;
 
 template <typename T>
 inline T* GetBuffer(RunTimeOperandInfo* operand) {
@@ -283,9 +277,6 @@ bool BidirectionalSequenceLSTM::Eval() {
 
     switch (input_->type) {
         case OperandType::TENSOR_FLOAT32: {
-            std::vector<float> fw_activation_state_out(
-                    getNumberOfElements(fw_activation_state_->shape()));
-            std::vector<float> fw_cell_state_out(getNumberOfElements(fw_cell_state_->shape()));
             std::vector<float> fw_scratch_buffer(getNumberOfElements(fw_scratch_shape_));
             const bool kForwardSequence = true;
             LSTMCell::LSTMEvalFloat32(
@@ -320,13 +311,10 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetOptionalBuffer<const float>(fw_forget_layer_norm_weights_),
                     GetOptionalBuffer<const float>(fw_cell_layer_norm_weights_),
                     GetOptionalBuffer<const float>(fw_output_layer_norm_weights_),
-                    fw_activation_state_out.data(), fw_cell_state_out.data(),
+                    GetBuffer<float>(fw_activation_state_), GetBuffer<float>(fw_cell_state_),
                     GetBuffer<float>(fw_output_), fw_scratch_buffer.data(), params_.time_major,
                     kForwardSequence);
 
-            std::vector<float> bw_activation_state_out(
-                    getNumberOfElements(bw_activation_state_->shape()));
-            std::vector<float> bw_cell_state_out(getNumberOfElements(bw_cell_state_->shape()));
             std::vector<float> bw_scratch_buffer(getNumberOfElements(bw_scratch_shape_));
             const bool kBackwardSequence = false;
             LSTMCell::LSTMEvalFloat32(
@@ -361,7 +349,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetOptionalBuffer<const float>(bw_forget_layer_norm_weights_),
                     GetOptionalBuffer<const float>(bw_cell_layer_norm_weights_),
                     GetOptionalBuffer<const float>(bw_output_layer_norm_weights_),
-                    bw_activation_state_out.data(), bw_cell_state_out.data(),
+                    GetBuffer<float>(bw_activation_state_), GetBuffer<float>(bw_cell_state_),
                     params_.merge_outputs ? GetBuffer<float>(fw_output_) + n_fw_output_elements
                                           : GetBuffer<float>(bw_output_),
                     bw_scratch_buffer.data(), params_.time_major, kBackwardSequence);
@@ -375,9 +363,6 @@ bool BidirectionalSequenceLSTM::Eval() {
             }
         } break;
         case OperandType::TENSOR_FLOAT16: {
-            std::vector<_Float16> fw_activation_state_out(
-                    getNumberOfElements(fw_activation_state_->shape()));
-            std::vector<_Float16> fw_cell_state_out(getNumberOfElements(fw_cell_state_->shape()));
             std::vector<_Float16> fw_scratch_buffer(getNumberOfElements(fw_scratch_shape_));
             const bool kForwardSequence = true;
             LSTMCell::LSTMEvalFloat16(
@@ -412,13 +397,10 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetOptionalBuffer<const _Float16>(fw_forget_layer_norm_weights_),
                     GetOptionalBuffer<const _Float16>(fw_cell_layer_norm_weights_),
                     GetOptionalBuffer<const _Float16>(fw_output_layer_norm_weights_),
-                    fw_activation_state_out.data(), fw_cell_state_out.data(),
+                    GetBuffer<_Float16>(fw_activation_state_), GetBuffer<_Float16>(fw_cell_state_),
                     GetBuffer<_Float16>(fw_output_), fw_scratch_buffer.data(), params_.time_major,
                     kForwardSequence);
 
-            std::vector<_Float16> bw_activation_state_out(
-                    getNumberOfElements(bw_activation_state_->shape()));
-            std::vector<_Float16> bw_cell_state_out(getNumberOfElements(bw_cell_state_->shape()));
             std::vector<_Float16> bw_scratch_buffer(getNumberOfElements(bw_scratch_shape_));
             const bool kBackwardSequence = false;
             LSTMCell::LSTMEvalFloat16(
@@ -453,7 +435,7 @@ bool BidirectionalSequenceLSTM::Eval() {
                     GetOptionalBuffer<const _Float16>(bw_forget_layer_norm_weights_),
                     GetOptionalBuffer<const _Float16>(bw_cell_layer_norm_weights_),
                     GetOptionalBuffer<const _Float16>(bw_output_layer_norm_weights_),
-                    bw_activation_state_out.data(), bw_cell_state_out.data(),
+                    GetBuffer<_Float16>(bw_activation_state_), GetBuffer<_Float16>(bw_cell_state_),
                     params_.merge_outputs ? GetBuffer<_Float16>(fw_output_) + n_fw_output_elements
                                           : GetBuffer<_Float16>(bw_output_),
                     bw_scratch_buffer.data(), params_.time_major, kBackwardSequence);

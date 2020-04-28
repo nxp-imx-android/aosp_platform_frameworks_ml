@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#ifndef ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#define ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
 
 #include <string>
 #include <vector>
@@ -108,9 +108,10 @@ struct RandomOperation {
     RandomOperation(const OperationSignature& operation);
 };
 
+// TODO: Consider relative bias and mse on floating point data types?
 struct AccuracyCriterion {
     // We expect the driver results to be unbiased.
-    // Formula: abs(sum_{i}(diff) / sum(1)) <= bias, where
+    // Formula: abs(sum_{i}(diff)) <= bias, where
     // * fixed point: diff = actual - expected
     // * floating point: diff = (actual - expected) / max(1, abs(expected))
     float bias = std::numeric_limits<float>::max();
@@ -179,4 +180,4 @@ class RandomGraph {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H
+#endif  // ANDROID_FRAMEWORK_ML_NN_RUNTIME_TEST_FUZZING_RANDOM_GRAPH_GENERATOR_H

@@ -25,8 +25,6 @@ namespace android {
 namespace nn {
 namespace channel_shuffle {
 
-using namespace hal;
-
 constexpr char kOperationName[] = "CHANNEL_SHUFFLE";
 
 constexpr uint32_t kNumInputs = 3;

@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_BIDIRECTIONAL_SEQUENCE_LSTM_H
-#define ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_BIDIRECTIONAL_SEQUENCE_LSTM_H
+#ifndef FRAMEWORKS_ML_NN_BIDIRECTIONAL_SEQUENCE_LSTM_H
+#define FRAMEWORKS_ML_NN_BIDIRECTIONAL_SEQUENCE_LSTM_H
 
-#include <tensorflow/lite/kernels/internal/tensor_utils.h>
+#include "ActivationFunctor.h"
+#include "HalOperation.h"
+#include "LSTM.h"
+#include "OperationsUtils.h"
+#include "tensorflow/lite/kernels/internal/tensor_utils.h"
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
-
-#include "ActivationFunctor.h"
-#include "LSTM.h"
-#include "OperationsUtils.h"
 
 namespace android {
 namespace nn {
@@ -34,10 +33,10 @@ struct RunTimeOperandInfo;
 
 class BidirectionalSequenceLSTM {
    public:
-    BidirectionalSequenceLSTM(const hal::Operation& operation,
+    BidirectionalSequenceLSTM(const Operation& operation,
                               std::vector<RunTimeOperandInfo>& operands);
 
-    bool Prepare(const hal::Operation& operation, std::vector<RunTimeOperandInfo>& operands,
+    bool Prepare(const Operation& operation, std::vector<RunTimeOperandInfo>& operands,
                  Shape* fwOutputShape, Shape* bwOutputShape);
     bool Eval();
 
@@ -193,8 +192,8 @@ class BidirectionalSequenceLSTM {
     const RunTimeOperandInfo* fw_cell_layer_norm_weights_;
     const RunTimeOperandInfo* fw_output_layer_norm_weights_;
 
-    const RunTimeOperandInfo* fw_activation_state_;
-    const RunTimeOperandInfo* fw_cell_state_;
+    RunTimeOperandInfo* fw_activation_state_;
+    RunTimeOperandInfo* fw_cell_state_;
     RunTimeOperandInfo* fw_output_;
 
     const RunTimeOperandInfo* bw_input_to_input_weights_;
@@ -224,12 +223,12 @@ class BidirectionalSequenceLSTM {
     const RunTimeOperandInfo* bw_cell_layer_norm_weights_;
     const RunTimeOperandInfo* bw_output_layer_norm_weights_;
 
-    const RunTimeOperandInfo* bw_activation_state_;
-    const RunTimeOperandInfo* bw_cell_state_;
+    RunTimeOperandInfo* bw_activation_state_;
+    RunTimeOperandInfo* bw_cell_state_;
     RunTimeOperandInfo* bw_output_;
 };
 
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_BIDIRECTIONAL_SEQUENCE_LSTM_H
+#endif  // FRAMEWORKS_ML_NN_BIDIRECTIONAL_SEQUENCE_LSTM_H

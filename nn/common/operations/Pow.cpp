@@ -17,7 +17,6 @@
 #define LOG_TAG "Operations"
 
 #include "Pow.h"
-#include "HalInterfaces.h"
 #include "IndexedShapeWrapper.h"
 #include "OperationsUtils.h"
 
@@ -28,8 +27,6 @@ namespace nn {
 namespace pow {
 
 namespace {
-
-using namespace hal;
 
 template <typename T>
 bool evalGeneric(const T* baseData, const Shape& baseShape, const T* exponentData,

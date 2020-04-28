@@ -21,7 +21,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include "RandomGraphGenerator.h"
 #include "RandomVariable.h"
@@ -55,6 +54,9 @@ SpecWriter::SpecWriter(std::string filename, std::string testname) : os(filename
 // Check nn/tools/test_generator/README.md for guide on spec file syntax.
 void SpecWriter::dump(const std::vector<RandomOperation>& operations,
                       const std::vector<std::shared_ptr<RandomOperand>>& operands) {
+    // RandomGraphGenerator does not support dynamic output shape.
+    os << "Configuration.test_dynamic_output_shape = False\n\n";
+
     // Dump model operands.
     os << "# Model operands\n";
     for (auto& operand : operands) dump(operand);
@@ -76,7 +78,7 @@ void SpecWriter::dump(const std::vector<RandomOperation>& operations,
              operand->getNumberOfElements());
         os << "],\n";
     }
-    os << "}).DisableDynamicOutputShapeVariation().DisableLifeTimeVariation()\n";
+    os << "})\n";
 }
 
 // Dump an operand buffer.

@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Operations"
-
 #include "CpuOperationUtils.h"
-#include "HalInterfaces.h"
 #include "OperationResolver.h"
-#include "Tracing.h"
 
-#include <tensorflow/lite/kernels/internal/common.h>
 #include <cfloat>
 #include <cmath>
+
+#include "Tracing.h"
+#include "tensorflow/lite/kernels/internal/common.h"
 
 namespace android {
 namespace nn {
@@ -39,8 +37,6 @@ constexpr uint32_t kNumOutputs = 1;
 constexpr uint32_t kOutputTensor = 0;
 
 namespace {
-
-using namespace hal;
 
 // If possible we will use this static buffer for the tensor.
 constexpr size_t kStaticBufferSize = 1605632;

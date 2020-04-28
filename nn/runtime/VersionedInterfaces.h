@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#ifndef ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#define ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+
+#include "HalInterfaces.h"
 
 #include <android-base/macros.h>
-
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -27,10 +28,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
-
 #include "Callbacks.h"
-#include "HalInterfaces.h"
 
 namespace android {
 namespace nn {
@@ -38,8 +36,8 @@ namespace nn {
 // forward declarations
 class ExecutionBurstController;
 class IDeviceDeathHandler;
+class IModelSlicer;
 class IPreparedModelDeathHandler;
-class MetaModel;
 class VersionedIPreparedModel;
 
 /**
@@ -76,7 +74,7 @@ class VersionedIDevice {
      * @return A valid VersionedIDevice object, otherwise nullptr.
      */
     static std::shared_ptr<VersionedIDevice> create(std::string serviceName,
-                                                    sp<hal::V1_0::IDevice> device);
+                                                    sp<V1_0::IDevice> device);
 
     /**
      * Constructor for the VersionedIDevice object.
@@ -94,9 +92,13 @@ class VersionedIDevice {
     /**
      * Gets the capabilities of a driver.
      *
+     * @return status Error status of the call, must be:
+     *                - NONE if successful
+     *                - DEVICE_UNAVAILABLE if driver is offline or busy
+     *                - GENERAL_FAILURE if there is an unspecified error
      * @return capabilities Capabilities of the driver.
      */
-    const hal::Capabilities& getCapabilities() const;
+    std::pair<ErrorStatus, Capabilities> getCapabilities();
 
     /**
      * Gets information about extensions supported by the driver implementation.
@@ -107,26 +109,28 @@ class VersionedIDevice {
      * All extension operations and operands must be fully supported for the
      * extension to appear in the list of supported extensions.
      *
+     * @return status Error status of the call, must be:
+     *     - NONE if successful
+     *     - DEVICE_UNAVAILABLE if driver is offline or busy
+     *     - GENERAL_FAILURE if there is an unspecified error
      * @return extensions A list of supported extensions.
      */
-    const std::vector<hal::Extension>& getSupportedExtensions() const;
+    std::pair<ErrorStatus, hidl_vec<Extension>> getSupportedExtensions();
 
     /**
-     * Gets the supported operations in a MetaModel.
+     * Gets the supported operations in a model.
      *
-     * getSupportedOperations indicates which operations of
-     * MetaModel::getModel() are fully supported by the vendor driver. If an
-     * operation may not be supported for any reason, getSupportedOperations
-     * must return false for that operation.
+     * getSupportedOperations indicates which operations of a model are fully
+     * supported by the vendor driver. If an operation may not be supported for
+     * any reason, getSupportedOperations must return false for that operation.
      *
-     * @param metaModel A MetaModel whose operations--and their corresponding
-     *                  operands--are to be verified by the driver.  When
-     *                  metaModel.getModel() is not compliant with the HAL
-     *                  version of the vendor driver, the MetaModel's slicing
-     *                  functionality (MetaModel::getSlice*()) is employed
-     *                  to query the vendor driver about which of the subset of
-     *                  compliant operations are supported.  See the MetaModel
-     *                  class in MetaModel.h for more details.
+     * @param model A model whose operations--and their corresponding
+     *              operands--are to be verified by the driver.
+     * @param slicer When the model is not compliant with the HAL version of the
+     *               vendor driver, the slicer (if any) is employed to query the
+     *               vendor driver about which of the subset of compliant
+     *               operations are supported.  See the IModelSlicer class in
+     *               Utils.h for more details.
      * @return status Error status of the call, must be:
      *                - NONE if successful
      *                - DEVICE_UNAVAILABLE if driver is offline or busy
@@ -139,8 +143,8 @@ class VersionedIDevice {
      *                             corresponds with the index of the operation
      *                             it is describing.
      */
-    std::pair<hal::ErrorStatus, hal::hidl_vec<bool>> getSupportedOperations(
-            const MetaModel& metaModel) const;
+    std::pair<ErrorStatus, hidl_vec<bool>> getSupportedOperations(const Model& model,
+                                                                  IModelSlicer* slicer = nullptr);
 
     /**
      * Synchronously creates a prepared model for execution and optionally saves it
@@ -232,10 +236,11 @@ class VersionedIDevice {
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *         that has been prepared for execution, else nullptr.
      */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
-            const hal::Model& model, hal::ExecutionPreference preference,
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+    std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModel(
+            const Model& model, ExecutionPreference preference,
+            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
+            const hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
+                    token);
 
     /**
      * Creates a prepared model from cache files for execution.
@@ -303,9 +308,10 @@ class VersionedIDevice {
      *     - preparedModel A VersionedIPreparedModel object representing a model
      *        that has been prepared for execution, else nullptr.
      */
-    std::pair<hal::ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
-            const hal::hidl_vec<hal::hidl_handle>& modelCache,
-            const hal::hidl_vec<hal::hidl_handle>& dataCache, const hal::CacheToken& token) const;
+    std::pair<ErrorStatus, std::shared_ptr<VersionedIPreparedModel>> prepareModelFromCache(
+            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
+            const hidl_array<uint8_t, static_cast<uint32_t>(Constant::BYTE_SIZE_OF_CACHE_TOKEN)>&
+                    token);
 
     /**
      * Returns the current status of a driver.
@@ -316,7 +322,7 @@ class VersionedIDevice {
      *                - DeviceStatus::OFFLINE
      *                - DeviceStatus::UNKNOWN
      */
-    hal::DeviceStatus getStatus() const;
+    DeviceStatus getStatus();
 
     /**
      * Returns the feature level of a driver.
@@ -327,17 +333,19 @@ class VersionedIDevice {
      *                      Return -1 if the driver is offline or busy, or the query resulted in
      *                      an unspecified error.
      */
-    int64_t getFeatureLevel() const;
+    int64_t getFeatureLevel();
 
     /**
      * Returns the device type of a driver.
      *
-     * @return deviceType The type of a given device, which can help application
-     *     developers to distribute Machine Learning workloads and other
-     *     workloads such as graphical rendering. E.g., for an app which renders
-     *     AR scenes based on real time object detection results, the developer
-     *     could choose an ACCELERATOR type device for ML workloads, and reserve
-     *     GPU for graphical rendering.
+     * @return deviceType The type of a given device, which can help application developers
+     *                    developers to distribute Machine Learning workloads and other workloads
+     *                    such as graphical rendering. E.g., for an app which renders AR scenes
+     *                    based on real time object detection results, the developer could choose
+     *                    an ACCELERATOR type device for ML workloads, and reserve GPU for
+     *                    graphical rendering.
+     *                    Return -1 if the driver is offline or busy, or the query resulted in
+     *                    an unspecified error.
      */
     int32_t getType() const;
 
@@ -361,9 +369,15 @@ class VersionedIDevice {
      *       the driver cannot meet that requirement because of bugs or certain optimizations.
      *       The application can filter out versions of these drivers.
      *
+     * @return status Error status returned from querying the version string. Must be:
+     *     - NONE if the query was successful
+     *     - DEVICE_UNAVAILABLE if driver is offline or busy
+     *     - GENERAL_FAILURE if the query resulted in an
+     *       unspecified error
      * @return version The version string of the device implementation.
+     *     Must have nonzero length if the query is successful, and must be an empty string if not.
      */
-    const std::string& getVersionString() const;
+    std::pair<ErrorStatus, hidl_string> getVersionString();
 
     /**
      * Gets the caching requirements of the driver implementation.
@@ -392,6 +406,10 @@ class VersionedIDevice {
      * IDevice::prepareModelFromCache or providing cache file descriptors to
      * IDevice::prepareModel_1_2.
      *
+     * @return status Error status of the call, must be:
+     *     - NONE if successful
+     *     - DEVICE_UNAVAILABLE if driver is offline or busy
+     *     - GENERAL_FAILURE if there is an unspecified error
      * @return numModelCache An unsigned integer indicating how many files for model cache
      *                       the driver needs to cache a single prepared model. It must
      *                       be less than or equal to Constant::MAX_NUMBER_OF_CACHE_FILES.
@@ -399,35 +417,32 @@ class VersionedIDevice {
      *                      the driver needs to cache a single prepared model. It must
      *                      be less than or equal to Constant::MAX_NUMBER_OF_CACHE_FILES.
      */
-    std::pair<uint32_t, uint32_t> getNumberOfCacheFilesNeeded() const;
+    std::tuple<ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeeded();
 
     /**
-     * Returns the name of the service.
+     * Returns the name of the service that implements the driver
      *
-     * @return Name of the service.
+     * @return serviceName The name of the service.
      */
-    const std::string& getName() const;
+    std::string getServiceName() const { return mServiceName; }
+
+    /**
+     * Returns whether this handle to an IDevice object is valid or not.
+     *
+     * @return bool true if V1_0::IDevice (which could be V1_1::IDevice) is
+     *              valid, false otherwise.
+     */
+    bool operator!=(nullptr_t) const;
+
+    /**
+     * Returns whether this handle to an IDevice object is valid or not.
+     *
+     * @return bool true if V1_0::IDevice (which could be V1_1::IDevice) is
+     *              invalid, false otherwise.
+     */
+    bool operator==(nullptr_t) const;
 
    private:
-    // initializeInternal is called once during VersionedIDevice creation.
-    // 'true' indicates successful initialization.
-    bool initializeInternal();
-
-    // internal helper methods
-    std::pair<hal::ErrorStatus, hal::Capabilities> getCapabilitiesInternal() const;
-    std::pair<hal::ErrorStatus, hal::hidl_vec<hal::Extension>> getSupportedExtensionsInternal()
-            const;
-    int32_t getTypeInternal() const;
-    std::pair<hal::ErrorStatus, hal::hidl_string> getVersionStringInternal() const;
-    std::tuple<hal::ErrorStatus, uint32_t, uint32_t> getNumberOfCacheFilesNeededInternal() const;
-
-    // internal members for the cached results of the internal methods above
-    hal::Capabilities mCapabilities;
-    std::vector<hal::Extension> mSupportedExtensions;
-    int32_t mType;
-    std::string mVersionString;
-    std::pair<uint32_t, uint32_t> mNumberOfCacheFilesNeeded;
-
     /**
      * This is a utility class for VersionedIDevice that encapsulates a
      * V1_0::IDevice, any appropriate downcasts to newer interfaces, and a
@@ -457,7 +472,7 @@ class VersionedIDevice {
          *                     the case when the service containing the IDevice
          *                     object crashes.
          */
-        Core(sp<hal::V1_0::IDevice> device, sp<IDeviceDeathHandler> deathHandler);
+        Core(sp<V1_0::IDevice> device, sp<IDeviceDeathHandler> deathHandler);
 
         /**
          * Destructor for the Core object.
@@ -487,7 +502,7 @@ class VersionedIDevice {
          *               interface.
          * @return A valid Core object, otherwise nullopt.
          */
-        static std::optional<Core> create(sp<hal::V1_0::IDevice> device);
+        static std::optional<Core> create(sp<V1_0::IDevice> device);
 
         /**
          * Returns sp<*::IDevice> that is a downcast of the sp<V1_0::IDevice>
@@ -497,20 +512,16 @@ class VersionedIDevice {
         template <typename T_IDevice>
         sp<T_IDevice> getDevice() const;
         template <>
-        sp<hal::V1_0::IDevice> getDevice() const {
+        sp<V1_0::IDevice> getDevice() const {
             return mDeviceV1_0;
         }
         template <>
-        sp<hal::V1_1::IDevice> getDevice() const {
+        sp<V1_1::IDevice> getDevice() const {
             return mDeviceV1_1;
         }
         template <>
-        sp<hal::V1_2::IDevice> getDevice() const {
+        sp<V1_2::IDevice> getDevice() const {
             return mDeviceV1_2;
-        }
-        template <>
-        sp<hal::V1_3::IDevice> getDevice() const {
-            return mDeviceV1_3;
         }
 
         /**
@@ -542,10 +553,9 @@ class VersionedIDevice {
          * Idiomatic usage: if mDeviceV1_1 is non-null, do V1_1 dispatch; otherwise,
          * do V1_0 dispatch.
          */
-        sp<hal::V1_0::IDevice> mDeviceV1_0;
-        sp<hal::V1_1::IDevice> mDeviceV1_1;
-        sp<hal::V1_2::IDevice> mDeviceV1_2;
-        sp<hal::V1_3::IDevice> mDeviceV1_3;
+        sp<V1_0::IDevice> mDeviceV1_0;
+        sp<V1_1::IDevice> mDeviceV1_1;
+        sp<V1_2::IDevice> mDeviceV1_2;
 
         /**
          * HIDL callback to be invoked if the service for mDeviceV1_0 crashes.
@@ -579,10 +589,9 @@ class VersionedIDevice {
     // If a callback is provided, this method protects it against driver death
     // and waits for it (callback->wait()).
     template <typename T_Return, typename T_IDevice, typename T_Callback = std::nullptr_t>
-    hal::Return<T_Return> recoverable(
-            const char* context,
-            const std::function<hal::Return<T_Return>(const sp<T_IDevice>&)>& fn,
-            const T_Callback& callback = nullptr) const EXCLUDES(mMutex);
+    Return<T_Return> recoverable(const char* context,
+                                 const std::function<Return<T_Return>(const sp<T_IDevice>&)>& fn,
+                                 const T_Callback& callback = nullptr) const EXCLUDES(mMutex);
 
     // The name of the service that implements the driver.
     const std::string mServiceName;
@@ -619,7 +628,7 @@ class VersionedIPreparedModel {
      *                     the case when the service containing the IDevice
      *                     object crashes.
      */
-    VersionedIPreparedModel(sp<hal::V1_0::IPreparedModel> preparedModel,
+    VersionedIPreparedModel(sp<V1_0::IPreparedModel> preparedModel,
                             sp<IPreparedModelDeathHandler> deathHandler);
 
     /**
@@ -632,84 +641,132 @@ class VersionedIPreparedModel {
     ~VersionedIPreparedModel();
 
     /**
+     * Launches an asynchronous execution on a prepared model.
+     *
+     * The execution is performed asynchronously with respect to the caller.
+     * execute must verify the inputs to the function are correct. If there is
+     * an error, execute must immediately invoke the callback with the
+     * appropriate ErrorStatus value, then return with the same ErrorStatus. If
+     * the inputs to the function are valid and there is no error, execute must
+     * launch an asynchronous task to perform the execution in the background,
+     * and immediately return with ErrorStatus::NONE. If the asynchronous task
+     * fails to launch, execute must immediately invoke the callback with
+     * ErrorStatus::GENERAL_FAILURE, then return with
+     * ErrorStatus::GENERAL_FAILURE.
+     *
+     * When the asynchronous task has finished its execution, it must
+     * immediately invoke the callback object provided as an input to the
+     * execute function. This callback must be provided with the ErrorStatus of
+     * the execution.
+     *
+     * If the prepared model was prepared from a model wherein all
+     * tensor operands have fully specified dimensions, and the inputs
+     * to the function are valid, then the execution should launch
+     * and complete successfully (ErrorStatus::NONE). There must be
+     * no failure unless the device itself is in a bad state.
+     *
+     * Multiple threads can call the execute and ExecuteSynchronously functions
+     * on the same VersionedIPreparedModel object concurrently with different
+     * requests.
+     *
+     * @param request The input and output information on which the prepared
+     *                model is to be executed.
+     * @param measure Specifies whether or not to measure duration of the execution.
+     * @param callback A callback object used to return the error status of
+     *                 the execution. The callback object's notify function must
+     *                 be called exactly once, even if the execution was
+     *                 unsuccessful.
+     * @return status Error status of the call, must be:
+     *                - NONE if task is successfully launched
+     *                - DEVICE_UNAVAILABLE if driver is offline or busy
+     *                - GENERAL_FAILURE if there is an unspecified error
+     *                - OUTPUT_INSUFFICIENT_SIZE if provided output buffer is
+     *                  not large enough to store the resultant values
+     *                - INVALID_ARGUMENT if one of the input arguments is
+     *                  invalid
+     */
+    ErrorStatus execute(const Request& request, MeasureTiming timing,
+                        const sp<ExecutionCallback>& callback);
+
+    /**
      * Performs a synchronous execution on a prepared model.
      *
      * The execution is performed synchronously with respect to the caller.
-     * VersionedIPreparedModel::execute must verify the inputs to the function
-     * are correct. If there is an error, VersionedIPreparedModel::execute must
-     * immediately return with the appropriate result code. If the inputs to the
-     * function are valid and there is no error,
-     * VersionedIPreparedModel::execute must perform the execution, and must not
-     * return until the execution is complete.
+     * executeSynchronously must verify the inputs to the function are
+     * correct. If there is an error, executeSynchronously must immediately
+     * return with the appropriate ErrorStatus value. If the inputs to the
+     * function are valid and there is no error, executeSynchronously must
+     * perform the execution, and must not return until the execution is
+     * complete.
      *
      * If the prepared model was prepared from a model wherein all tensor
      * operands have fully specified dimensions, and the inputs to the function
-     * are valid, and at execution time every operation's input operands have
-     * legal values, then the execution should complete successfully
-     * (ANEURALNETWORKS_NO_ERROR): There must be no failure unless the device
-     * itself is in a bad state.
+     * are valid, then the execution should complete successfully
+     * (ErrorStatus::NONE). There must be no failure unless the device itself is
+     * in a bad state.
      *
-     * Any number of calls to the VersionedIPreparedModel::execute function, in
-     * any combination, may be made concurrently, even on the same
+     * Any number of calls to the execute and executeSynchronously
+     * functions, in any combination, may be made concurrently, even on the same
      * VersionedIPreparedModel object.
      *
      * @param request The input and output information on which the prepared
-     *     model is to be executed.
-     * @param measure Specifies whether or not to measure duration of the
-     *     execution.
-     * @param preferSynchronous 'true' to perform synchronous HAL execution when
-     *     possible, 'false' to force asynchronous HAL execution.
-     * @return A tuple consisting of:
-     *     - Result code of the execution, must be:
-     *         - ANEURALNETWORKS_NO_ERROR if execution is performed successfully
-     *         - ANEURALNETWORKS_UNAVAILABLE_DEVICE if driver is offline or busy
-     *         - ANEURALNETWORKS_OP_FAILED if there is an unspecified error
-     *         - ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE if at least one output
-     *             operand buffer is not large enough to store the corresponding
-     *             output
-     *         - ANEURALNETWORKS_BAD_DATA if one of the input arguments is
-     *             invalid
-     *     - A list of shape information of model output operands.
-     *         The index into "outputShapes" corresponds to the index of the
-     *         output operand in the Request outputs vector. outputShapes must
-     *         be empty unless the result code is either
-     *         ANEURALNETWORKS_NO_ERROR or
-     *         ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE. outputShapes may be
-     *         empty if the result code is ANEURALNETWORKS_NO_ERROR and all
-     *         model output operands are fully-specified at execution time.
-     *         outputShapes must have the same number of elements as the number
-     *         of model output operands if the result code is
-     *         ANEURALNETWORKS_OUTPUT_INSUFFICIENT_SIZE, or if the result code
-     *         is ANEURALNETWORKS_NO_ERROR and the model has at least one output
-     *         operand that is not fully-specified.
-     *     - Duration of execution. Unless measure is YES and result code is
-     *         ANEURALNETWORKS_NO_ERROR, all times must be reported as
-     *         UINT64_MAX. A driver may choose to report any time as UINT64_MAX,
-     *         indicating that measurement is not available.
+     *                model is to be executed.
+     * @param measure Specifies whether or not to measure duration of the execution.
+     * @return status Error status of the execution, must be:
+     *                - NONE if execution is performed successfully
+     *                - DEVICE_UNAVAILABLE if driver is offline or busy
+     *                - GENERAL_FAILURE if there is an unspecified error
+     *                - OUTPUT_INSUFFICIENT_SIZE if at least one output
+     *                  operand buffer is not large enough to store the
+     *                  corresponding output
+     *                - INVALID_ARGUMENT if one of the input arguments is
+     *                  invalid
+     * @return outputShapes A list of shape information of model output operands.
+     *                      The index into "outputShapes" corresponds with the index
+     *                      of the output operand in the Request outputs vector.
+     *                      outputShapes nust be empty unless the status is either
+     *                      NONE or OUTPUT_INSUFFICIENT_SIZE. outputShaps may be
+     *                      empty if the status is NONE and all model output operands
+     *                      are fully-specified at execution time. outputShapes must
+     *                      have the same number of elements as the number of model
+     *                      output operands if the status is OUTPUT_INSUFFICIENT_SIZE,
+     *                      or if the status is NONE and the model has at least one
+     *                      output operand that is not fully-specified.
+     * @return Timing Duration of execution. Unless measure is YES and status is
+     *                NONE, all times must be reported as UINT64_MAX. A driver may
+     *                choose to report any time as UINT64_MAX, indicating that
+     *                measurement is not available.
      */
-    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> execute(
-            const hal::Request& request, hal::MeasureTiming measure, bool preferSynchronous) const;
+    std::tuple<ErrorStatus, hidl_vec<OutputShape>, Timing> executeSynchronously(
+            const Request& request, MeasureTiming measure);
 
     /**
      * Creates a burst controller on a prepared model.
      *
-     * @param preferPowerOverLatency 'true' if the Burst object should run in a
-     *                               more power efficient mode, 'false' if more
-     *                               power can be used to possibly reduce
-     *                               burst compute latency.
+     * @param blocking 'true' if the FMQ should block until data is available.
      * @return ExecutionBurstController Execution burst controller object.
      *                                  nullptr is returned if the burst cannot
      *                                  be configured for any reason.
      */
-    std::shared_ptr<ExecutionBurstController> configureExecutionBurst(
-            bool preferPowerOverLatency) const;
+    std::shared_ptr<ExecutionBurstController> configureExecutionBurst(bool blocking) const;
+
+    /**
+     * Returns whether this handle to an IPreparedModel object is valid or not.
+     *
+     * @return bool true if V1_0::IPreparedModel (which could be V1_2::IPreparedModel) is
+     *              valid, false otherwise.
+     */
+    bool operator!=(nullptr_t) const;
+
+    /**
+     * Returns whether this handle to an IPreparedModel object is valid or not.
+     *
+     * @return bool true if V1_0::IPreparedModel (which could be V1_2::IPreparedModel) is
+     *              invalid, false otherwise.
+     */
+    bool operator==(nullptr_t) const;
 
    private:
-    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeAsynchronously(
-            const hal::Request& request, hal::MeasureTiming timing) const;
-    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> executeSynchronously(
-            const hal::Request& request, hal::MeasureTiming measure) const;
-
     /**
      * All versions of IPreparedModel are necessary because the preparedModel could be v1.0,
      * v1.2, or a later version. All these pointers logically represent the same object.
@@ -729,8 +786,8 @@ class VersionedIPreparedModel {
      * Idiomatic usage: if mPreparedModelV1_2 is non-null, do V1_2 dispatch; otherwise,
      * do V1_0 dispatch.
      */
-    sp<hal::V1_0::IPreparedModel> mPreparedModelV1_0;
-    sp<hal::V1_2::IPreparedModel> mPreparedModelV1_2;
+    sp<V1_0::IPreparedModel> mPreparedModelV1_0;
+    sp<V1_2::IPreparedModel> mPreparedModelV1_2;
 
     /**
      * HIDL callback to be invoked if the service for mPreparedModelV1_0 crashes.
@@ -741,4 +798,4 @@ class VersionedIPreparedModel {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_VERSIONED_INTERFACES_H
+#endif  // ANDROID_ML_NN_RUNTIME_VERSIONED_INTERFACES_H

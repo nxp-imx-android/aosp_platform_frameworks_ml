@@ -45,11 +45,12 @@ quant8 = DataTypeConverter().Identify({
     o3: ("TENSOR_QUANT8_ASYMM", 0.1, 128)
 })
 
+# Create test case with dummy values.
 Example({
     i1: [1],
-    o1: [],
-    o2: [],
-    o3: [],
+    o1: [0],
+    o2: [0],
+    o3: [0],
 }).AddVariations("relaxed", quant8, "float16")
 
 
@@ -86,10 +87,11 @@ quant8 = DataTypeConverter().Identify({
     o3: ("TENSOR_QUANT8_ASYMM", 0.1, 128)
 })
 
+# Create test case with dummy values.
 Example({
     i1: [1],
     i2: [1, 2, 3, 4],
-    o1: [],
-    o2: [],
+    o1: [0],
+    o2: [0],
     o3: [1, 2, 3, 4],
 }).AddVariations("relaxed", quant8, "float16")

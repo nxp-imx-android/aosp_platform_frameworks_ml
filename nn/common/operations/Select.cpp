@@ -35,8 +35,6 @@ constexpr uint32_t kOutputTensor = 0;
 
 namespace {
 
-using namespace hal;
-
 template <typename T>
 bool compute(const bool8* conditionData, const Shape& conditionShape, const T* aData,
              const Shape& aShape, const T* bData, const Shape& bShape, T* outputData,

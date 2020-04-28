@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_CALLBACKS_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_CALLBACKS_H
-
-#include "HalInterfaces.h"
+#ifndef ANDROID_ML_NN_RUNTIME_CALLBACKS_H
+#define ANDROID_ML_NN_RUNTIME_CALLBACKS_H
 
 #include <android-base/thread_annotations.h>
+#include <android/hardware/neuralnetworks/1.0/IExecutionCallback.h>
+#include <android/hardware/neuralnetworks/1.0/IPreparedModelCallback.h>
+#include <android/hardware/neuralnetworks/1.2/IExecutionCallback.h>
+#include <android/hardware/neuralnetworks/1.2/IPreparedModelCallback.h>
+#include <hidl/MQDescriptor.h>
+#include <hidl/Status.h>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -43,7 +47,9 @@
  * instead.
  */
 
-namespace android::nn {
+namespace android::hardware::neuralnetworks::V1_2::implementation {
+
+using V1_0::ErrorStatus;
 
 /**
  * The PreparedModelCallback class is used to receive the error status of
@@ -59,7 +65,7 @@ namespace android::nn {
  *
  * This callback object is passed as an argument to IDevice::prepareModel*.
  */
-class PreparedModelCallback : public hal::IPreparedModelCallback {
+class PreparedModelCallback : public IPreparedModelCallback {
    public:
     /**
      * IPreparedModelCallback::notify marks the callback object with the return
@@ -84,8 +90,7 @@ class PreparedModelCallback : public hal::IPreparedModelCallback {
      * @param preparedModel Returned model that has been prepared for execution,
      *     nullptr if the model was unable to be prepared.
      */
-    hal::Return<void> notify(hal::ErrorStatus status,
-                             const sp<hal::V1_0::IPreparedModel>& preparedModel) override;
+    Return<void> notify(ErrorStatus status, const sp<V1_0::IPreparedModel>& preparedModel) override;
 
     /**
      * IPreparedModelCallback::notify_1_2 marks the callback object with the
@@ -110,8 +115,8 @@ class PreparedModelCallback : public hal::IPreparedModelCallback {
      * @param preparedModel Returned model that has been prepared for execution,
      *     nullptr if the model was unable to be prepared.
      */
-    hal::Return<void> notify_1_2(hal::ErrorStatus status,
-                                 const sp<hal::V1_2::IPreparedModel>& preparedModel) override;
+    Return<void> notify_1_2(ErrorStatus status,
+                            const sp<V1_2::IPreparedModel>& preparedModel) override;
 
     /**
      * PreparedModelCallback::wait blocks until notify* has been called on the
@@ -132,7 +137,7 @@ class PreparedModelCallback : public hal::IPreparedModelCallback {
      *     - GENERAL_FAILURE if there is an unspecified error
      *     - INVALID_ARGUMENT if the input model is invalid
      */
-    hal::ErrorStatus getStatus() const;
+    ErrorStatus getStatus() const;
 
     /**
      * Retrieves the model that has been prepared for execution from the
@@ -144,14 +149,14 @@ class PreparedModelCallback : public hal::IPreparedModelCallback {
      * @return preparedModel Returned model that has been prepared for
      *     execution, nullptr if the model was unable to be prepared.
      */
-    sp<hal::V1_0::IPreparedModel> getPreparedModel() const;
+    sp<V1_0::IPreparedModel> getPreparedModel() const;
 
    private:
     mutable std::mutex mMutex;
     mutable std::condition_variable mCondition;
     bool mNotified GUARDED_BY(mMutex) = false;
-    hal::ErrorStatus mErrorStatus = hal::ErrorStatus::GENERAL_FAILURE;
-    sp<hal::V1_0::IPreparedModel> mPreparedModel;
+    ErrorStatus mErrorStatus = ErrorStatus::GENERAL_FAILURE;
+    sp<V1_0::IPreparedModel> mPreparedModel;
 };
 
 /**
@@ -168,9 +173,9 @@ class PreparedModelCallback : public hal::IPreparedModelCallback {
  *
  * This callback object is passed as an argument to IPreparedModel::execute*.
  */
-class ExecutionCallback : public hal::IExecutionCallback {
+class ExecutionCallback : public IExecutionCallback {
     using ExecutionFinish =
-            std::function<hal::ErrorStatus(hal::ErrorStatus, const std::vector<hal::OutputShape>&)>;
+            std::function<ErrorStatus(ErrorStatus, const std::vector<OutputShape>&)>;
 
    public:
     /**
@@ -196,7 +201,7 @@ class ExecutionCallback : public hal::IExecutionCallback {
      *         enough to store the resultant values
      *     - INVALID_ARGUMENT if the input request is invalid
      */
-    hal::Return<void> notify(hal::ErrorStatus status) override;
+    Return<void> notify(ErrorStatus status) override;
 
     /**
      * IExecutionCallback::notify_1_2 marks the callback object with the results
@@ -231,14 +236,12 @@ class ExecutionCallback : public hal::IExecutionCallback {
      *     reported as UINT64_MAX. A driver may choose to report any time as
      *     UINT64_MAX, indicating that particular measurement is not available.
      */
-    hal::Return<void> notify_1_2(hal::ErrorStatus status,
-                                 const hal::hidl_vec<hal::OutputShape>& outputShapes,
-                                 const hal::Timing& timing) override;
+    Return<void> notify_1_2(ErrorStatus status, const hidl_vec<OutputShape>& outputShapes,
+                            const Timing& timing) override;
 
     // An overload of the latest notify interface to hide the version from ExecutionBuilder.
-    hal::Return<void> notify(hal::ErrorStatus status,
-                             const hal::hidl_vec<hal::OutputShape>& outputShapes,
-                             const hal::Timing& timing) {
+    Return<void> notify(ErrorStatus status, const hidl_vec<OutputShape>& outputShapes,
+                        const Timing& timing) {
         return notify_1_2(status, outputShapes, timing);
     }
 
@@ -267,7 +270,7 @@ class ExecutionCallback : public hal::IExecutionCallback {
      *     - INVALID_ARGUMENT if one of the input arguments to prepareModel is
      *         invalid
      */
-    hal::ErrorStatus getStatus() const;
+    ErrorStatus getStatus() const;
 
     /**
      * Retrieves the output shapes returned from the asynchronous task launched
@@ -289,7 +292,7 @@ class ExecutionCallback : public hal::IExecutionCallback {
      *     OUTPUT_INSUFFICIENT_SIZE, or if the status is NONE and the model has
      *     at least one output operand that is not fully-specified.
      */
-    const std::vector<hal::OutputShape>& getOutputShapes() const;
+    const std::vector<OutputShape>& getOutputShapes() const;
 
     /**
      * Retrieves the duration of execution of the asynchronous task launched by
@@ -303,7 +306,7 @@ class ExecutionCallback : public hal::IExecutionCallback {
      * @return timing Duration of the execution. Every time must be UINT64_MAX
      *     unless the status is NONE.
      */
-    hal::Timing getTiming() const;
+    Timing getTiming() const;
 
     /**
      * ExecutionCallback::bindThread binds a thread to the ExecutionCallback
@@ -357,9 +360,8 @@ class ExecutionCallback : public hal::IExecutionCallback {
      * before any call to wait or get* return. It then enables all prior and
      * future wait calls on the ExecutionCallback object to proceed.
      */
-    void notifyInternal(hal::ErrorStatus errorStatus,
-                        const hal::hidl_vec<hal::OutputShape>& outputShapes,
-                        const hal::Timing& timing);
+    void notifyInternal(ErrorStatus errorStatus, const hidl_vec<OutputShape>& outputShapes,
+                        const Timing& timing);
 
     // members
     mutable std::mutex mMutex;
@@ -367,11 +369,18 @@ class ExecutionCallback : public hal::IExecutionCallback {
     mutable std::thread mThread GUARDED_BY(mMutex);
     ExecutionFinish mOnFinish GUARDED_BY(mMutex);
     bool mNotified GUARDED_BY(mMutex) = false;
-    hal::ErrorStatus mErrorStatus = hal::ErrorStatus::GENERAL_FAILURE;
-    std::vector<hal::OutputShape> mOutputShapes;
-    hal::Timing mTiming = {};
+    ErrorStatus mErrorStatus = ErrorStatus::GENERAL_FAILURE;
+    std::vector<OutputShape> mOutputShapes = {};
+    Timing mTiming = {};
 };
+
+}  // namespace android::hardware::neuralnetworks::V1_2::implementation
+
+namespace android::nn {
+
+using ::android::hardware::neuralnetworks::V1_2::implementation::ExecutionCallback;
+using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 
 }  // namespace android::nn
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_CALLBACKS_H
+#endif  // ANDROID_ML_NN_RUNTIME_CALLBACKS_H

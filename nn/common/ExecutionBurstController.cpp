@@ -19,31 +19,22 @@
 #include "ExecutionBurstController.h"
 
 #include <android-base/logging.h>
-
-#include <algorithm>
 #include <cstring>
 #include <limits>
-#include <memory>
 #include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
-
 #include "Tracing.h"
-#include "Utils.h"
 
 namespace android::nn {
 namespace {
 
-using namespace hal;
-
-using FmqRequestDescriptor = hardware::MQDescriptorSync<FmqRequestDatum>;
-using FmqResultDescriptor = hardware::MQDescriptorSync<FmqResultDatum>;
+using ::android::hardware::MQDescriptorSync;
+using FmqRequestDescriptor = MQDescriptorSync<FmqRequestDatum>;
+using FmqResultDescriptor = MQDescriptorSync<FmqResultDatum>;
 
 constexpr Timing kNoTiming = {std::numeric_limits<uint64_t>::max(),
                               std::numeric_limits<uint64_t>::max()};
 
-class BurstContextDeathHandler : public hidl_death_recipient {
+class BurstContextDeathHandler : public hardware::hidl_death_recipient {
    public:
     using Callback = std::function<void()>;
 
@@ -227,23 +218,22 @@ std::optional<std::tuple<ErrorStatus, std::vector<OutputShape>, Timing>> deseria
 }
 
 std::pair<std::unique_ptr<ResultChannelReceiver>, const FmqResultDescriptor*>
-ResultChannelReceiver::create(size_t channelLength, std::chrono::microseconds pollingTimeWindow) {
+ResultChannelReceiver::create(size_t channelLength, bool blocking) {
     std::unique_ptr<FmqResultChannel> fmqResultChannel =
-            std::make_unique<FmqResultChannel>(channelLength, /*confEventFlag=*/true);
+            std::make_unique<FmqResultChannel>(channelLength, /*confEventFlag=*/blocking);
     if (!fmqResultChannel->isValid()) {
         LOG(ERROR) << "Unable to create ResultChannelReceiver";
         return {nullptr, nullptr};
     }
-
     const FmqResultDescriptor* descriptor = fmqResultChannel->getDesc();
     return std::make_pair(
-            std::make_unique<ResultChannelReceiver>(std::move(fmqResultChannel), pollingTimeWindow),
+            std::make_unique<ResultChannelReceiver>(std::move(fmqResultChannel), blocking),
             descriptor);
 }
 
 ResultChannelReceiver::ResultChannelReceiver(std::unique_ptr<FmqResultChannel> fmqResultChannel,
-                                             std::chrono::microseconds pollingTimeWindow)
-    : mFmqResultChannel(std::move(fmqResultChannel)), kPollingTimeWindow(pollingTimeWindow) {}
+                                             bool blocking)
+    : mFmqResultChannel(std::move(fmqResultChannel)), mBlocking(blocking) {}
 
 std::optional<std::tuple<ErrorStatus, std::vector<OutputShape>, Timing>>
 ResultChannelReceiver::getBlocking() {
@@ -261,14 +251,16 @@ void ResultChannelReceiver::invalidate() {
     // force unblock
     // ExecutionBurstController waits on a result packet after sending a
     // request. If the driver containing ExecutionBurstServer crashes, the
-    // controller may be waiting on the futex. This force unblock wakes up any
-    // thread waiting on the futex.
-    // TODO: look for a different/better way to signal/notify the futex to
-    // wake up any thread waiting on it
-    FmqResultDatum datum;
-    datum.packetInformation({/*.packetSize=*/0, /*.errorStatus=*/ErrorStatus::GENERAL_FAILURE,
-                             /*.numberOfOperands=*/0});
-    mFmqResultChannel->writeBlocking(&datum, 1);
+    // controller will still be waiting on the futex (assuming mBlocking is
+    // true). This force unblock wakes up any thread waiting on the futex.
+    if (mBlocking) {
+        // TODO: look for a different/better way to signal/notify the futex to
+        // wake up any thread waiting on it
+        FmqResultDatum datum;
+        datum.packetInformation({/*.packetSize=*/0, /*.errorStatus=*/ErrorStatus::GENERAL_FAILURE,
+                                 /*.numberOfOperands=*/0});
+        mFmqResultChannel->writeBlocking(&datum, 1);
+    }
 }
 
 std::optional<std::vector<FmqResultDatum>> ResultChannelReceiver::getPacketBlocking() {
@@ -278,41 +270,16 @@ std::optional<std::vector<FmqResultDatum>> ResultChannelReceiver::getPacketBlock
         return std::nullopt;
     }
 
-    // First spend time polling if results are available in FMQ instead of
-    // waiting on the futex. Polling is more responsive (yielding lower
-    // latencies), but can take up more power, so only poll for a limited period
-    // of time.
-
-    auto& getCurrentTime = std::chrono::high_resolution_clock::now;
-    const auto timeToStopPolling = getCurrentTime() + kPollingTimeWindow;
-
-    while (getCurrentTime() < timeToStopPolling) {
-        // if class is being torn down, immediately return
-        if (!mValid.load(std::memory_order_relaxed)) {
-            return std::nullopt;
-        }
-
-        // Check if data is available. If it is, immediately retrieve it and
-        // return.
-        const size_t available = mFmqResultChannel->availableToRead();
-        if (available > 0) {
-            std::vector<FmqResultDatum> packet(available);
-            const bool success = mFmqResultChannel->read(packet.data(), available);
-            if (!success) {
-                LOG(ERROR) << "Error receiving packet";
-                return std::nullopt;
-            }
-            return std::make_optional(std::move(packet));
-        }
-    }
-
-    // If we get to this point, we either stopped polling because it was taking
-    // too long or polling was not allowed. Instead, perform a blocking call
-    // which uses a futex to save power.
-
     // wait for result packet and read first element of result packet
     FmqResultDatum datum;
-    bool success = mFmqResultChannel->readBlocking(&datum, 1);
+    bool success = true;
+    if (mBlocking) {
+        success = mFmqResultChannel->readBlocking(&datum, 1);
+    } else {
+        while ((success = mValid.load(std::memory_order_relaxed)) &&
+               !mFmqResultChannel->read(&datum, 1)) {
+        }
+    }
 
     // retrieve remaining elements
     // NOTE: all of the data is already available at this point, so there's no
@@ -340,21 +307,22 @@ std::optional<std::vector<FmqResultDatum>> ResultChannelReceiver::getPacketBlock
 }
 
 std::pair<std::unique_ptr<RequestChannelSender>, const FmqRequestDescriptor*>
-RequestChannelSender::create(size_t channelLength) {
+RequestChannelSender::create(size_t channelLength, bool blocking) {
     std::unique_ptr<FmqRequestChannel> fmqRequestChannel =
-            std::make_unique<FmqRequestChannel>(channelLength, /*confEventFlag=*/true);
+            std::make_unique<FmqRequestChannel>(channelLength, /*confEventFlag=*/blocking);
     if (!fmqRequestChannel->isValid()) {
         LOG(ERROR) << "Unable to create RequestChannelSender";
         return {nullptr, nullptr};
     }
-
     const FmqRequestDescriptor* descriptor = fmqRequestChannel->getDesc();
-    return std::make_pair(std::make_unique<RequestChannelSender>(std::move(fmqRequestChannel)),
-                          descriptor);
+    return std::make_pair(
+            std::make_unique<RequestChannelSender>(std::move(fmqRequestChannel), blocking),
+            descriptor);
 }
 
-RequestChannelSender::RequestChannelSender(std::unique_ptr<FmqRequestChannel> fmqRequestChannel)
-    : mFmqRequestChannel(std::move(fmqRequestChannel)) {}
+RequestChannelSender::RequestChannelSender(std::unique_ptr<FmqRequestChannel> fmqRequestChannel,
+                                           bool blocking)
+    : mFmqRequestChannel(std::move(fmqRequestChannel)), mBlocking(blocking) {}
 
 bool RequestChannelSender::send(const Request& request, MeasureTiming measure,
                                 const std::vector<int32_t>& slots) {
@@ -373,9 +341,11 @@ bool RequestChannelSender::sendPacket(const std::vector<FmqRequestDatum>& packet
         return false;
     }
 
-    // Always send the packet with "blocking" because this signals the futex and
-    // unblocks the consumer if it is waiting on the futex.
-    return mFmqRequestChannel->writeBlocking(packet.data(), packet.size());
+    if (mBlocking) {
+        return mFmqRequestChannel->writeBlocking(packet.data(), packet.size());
+    } else {
+        return mFmqRequestChannel->write(packet.data(), packet.size());
+    }
 }
 
 void RequestChannelSender::invalidate() {
@@ -465,7 +435,7 @@ int32_t ExecutionBurstController::ExecutionBurstCallback::allocateSlotLocked() {
 }
 
 std::unique_ptr<ExecutionBurstController> ExecutionBurstController::create(
-        const sp<IPreparedModel>& preparedModel, std::chrono::microseconds pollingTimeWindow) {
+        const sp<IPreparedModel>& preparedModel, bool blocking) {
     // check inputs
     if (preparedModel == nullptr) {
         LOG(ERROR) << "ExecutionBurstController::create passed a nullptr";
@@ -477,9 +447,9 @@ std::unique_ptr<ExecutionBurstController> ExecutionBurstController::create(
 
     // create FMQ objects
     auto [requestChannelSenderTemp, requestChannelDescriptor] =
-            RequestChannelSender::create(kExecutionBurstChannelLength);
+            RequestChannelSender::create(kExecutionBurstChannelLength, blocking);
     auto [resultChannelReceiverTemp, resultChannelDescriptor] =
-            ResultChannelReceiver::create(kExecutionBurstChannelLength, pollingTimeWindow);
+            ResultChannelReceiver::create(kExecutionBurstChannelLength, blocking);
     std::shared_ptr<RequestChannelSender> requestChannelSender =
             std::move(requestChannelSenderTemp);
     std::shared_ptr<ResultChannelReceiver> resultChannelReceiver =
@@ -546,7 +516,7 @@ ExecutionBurstController::ExecutionBurstController(
         const std::shared_ptr<RequestChannelSender>& requestChannelSender,
         const std::shared_ptr<ResultChannelReceiver>& resultChannelReceiver,
         const sp<IBurstContext>& burstContext, const sp<ExecutionBurstCallback>& callback,
-        const sp<hidl_death_recipient>& deathHandler)
+        const sp<hardware::hidl_death_recipient>& deathHandler)
     : mRequestChannelSender(requestChannelSender),
       mResultChannelReceiver(resultChannelReceiver),
       mBurstContext(burstContext),
@@ -563,20 +533,16 @@ ExecutionBurstController::~ExecutionBurstController() {
     }
 }
 
-static std::tuple<int, std::vector<OutputShape>, Timing, bool> getExecutionResult(
-        ErrorStatus status, std::vector<OutputShape> outputShapes, Timing timing, bool fallback) {
-    auto [n, checkedOutputShapes, checkedTiming] =
-            getExecutionResult(status, std::move(outputShapes), timing);
-    return {n, std::move(checkedOutputShapes), checkedTiming, fallback};
+std::tuple<ErrorStatus, std::vector<OutputShape>, Timing> ExecutionBurstController::compute(
+        const Request& request, MeasureTiming measure, const std::vector<intptr_t>& memoryIds) {
+    auto [status, outputShapes, timing, fallback] = tryCompute(request, measure, memoryIds);
+    (void)fallback;  // ignore fallback field
+    return {status, std::move(outputShapes), timing};
 }
 
-std::tuple<int, std::vector<OutputShape>, Timing, bool> ExecutionBurstController::compute(
-        const Request& request, MeasureTiming measure, const std::vector<intptr_t>& memoryIds) {
-    // This is the first point when we know an execution is occurring, so begin
-    // to collect systraces. Note that the first point we can begin collecting
-    // systraces in ExecutionBurstServer is when the RequestChannelReceiver
-    // realizes there is data in the FMQ, so ExecutionBurstServer collects
-    // systraces at different points in the code.
+std::tuple<ErrorStatus, std::vector<OutputShape>, Timing, bool>
+ExecutionBurstController::tryCompute(const Request& request, MeasureTiming measure,
+                                     const std::vector<intptr_t>& memoryIds) {
     NNTRACE_FULL(NNTRACE_LAYER_IPC, NNTRACE_PHASE_EXECUTION, "ExecutionBurstController::compute");
 
     std::lock_guard<std::mutex> guard(mMutex);
@@ -587,7 +553,7 @@ std::tuple<int, std::vector<OutputShape>, Timing, bool> ExecutionBurstController
     if (!success) {
         LOG(ERROR) << "Error sending FMQ packet";
         // only use fallback execution path if the packet could not be sent
-        return getExecutionResult(ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/true);
+        return {ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/true};
     }
 
     // get result packet
@@ -595,13 +561,13 @@ std::tuple<int, std::vector<OutputShape>, Timing, bool> ExecutionBurstController
     if (!result) {
         LOG(ERROR) << "Error retrieving FMQ packet";
         // only use fallback execution path if the packet could not be sent
-        return getExecutionResult(ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/false);
+        return {ErrorStatus::GENERAL_FAILURE, {}, kNoTiming, /*fallback=*/false};
     }
 
     // unpack results and return (only use fallback execution path if the
     // packet could not be sent)
     auto [status, outputShapes, timing] = std::move(*result);
-    return getExecutionResult(status, std::move(outputShapes), timing, /*fallback=*/false);
+    return {status, std::move(outputShapes), timing, /*fallback=*/false};
 }
 
 void ExecutionBurstController::freeMemory(intptr_t key) {

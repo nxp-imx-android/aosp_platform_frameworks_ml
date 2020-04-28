@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_LSTM_H
-#define ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_LSTM_H
+#ifndef FRAMEWORKS_ML_NN_LSTMCELL_H
+#define FRAMEWORKS_ML_NN_LSTMCELL_H
 
-#include <tensorflow/lite/kernels/internal/tensor_utils.h>
+#include "ActivationFunctor.h"
+#include "HalOperation.h"
+#include "tensorflow/lite/kernels/internal/tensor_utils.h"
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
-
-#include "ActivationFunctor.h"
-#include "HalInterfaces.h"
 
 namespace android {
 namespace nn {
@@ -47,9 +45,9 @@ struct Shape;
 
 class LSTMCell {
    public:
-    LSTMCell(const hal::Operation& operation, std::vector<RunTimeOperandInfo>& operands);
+    LSTMCell(const Operation& operation, std::vector<RunTimeOperandInfo>& operands);
 
-    bool Prepare(const hal::Operation& operation, std::vector<RunTimeOperandInfo>& operands,
+    bool Prepare(const Operation& operation, std::vector<RunTimeOperandInfo>& operands,
                  Shape* scratchShape, Shape* outputStateShape, Shape* cellStateShape,
                  Shape* outputShape);
     bool Eval();
@@ -248,4 +246,4 @@ class LSTMCell {
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_OPERATIONS_LSTM_H
+#endif  // FRAMEWORKS_ML_NN_LSTMCELL_H

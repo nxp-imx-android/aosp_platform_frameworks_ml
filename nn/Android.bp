@@ -17,32 +17,32 @@
 cc_defaults {
     name: "neuralnetworks_defaults",
     cflags: [
-        "-O3",
         "-Wall",
-        "-Werror",
         "-Wextra",
+        "-Werror",
+        "-O3",
     ],
-    arch: {
-        x86: {
-            avx2: {
-                cflags: [
-                    "-mavx2",
-                    "-mfma",
-                ],
-            },
-        },
-        x86_64: {
-            avx2: {
-                cflags: [
-                    "-mavx2",
-                    "-mfma",
-                ],
-            },
-        },
-    },
     product_variables: {
-        debuggable: { // eng and userdebug builds
+        debuggable: {  // eng and userdebug builds
             cflags: ["-DNN_DEBUGGABLE"],
         },
     },
+}
+
+cc_library_headers {
+    name: "libneuralnetworks_generated_test_harness_headers",
+    host_supported: false,
+    export_include_dirs: ["tools/test_generator/include"],
+}
+
+cc_library_headers {
+    name: "libneuralnetworks_generated_tests",
+    host_supported: false,
+    export_include_dirs: ["runtime/test/generated"],
+}
+
+cc_library_headers {
+    name: "libneuralnetworks_generated_test_harness",
+    host_supported: false,
+    export_include_dirs: ["runtime/test/"],
 }

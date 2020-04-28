@@ -14,38 +14,65 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
-
-#include <atomic>
-#include <memory>
-#include <vector>
+#ifndef ANDROID_ML_NN_RUNTIME_EXECUTION_BUILDER_H
+#define ANDROID_ML_NN_RUNTIME_EXECUTION_BUILDER_H
 
 #include "Callbacks.h"
 #include "HalInterfaces.h"
 #include "Memory.h"
-#include "ModelArgumentInfo.h"
 #include "ModelBuilder.h"
 #include "NeuralNetworks.h"
+#include "VersionedInterfaces.h"
+
+#include <atomic>
+#include <unordered_map>
+#include <vector>
+
+using ::android::hardware::neuralnetworks::V1_2::implementation::ExecutionCallback;
+using ::android::hardware::neuralnetworks::V1_2::implementation::PreparedModelCallback;
 
 namespace android {
 namespace nn {
 
 class BurstBuilder;
 class CompilationBuilder;
-class Device;
-class ExecutionBurstController;
 class ExecutionPlan;
+class ExecutionBurstController;
 class ExecutionStep;
 class Memory;
 class ModelBuilder;
-class PreparedModel;
 class StepExecutor;
+class Device;
+
+// TODO move length out of DataLocation
+struct ModelArgumentInfo {
+    // Whether the argument was specified as being in a Memory, as a pointer,
+    // has no value, or has not been specified.
+    // If POINTER then:
+    //   locationAndLength.length is valid.
+    //   dimensions is valid.
+    //   buffer is valid
+    // If MEMORY then:
+    //   locationAndLength.{poolIndex, offset, length} is valid.
+    //   dimensions is valid.
+    enum { POINTER, MEMORY, HAS_NO_VALUE, UNSPECIFIED } state = UNSPECIFIED;
+    DataLocation locationAndLength;
+    std::vector<uint32_t> dimensions;
+    void* buffer;
+    bool isSufficient = true;
+
+    int setFromPointer(const Operand& operand, const ANeuralNetworksOperandType* type, void* buffer,
+                       uint32_t length);
+    int setFromMemory(const Operand& operand, const ANeuralNetworksOperandType* type,
+                      uint32_t poolIndex, uint32_t offset, uint32_t length);
+    int setFromTemporaryMemory(const Operand& operand, uint32_t poolIndex, uint32_t offset,
+                               uint32_t length);
+    int updateDimensionInfo(const Operand& operand, const ANeuralNetworksOperandType* newType);
+};
 
 class ExecutionBuilder {
     friend class StepExecutor;
-
-   public:
+public:
     ExecutionBuilder(const CompilationBuilder* compilation);
 
     int setInput(uint32_t index, const ANeuralNetworksOperandType* type, const void* buffer,
@@ -69,22 +96,19 @@ class ExecutionBuilder {
     int burstCompute(BurstBuilder* burst) { return compute(nullptr, burst); }
 
     // Initialize output dimensional information from ModelArgumentInfo.
-    std::vector<hal::OutputShape> getInitialOutputShapes() const;
+    void initializeOutputShapes(std::vector<OutputShape>* outputShapes) const;
 
     int getOutputOperandDimensions(uint32_t index, uint32_t* dimensions);
     int getOutputOperandRank(uint32_t index, uint32_t* rank);
 
     // Handshake with lower-level execution support
     bool measureTiming() const { return mMeasureTiming; }
-    void reportTiming(hal::Timing timing) { mTiming = timing; }
+    void reportTiming(Timing timing) { mTiming = timing; }
 
     const CompilationBuilder* getCompilation() const { return mCompilation; }
     const ModelBuilder* getModel() const { return mModel; }
 
-    hal::ErrorStatus finish(hal::ErrorStatus error,
-                            const std::vector<hal::OutputShape>& outputShapes);
-
-    bool inFlight() const { return mStarted && !mFinished; }
+    ErrorStatus finish(ErrorStatus error, const std::vector<OutputShape>& outputShapes);
 
    private:
     // If a callback is provided, then this is asynchronous. If a callback is
@@ -100,7 +124,7 @@ class ExecutionBuilder {
     const CompilationBuilder* mCompilation;
 
     // Update output dimensional information from OutputShape to ModelArgumentInfo.
-    bool updateOutputShapes(const std::vector<hal::OutputShape>& outputShapes);
+    bool updateOutputShapes(const std::vector<OutputShape>& outputShapes);
 
     const ModelBuilder* mModel;
     const ExecutionPlan* mPlan;
@@ -127,7 +151,7 @@ class ExecutionBuilder {
     bool mMeasureTiming = false;
 
     // Timing reported from the driver
-    hal::Timing mTiming = {};
+    Timing mTiming = {};
 
     // Properties cannot be set once the execution has started.
     std::atomic_bool mStarted = false;
@@ -153,16 +177,16 @@ class StepExecutor {
     //     model to execute on that device.  (Both are nullptr in the
     //     case of CPU.)
     StepExecutor(ExecutionBuilder* executionBuilder, const ModelBuilder* model,
-                 std::shared_ptr<Device> device, std::shared_ptr<PreparedModel> preparedModel);
+                 std::shared_ptr<Device> device,
+                 std::shared_ptr<VersionedIPreparedModel> preparedModel);
 
     // Map inputs and outputs from ExecutionBuilder to StepExecutor,
     // in the case where we have a single-"step" execution (i.e., the executor
     // is executing the entire model from the ExecutionBuilder).
     void mapInputsAndOutputsTrivially();
 
-    // Update output shapes with shapes returned from execution.
-    bool updateOutputShapes(const std::vector<hal::OutputShape>& from,
-                            std::vector<hal::OutputShape>* to);
+    // Update output shapes returned from ExecutionCallback to ExecutionBuilder.
+    bool updateOutputShapes(const std::vector<OutputShape>& from, std::vector<OutputShape>* to);
 
     // Map inputs and outputs from ExecutionBuilder to StepExecutor,
     // one at a time.  Note that these are input/output indexes, not
@@ -174,27 +198,30 @@ class StepExecutor {
         mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex], &mOutputs[executorIndex]);
     }
     void mapOutputToInput(uint32_t builderIndex, uint32_t executorIndex) {
-        mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex], &mInputs[executorIndex]);
+        mapInputOrOutput(mExecutionBuilder->mOutputs[builderIndex],
+                         &mInputs[executorIndex]);
     }
 
     // The input or output is assumed to have the size of the
     // corresponding operand.
     int setInputFromTemporaryMemory(uint32_t inputIndex, const Memory* memory, uint32_t offset) {
-        return setInputOrOutputFromTemporaryMemory(mModel->getInputOperand(inputIndex), memory,
-                                                   offset, &mInputs.at(inputIndex));
+        return setInputOrOutputFromTemporaryMemory(mModel->getInputOperand(inputIndex),
+                                                   memory, offset,
+                                                   &mInputs.at(inputIndex));
     }
     int setOutputFromTemporaryMemory(uint32_t outputIndex, const Memory* memory, uint32_t offset) {
-        return setInputOrOutputFromTemporaryMemory(mModel->getOutputOperand(outputIndex), memory,
-                                                   offset, &mOutputs.at(outputIndex));
+        return setInputOrOutputFromTemporaryMemory(mModel->getOutputOperand(outputIndex),
+                                                   memory, offset,
+                                                   &mOutputs.at(outputIndex));
     }
 
     // Executes using the (driver, preparedModel) specified at construction time.
-    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> compute(
-            const std::shared_ptr<ExecutionBurstController>& burstController = nullptr);
+    int startCompute(sp<ExecutionCallback>* synchronizationCallback,
+                     const std::shared_ptr<ExecutionBurstController>& burstController = nullptr);
 
-    // Re-compiles and executes using the CPU, regardless of the (driver,
+    // Executes using the CPU, regardless of the (driver,
     // preparedModel) specified at construction time.
-    std::tuple<int, std::vector<hal::OutputShape>, hal::Timing> computeOnCpuFallback();
+    int startComputeOnCpu(sp<ExecutionCallback>* synchronizationCallback);
 
     bool isCpu() const;
 
@@ -204,10 +231,14 @@ class StepExecutor {
     }
 
    private:
+    int allocatePointerArgumentsToPool(std::vector<ModelArgumentInfo>* args, Memory* memory);
+    int startComputeOnDevice(sp<ExecutionCallback>* synchronizationCallback,
+                             const std::shared_ptr<ExecutionBurstController>& burstController);
+
     void mapInputOrOutput(const ModelArgumentInfo& builderInputOrOutput,
                           ModelArgumentInfo* executorInputOrOutput);
 
-    int setInputOrOutputFromTemporaryMemory(const hal::Operand& inputOrOutputOperand,
+    int setInputOrOutputFromTemporaryMemory(const Operand& inputOrOutputOperand,
                                             const Memory* memory, uint32_t offset,
                                             ModelArgumentInfo* inputOrOutputInfo);
 
@@ -221,7 +252,8 @@ class StepExecutor {
     // compiled forms; and device on which to execute it
     const ModelBuilder* mModel;
     std::shared_ptr<Device> mDevice;
-    std::shared_ptr<PreparedModel> mPreparedModel;
+    std::shared_ptr<VersionedIPreparedModel>
+            mPreparedModel;  // nullptr if CPU execution or if bypassing ExecutionPlan
 
     // The information we'll send to the driver about the inputs and outputs.
     // Note that we build this in two steps:
@@ -238,7 +270,7 @@ class StepExecutor {
     MemoryTracker mMemories;
 };
 
-}  // namespace nn
-}  // namespace android
+} // namespace nn
+} // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_EXECUTION_BUILDER_H
+#endif // ANDROID_ML_NN_RUNTIME_EXECUTION_BUILDER_H

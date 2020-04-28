@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_DRIVER_SAMPLE_SAMPLE_DRIVER_FULL_H
-#define ANDROID_FRAMEWORKS_ML_NN_DRIVER_SAMPLE_SAMPLE_DRIVER_FULL_H
+#ifndef ANDROID_ML_NN_SAMPLE_DRIVER_SAMPLE_DRIVER_FULL_H
+#define ANDROID_ML_NN_SAMPLE_DRIVER_SAMPLE_DRIVER_FULL_H
 
-#include "HalInterfaces.h"
 #include "SampleDriver.h"
 
 namespace android {
@@ -26,18 +25,17 @@ namespace sample_driver {
 
 class SampleDriverFull : public SampleDriver {
    public:
-    SampleDriverFull(const char* name, hal::PerformanceInfo perf)
-        : SampleDriver(name), mPerf(perf) {}
-    hal::Return<void> getCapabilities_1_3(getCapabilities_1_3_cb cb) override;
-    hal::Return<void> getSupportedOperations_1_3(const hal::V1_3::Model& model,
-                                                 getSupportedOperations_1_3_cb cb) override;
+    SampleDriverFull(const char* name, PerformanceInfo perf) : SampleDriver(name), mPerf(perf) {}
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb cb) override;
+    Return<void> getSupportedOperations_1_2(const V1_2::Model& model,
+                                            getSupportedOperations_1_2_cb cb) override;
 
    private:
-    hal::PerformanceInfo mPerf;
+    PerformanceInfo mPerf;
 };
 
 }  // namespace sample_driver
 }  // namespace nn
 }  // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_DRIVER_SAMPLE_SAMPLE_DRIVER_FULL_H
+#endif  // ANDROID_ML_NN_SAMPLE_DRIVER_SAMPLE_DRIVER_FULL_H

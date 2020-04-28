@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import numpy as np
+import numpy
 
 input0 = Input("input0", "TENSOR_QUANT8_ASYMM", "{1, 1, 2, 3}, 2.3, 4")
 paddings = Parameter("paddings", "TENSOR_INT32", "{4, 2}", [1, 2,

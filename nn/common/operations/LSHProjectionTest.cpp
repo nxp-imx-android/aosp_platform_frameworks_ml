@@ -17,10 +17,9 @@
 #include "LSHProjection.h"
 
 #include "NeuralNetworksWrapper.h"
-
-#include <gmock/gmock-generated-matchers.h>
-#include <gmock/gmock-matchers.h>
-#include <gtest/gtest.h>
+#include "gmock/gmock-generated-matchers.h"
+#include "gmock/gmock-matchers.h"
+#include "gtest/gtest.h"
 
 using ::testing::FloatNear;
 using ::testing::Matcher;

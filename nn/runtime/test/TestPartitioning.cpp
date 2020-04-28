@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
-#include <algorithm>
-#include <filesystem>
-#include <functional>
-#include <map>
-#include <memory>
-#include <queue>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
-
 #include "CompilationBuilder.h"
 #include "ExecutionPlan.h"
 #include "HalInterfaces.h"
@@ -38,6 +25,14 @@
 #include "TestNeuralNetworksWrapper.h"
 #include "Utils.h"
 #include "ValidateHal.h"
+
+#include <gtest/gtest.h>
+
+#include <filesystem>
+#include <functional>
+#include <map>
+#include <queue>
+#include <type_traits>
 
 // Uncomment the following line to generate some debugging output that
 // may be useful when analyzing failures:
@@ -135,7 +130,8 @@
 
 namespace {
 
-using namespace android::nn::hal;
+const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
+
 using CompilationBuilder = ::android::nn::CompilationBuilder;
 using Device = ::android::nn::Device;
 using DeviceManager = ::android::nn::DeviceManager;
@@ -143,27 +139,27 @@ using ExecutePreference = ::android::nn::test_wrapper::ExecutePreference;
 using ExecutionPlan = ::android::nn::ExecutionPlan;
 using ExecutionStep = ::android::nn::ExecutionStep;
 using HalVersion = ::android::nn::HalVersion;
-using HidlModel = V1_3::Model;
+using HidlModel = ::android::hardware::neuralnetworks::V1_2::Model;
+using HidlToken =
+        ::android::hardware::hidl_array<uint8_t, ANEURALNETWORKS_BYTE_SIZE_OF_CACHE_TOKEN>;
 using ModelBuilder = ::android::nn::ModelBuilder;
 using Result = ::android::nn::test_wrapper::Result;
 using SampleDriver = ::android::nn::sample_driver::SampleDriver;
+using WrapperSymmPerChannelQuantParams = ::android::nn::test_wrapper::SymmPerChannelQuantParams;
 using WrapperCompilation = ::android::nn::test_wrapper::Compilation;
 using WrapperModel = ::android::nn::test_wrapper::Model;
 using WrapperOperandType = ::android::nn::test_wrapper::OperandType;
-using WrapperSymmPerChannelQuantParams = ::android::nn::test_wrapper::SymmPerChannelQuantParams;
 using WrapperType = ::android::nn::test_wrapper::Type;
 
+template <typename T> using sp = ::android::sp<T>;
 template <typename T>
 using MQDescriptorSync = ::android::hardware::MQDescriptorSync<T>;
-
-const Timing kBadTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UINT64_MAX};
 
 Capabilities makeCapabilities(float perf) {
     PerformanceInfo perfInfo = {.execTime = perf, .powerUsage = perf};
     return {.relaxedFloat32toFloat16PerformanceScalar = perfInfo,
             .relaxedFloat32toFloat16PerformanceTensor = perfInfo,
-            .operandPerformance =
-                    ::android::nn::nonExtensionOperandPerformance<HalVersion::V1_3>(perfInfo)};
+            .operandPerformance = ::android::nn::nonExtensionOperandPerformance(perfInfo)};
 };
 
 void update(Capabilities* capabilities, OperandType type, float perf) {
@@ -242,7 +238,9 @@ uint32_t lookupOperation(std::function<const Operation&(uint32_t)> getOperation,
                 (input2.lifetime == OperandLifeTime::CONSTANT_COPY)) {
                 int32_t value;
                 CHECK_EQ(sizeof(value), input2.location.length);
-                memcpy(&value, getValue(input2.location.offset), input2.location.length);
+                memcpy(&value,
+                       getValue(input2.location.offset),
+                       input2.location.length);
                 return value + operationToFirstEncoding.at(operation.type);
             }
             break;
@@ -260,15 +258,21 @@ uint32_t lookupOperation(std::function<const Operation&(uint32_t)> getOperation,
 
 uint32_t lookupOperation(const HidlModel& model, uint32_t operationIndex) {
     return lookupOperation(
-            [&model](uint32_t index) -> const Operation& { return model.operations[index]; },
-            [&model](uint32_t index) -> const Operand& { return model.operands[index]; },
-            [&model](uint32_t offset) { return &model.operandValues[offset]; }, operationIndex);
+        [&model](uint32_t index) -> const Operation& {
+            return model.operations[index];
+        },
+        [&model](uint32_t index) -> const Operand& {
+            return model.operands[index];
+        },
+        [&model](uint32_t offset) {return &model.operandValues[offset];},
+        operationIndex);
 }
 
 #ifdef VERBOSE
 // This is a debugging utility function
 void dump(const char* name, const ModelBuilder* model) {
-    const HidlModel hidlModel = model->makeHidlModel();
+    HidlModel hidlModel;
+    model->setHidlModel(&hidlModel);
     std::cout << name << ": " << toString(hidlModel) << std::endl;
     std::cout << "inputs: " << toString(hidlModel.inputIndexes) << std::endl;
     std::cout << "outputs: " << toString(hidlModel.outputIndexes) << std::endl;
@@ -285,33 +289,32 @@ void dump(const char* name, const ModelBuilder* model) {
 // operation.  The subset is represented with a bitmask, in which
 // operation kind K corresponds to the bit (1 << K).
 class PartitioningDriver : public SampleDriver {
-   private:
+private:
     // Dummy class -- a prepared model must not be nullptr.
     class PartitioningPreparedModel : public IPreparedModel {
-       public:
-        Return<ErrorStatus> execute(const Request&, const sp<V1_0::IExecutionCallback>&) override {
-            return ErrorStatus::DEVICE_UNAVAILABLE;
-        }
-        Return<ErrorStatus> execute_1_2(const Request&, MeasureTiming,
-                                        const sp<V1_2::IExecutionCallback>&) override {
-            return ErrorStatus::DEVICE_UNAVAILABLE;
-        }
-        Return<void> executeSynchronously(const Request&, MeasureTiming,
-                                          executeSynchronously_cb cb) override {
-            cb(ErrorStatus::DEVICE_UNAVAILABLE, {}, kBadTiming);
-            return Void();
-        }
-        Return<void> configureExecutionBurst(
-                const sp<V1_2::IBurstCallback>& /*callback*/,
-                const MQDescriptorSync<V1_2::FmqRequestDatum>& /*requestChannel*/,
-                const MQDescriptorSync<V1_2::FmqResultDatum>& /*resultChannel*/,
-                configureExecutionBurst_cb cb) override {
-            cb(ErrorStatus::DEVICE_UNAVAILABLE, nullptr);
-            return Void();
-        }
+    public:
+     Return<ErrorStatus> execute(const Request&, const sp<V1_0::IExecutionCallback>&) override {
+         return ErrorStatus::DEVICE_UNAVAILABLE;
+     }
+     Return<ErrorStatus> execute_1_2(const Request&, MeasureTiming,
+                                     const sp<V1_2::IExecutionCallback>&) override {
+         return ErrorStatus::DEVICE_UNAVAILABLE;
+     }
+     Return<void> executeSynchronously(const Request&, MeasureTiming,
+                                       executeSynchronously_cb cb) override {
+         cb(ErrorStatus::DEVICE_UNAVAILABLE, {}, kBadTiming);
+         return Void();
+     }
+     Return<void> configureExecutionBurst(
+             const sp<V1_2::IBurstCallback>& /*callback*/,
+             const MQDescriptorSync<V1_2::FmqRequestDatum>& /*requestChannel*/,
+             const MQDescriptorSync<V1_2::FmqResultDatum>& /*resultChannel*/,
+             configureExecutionBurst_cb cb) override {
+         cb(ErrorStatus::DEVICE_UNAVAILABLE, nullptr);
+         return Void();
+     }
     };
-
-   public:
+public:
     enum OEM {
         OEMNo,          // rejected by getSupportedOperations and prepareModel
         OEMIndecisive,  // accepted by getSupportedOperations but not prepareModel
@@ -332,9 +335,9 @@ class PartitioningDriver : public SampleDriver {
         return Void();
     }
 
-    Return<ErrorStatus> prepareModel_1_3(const Model& model, ExecutionPreference,
+    Return<ErrorStatus> prepareModel_1_2(const Model& model, ExecutionPreference,
                                          const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&,
-                                         const CacheToken&,
+                                         const HidlToken&,
                                          const sp<IPreparedModelCallback>& cb) override {
         ErrorStatus status = ErrorStatus::NONE;
         if (mOEM != OEMYes) {
@@ -349,14 +352,16 @@ class PartitioningDriver : public SampleDriver {
         return status;
     }
 
-    Return<DeviceStatus> getStatus() override { return DeviceStatus::AVAILABLE; }
+    Return<DeviceStatus> getStatus() override {
+        return DeviceStatus::AVAILABLE;
+    }
 
-    Return<void> getCapabilities_1_3(getCapabilities_1_3_cb cb) override {
+    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb cb) override {
         cb(ErrorStatus::NONE, mCapabilities);
         return Void();
     }
 
-    Return<void> getSupportedOperations_1_3(const Model& model,
+    Return<void> getSupportedOperations_1_2(const Model& model,
                                             getSupportedOperations_cb cb) override {
         if (!android::nn::validateModel(model)) {
             cb(ErrorStatus::INVALID_ARGUMENT, std::vector<bool>());
@@ -386,7 +391,7 @@ class PartitioningDriver : public SampleDriver {
     }
 
     Return<ErrorStatus> prepareModelFromCache(
-            const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const CacheToken&,
+            const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const HidlToken&,
             const sp<V1_2::IPreparedModelCallback>& callback) override {
         callback->notify_1_2(ErrorStatus::NONE, new PartitioningPreparedModel);
         return ErrorStatus::NONE;
@@ -399,108 +404,41 @@ class PartitioningDriver : public SampleDriver {
     OEM mOEM;
 };
 
-// Like PartitioningDriver, but implementing 1.2
-class PartitioningDriverV1_2 : public V1_2::IDevice {
-   public:
-    PartitioningDriverV1_2(const char* name, const char* version, Capabilities capabilities,
-                           uint32_t operationMask,
-                           PartitioningDriver::OEM oem = PartitioningDriver::OEMNo)
-        : mLatestDriver(new PartitioningDriver(name, version, capabilities, operationMask, oem)) {}
-    Return<void> getCapabilities_1_2(getCapabilities_1_2_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_2(_hidl_cb);
-    }
-    Return<void> getSupportedOperations_1_2(const V1_2::Model& model,
-                                            getSupportedOperations_1_2_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_2(model, _hidl_cb);
-    }
-    Return<ErrorStatus> prepareModel_1_2(
-            const V1_2::Model& model, ExecutionPreference preference,
-            const hidl_vec<hidl_handle>& modelCache, const hidl_vec<hidl_handle>& dataCache,
-            const CacheToken& token, const sp<IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel_1_2(model, preference, modelCache, dataCache, token,
-                                               actualCallback);
-    }
-    Return<void> getVersionString(getVersionString_cb _hidl_cb) override {
-        return mLatestDriver->getVersionString(_hidl_cb);
-    }
-    Return<void> getType(getType_cb _hidl_cb) override { return mLatestDriver->getType(_hidl_cb); }
-    Return<void> getSupportedExtensions(getSupportedExtensions_cb _hidl_cb) {
-        return mLatestDriver->getSupportedExtensions(_hidl_cb);
-    }
-    Return<void> getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeeded_cb _hidl_cb) {
-        return mLatestDriver->getNumberOfCacheFilesNeeded(_hidl_cb);
-    }
-    Return<ErrorStatus> prepareModelFromCache(const hidl_vec<hidl_handle>& modelCache,
-                                              const hidl_vec<hidl_handle>& dataCache,
-                                              const CacheToken& token,
-                                              const sp<V1_2::IPreparedModelCallback>& callback) {
-        return mLatestDriver->prepareModelFromCache(modelCache, dataCache, token, callback);
-    }
-    Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_1(_hidl_cb);
-    }
-    Return<void> getSupportedOperations_1_1(const V1_1::Model& model,
-                                            getSupportedOperations_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_1(model, _hidl_cb);
-    }
-    Return<ErrorStatus> prepareModel_1_1(
-            const V1_1::Model& model, ExecutionPreference preference,
-            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
-    }
-    Return<DeviceStatus> getStatus() override { return mLatestDriver->getStatus(); }
-    Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities(_hidl_cb);
-    }
-    Return<void> getSupportedOperations(const V1_0::Model& model,
-                                        getSupportedOperations_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations(model, _hidl_cb);
-    }
-    Return<ErrorStatus> prepareModel(
-            const V1_0::Model& model,
-            const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel(model, actualCallback);
-    }
-
-   private:
-    const sp<V1_3::IDevice> mLatestDriver;
-};
-
 // Like PartitioningDriver, but implementing 1.1
 class PartitioningDriverV1_1 : public V1_1::IDevice {
    public:
     PartitioningDriverV1_1(const char* name, const char* version, Capabilities capabilities,
                            uint32_t operationMask,
                            PartitioningDriver::OEM oem = PartitioningDriver::OEMNo)
-        : mLatestDriver(new PartitioningDriver(name, version, capabilities, operationMask, oem)) {}
+        : mDriverV1_2(new PartitioningDriver(name, version, capabilities, operationMask, oem)) {}
     Return<void> getCapabilities_1_1(getCapabilities_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities_1_1(_hidl_cb);
+        return mDriverV1_2->getCapabilities_1_1(_hidl_cb);
     }
     Return<void> getSupportedOperations_1_1(const V1_1::Model& model,
                                             getSupportedOperations_1_1_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations_1_1(model, _hidl_cb);
+        return mDriverV1_2->getSupportedOperations_1_1(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel_1_1(
             const V1_1::Model& model, ExecutionPreference preference,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel_1_1(model, preference, actualCallback);
+        return mDriverV1_2->prepareModel_1_1(model, preference, actualCallback);
     }
-    Return<DeviceStatus> getStatus() override { return mLatestDriver->getStatus(); }
+    Return<DeviceStatus> getStatus() override { return mDriverV1_2->getStatus(); }
     Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities(_hidl_cb);
+        return mDriverV1_2->getCapabilities(_hidl_cb);
     }
     Return<void> getSupportedOperations(const V1_0::Model& model,
                                         getSupportedOperations_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations(model, _hidl_cb);
+        return mDriverV1_2->getSupportedOperations(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel(model, actualCallback);
+        return mDriverV1_2->prepareModel(model, actualCallback);
     }
 
    private:
-    const sp<V1_3::IDevice> mLatestDriver;
+    const sp<V1_2::IDevice> mDriverV1_2;
 };
 
 // Like PartitioningDriver, but implementing 1.0
@@ -509,23 +447,23 @@ class PartitioningDriverV1_0 : public V1_0::IDevice {
     PartitioningDriverV1_0(const char* name, const char* version, Capabilities capabilities,
                            uint32_t operationMask,
                            PartitioningDriver::OEM oem = PartitioningDriver::OEMNo)
-        : mLatestDriver(new PartitioningDriver(name, version, capabilities, operationMask, oem)) {}
+        : mDriverV1_2(new PartitioningDriver(name, version, capabilities, operationMask, oem)) {}
     Return<void> getCapabilities(getCapabilities_cb _hidl_cb) override {
-        return mLatestDriver->getCapabilities(_hidl_cb);
+        return mDriverV1_2->getCapabilities(_hidl_cb);
     }
     Return<void> getSupportedOperations(const V1_0::Model& model,
                                         getSupportedOperations_cb _hidl_cb) override {
-        return mLatestDriver->getSupportedOperations(model, _hidl_cb);
+        return mDriverV1_2->getSupportedOperations(model, _hidl_cb);
     }
     Return<ErrorStatus> prepareModel(
             const V1_0::Model& model,
             const sp<V1_0::IPreparedModelCallback>& actualCallback) override {
-        return mLatestDriver->prepareModel(model, actualCallback);
+        return mDriverV1_2->prepareModel(model, actualCallback);
     }
-    Return<DeviceStatus> getStatus() override { return mLatestDriver->getStatus(); }
+    Return<DeviceStatus> getStatus() override { return mDriverV1_2->getStatus(); }
 
    private:
-    const sp<V1_3::IDevice> mLatestDriver;
+    const sp<V1_2::IDevice> mDriverV1_2;
 };
 
 // This class adds some simple abstractions and utilities on top of
@@ -572,7 +510,6 @@ class PartitioningModel : private WrapperModel {
 
             case ANEURALNETWORKS_TENSOR_INT32:
             case ANEURALNETWORKS_TENSOR_QUANT8_ASYMM:
-            case ANEURALNETWORKS_TENSOR_QUANT8_ASYMM_SIGNED:
             case ANEURALNETWORKS_TENSOR_QUANT8_SYMM:
             case ANEURALNETWORKS_TENSOR_QUANT16_ASYMM:
             case ANEURALNETWORKS_TENSOR_QUANT16_SYMM: {
@@ -582,7 +519,7 @@ class PartitioningModel : private WrapperModel {
             }
 
             case ANEURALNETWORKS_TENSOR_QUANT8_SYMM_PER_CHANNEL: {
-                WrapperOperandType wrapperOperandType(wrapperType, {1},
+                WrapperOperandType wrapperOperandType(wrapperType, {1}, 0.0f, 0,
                                                       WrapperSymmPerChannelQuantParams({1.0f}, 0));
                 mWrapperOperandType.push_back(wrapperOperandType);
                 return WrapperModel::addOperand(&wrapperOperandType);
@@ -632,15 +569,15 @@ class PartitioningModel : private WrapperModel {
     uint32_t addOperationOEM1To1(const uint32_t input,
                                  Dimensioned dimensionedOutput = Dimensioned::YES) {
         uint32_t output = addOperandOfSameType(input, dimensionedOutput);
-        addOperation(ANEURALNETWORKS_OEM_OPERATION, {input}, {output});
+        addOperation(ANEURALNETWORKS_OEM_OPERATION, { input }, { output });
         return output;
     }
 
     // Run the partitioning algorithm to create an ExecutionPlan.
     int partitionTheWork(const std::vector<std::shared_ptr<Device>>& devices,
                          ExecutePreference preference, ExecutionPlan* plan) {
-        return reinterpret_cast<ModelBuilder*>(getHandle())
-                ->partitionTheWork(devices, static_cast<uint32_t>(preference), plan);
+        return reinterpret_cast<ModelBuilder*>(getHandle())->partitionTheWork(
+            devices, static_cast<uint32_t>(preference), plan);
     }
 
 #ifdef VERBOSE
@@ -651,34 +588,34 @@ class PartitioningModel : private WrapperModel {
     }
 #endif
 
-   private:
-    // Create an operation with two inputs and one output, specifying
-    // the operation kind and the input operand indexes.
-    // Returns the output operand index.
-    uint32_t addOperation2To1(uint32_t operation, const uint32_t input0, const uint32_t input1,
-                              Dimensioned dimensionedOutput = Dimensioned::YES) {
-        auto it = firstEncodingToOperation.lower_bound(operation);
-        CHECK(it != firstEncodingToOperation.end());
-        ANeuralNetworksOperationType type = it->second.first;
-        if (it->second.second) {
-            int32_t fuseCode = operation - it->first;
-            uint32_t input2 = addIntOperand(fuseCode);
-            uint32_t output = addOperandOfSameType(input0, dimensionedOutput);
-            addOperation(type, {input0, input1, input2}, {output});
-            return output;
-        } else {
-            uint32_t output = addOperandOfSameType(input0, dimensionedOutput);
-            addOperation(type, {input0, input1}, {output});
-            return output;
-        }
-    }
+private:
+ // Create an operation with two inputs and one output, specifying
+ // the operation kind and the input operand indexes.
+ // Returns the output operand index.
+ uint32_t addOperation2To1(uint32_t operation, const uint32_t input0, const uint32_t input1,
+                           Dimensioned dimensionedOutput = Dimensioned::YES) {
+     auto it = firstEncodingToOperation.lower_bound(operation);
+     CHECK(it != firstEncodingToOperation.end());
+     ANeuralNetworksOperationType type = it->second.first;
+     if (it->second.second) {
+         int32_t fuseCode = operation - it->first;
+         uint32_t input2 = addIntOperand(fuseCode);
+         uint32_t output = addOperandOfSameType(input0, dimensionedOutput);
+         addOperation(type, {input0, input1, input2}, {output});
+         return output;
+     } else {
+         uint32_t output = addOperandOfSameType(input0, dimensionedOutput);
+         addOperation(type, {input0, input1}, {output});
+         return output;
+     }
+ }
 
-    // Create a scalar integer operand of the specified value, and
-    // return the corresponding operand index.
-    uint32_t addIntOperand(int32_t value) {
-        uint32_t operand = addOperand(WrapperType::INT32);
-        setOperandValue(operand, &value, sizeof(value));
-        return operand;
+ // Create a scalar integer operand of the specified value, and
+ // return the corresponding operand index.
+ uint32_t addIntOperand(int32_t value) {
+     uint32_t operand = addOperand(WrapperType::INT32);
+     setOperandValue(operand, &value, sizeof(value));
+     return operand;
     }
 
     // Create an operand of the same type as the specified operand,
@@ -698,26 +635,30 @@ class PartitioningModel : private WrapperModel {
 
 // This class adds some utilities on top of WrapperCompilation.
 class PartitioningCompilation : public WrapperCompilation {
-   public:
-    PartitioningCompilation(const PartitioningModel* model,
-                            const std::vector<std::shared_ptr<Device>>& devices) {
-        ModelBuilder* m = reinterpret_cast<ModelBuilder*>(model->getHandle());
-        CompilationBuilder* c = nullptr;
-        int result = m->createCompilation(&c, devices);
-        EXPECT_EQ(result, 0);
-        mCompilation = reinterpret_cast<ANeuralNetworksCompilation*>(c);
-    }
+public:
+ PartitioningCompilation(const PartitioningModel* model,
+                         const std::vector<std::shared_ptr<Device>>& devices) {
+     ModelBuilder* m = reinterpret_cast<ModelBuilder*>(model->getHandle());
+     CompilationBuilder* c = nullptr;
+     int result = m->createCompilation(&c, devices);
+     EXPECT_EQ(result, 0);
+     mCompilation = reinterpret_cast<ANeuralNetworksCompilation*>(c);
+ }
 
-    Result setPartitioning(uint32_t partitioning) {
-        return static_cast<Result>(builder()->setPartitioning(partitioning));
+ Result setPartitioning(uint32_t partitioning) {
+     return static_cast<Result>(builder()->setPartitioning(partitioning));
     }
 
     using WrapperCompilation::finish;
 
-    const ExecutionPlan& getExecutionPlan() const { return builder()->forTest_getExecutionPlan(); }
+    const ExecutionPlan& getExecutionPlan() const {
+        return builder()->forTest_getExecutionPlan();
+    }
 
-   private:
-    CompilationBuilder* builder() { return reinterpret_cast<CompilationBuilder*>(getHandle()); }
+private:
+    CompilationBuilder* builder() {
+        return reinterpret_cast<CompilationBuilder*>(getHandle());
+    }
 
     const CompilationBuilder* builder() const {
         return reinterpret_cast<const CompilationBuilder*>(getHandle());
@@ -725,14 +666,16 @@ class PartitioningCompilation : public WrapperCompilation {
 };
 
 #ifdef VERBOSE
-#define RETURN_TRUE()                                                 \
-    {                                                                 \
-        std::cerr << "returning true from " << __LINE__ << std::endl; \
-        return true;                                                  \
+#define RETURN_TRUE()                                                          \
+    {                                                                          \
+        std::cerr << "returning true from " << __LINE__ << std::endl;          \
+        return true;                                                           \
     }
 #else
-#define RETURN_TRUE() \
-    { return true; }
+#define RETURN_TRUE()                                                          \
+    {                                                                          \
+        return true;                                                           \
+    }
 #endif
 #ifdef VERBOSE
 #define RETURN_FALSE(MESSAGE)                                                  \
@@ -741,16 +684,19 @@ class PartitioningCompilation : public WrapperCompilation {
         return false;                                                          \
     }
 #else
-#define RETURN_FALSE(MESSAGE) \
-    { return false; }
+#define RETURN_FALSE(MESSAGE)                                                  \
+    {                                                                          \
+        return false;                                                          \
+    }
 #endif
 
 class PartitioningTest : public ::testing::Test {
-   protected:
+protected:
     using RemapVectorType = ExecutionStep::RemapVectorType;
     using SubModelOutputSetType = ExecutionStep::SubModelOutputSetType;
 
-    virtual void SetUp() {}
+    virtual void SetUp() {
+    }
 
     // From a vector of DeviceSpecification, create a vector of
     // Devices.
@@ -779,12 +725,10 @@ class PartitioningTest : public ::testing::Test {
                             PartitioningDriver::OEM oem = PartitioningDriver::OEMNo)
             : mName(name), mVersionString(version), mOperationMask(operationMask), mOEM(oem) {
             PerformanceInfo perfRelaxedInfo = {.execTime = perfRelaxed, .powerUsage = perfRelaxed};
-            mCapabilities = {
-                    .relaxedFloat32toFloat16PerformanceScalar = perfRelaxedInfo,
-                    .relaxedFloat32toFloat16PerformanceTensor = perfRelaxedInfo,
-                    .operandPerformance =
-                            ::android::nn::nonExtensionOperandPerformance<HalVersion::V1_3>(
-                                    {.execTime = perf, .powerUsage = perf})};
+            mCapabilities = {.relaxedFloat32toFloat16PerformanceScalar = perfRelaxedInfo,
+                             .relaxedFloat32toFloat16PerformanceTensor = perfRelaxedInfo,
+                             .operandPerformance = ::android::nn::nonExtensionOperandPerformance(
+                                     {.execTime = perf, .powerUsage = perf})};
         }
         DeviceSpecification(const std::string& name, float perf, HalVersion halVersion,
                             uint32_t operationMaskV1_0, uint32_t operationMaskV1_1 = 0,
@@ -849,14 +793,8 @@ class PartitioningTest : public ::testing::Test {
         for (const auto& specification : specifications) {
             V1_0::IDevice* halDriver = nullptr;
             switch (specification.mHalVersion) {
-                case HalVersion::V1_3:
-                    halDriver = new PartitioningDriver(
-                            specification.mName.c_str(), specification.mVersionString.c_str(),
-                            specification.mCapabilities, specification.mOperationMask,
-                            specification.mOEM);
-                    break;
                 case HalVersion::V1_2:
-                    halDriver = new PartitioningDriverV1_2(
+                    halDriver = new PartitioningDriver(
                             specification.mName.c_str(), specification.mVersionString.c_str(),
                             specification.mCapabilities, specification.mOperationMask,
                             specification.mOEM);
@@ -905,20 +843,21 @@ class PartitioningTest : public ::testing::Test {
     // within its scope (actual operations, inputs, constants).
 
     enum PseudoDefiningOperationEncodings : uint32_t {
-        kPseudoDefiningOperationModelInput0 = 0x80000000U,
+        kPseudoDefiningOperationModelInput0   = 0x80000000U,
         kPseudoDefiningOperationConstantCopy0 = 0x90000000U,
-        kPseudoDefiningOperationNoValue = 0xeeeeeeeeU,
+        kPseudoDefiningOperationNoValue       = 0xeeeeeeeeU,
 
         // lowest value for special encoding
-        kPseudoDefiningOperationBase = 0x80000000U,
+        kPseudoDefiningOperationBase          = 0x80000000U,
 
         // range of encoded input or constant
-        kPseudoDefiningOperationRange = 0x10000000U,
+        kPseudoDefiningOperationRange         = 0x10000000U,
     };
 
     // Build a map from operand to defining operation.
     // TODO: Replace map with vector?
-    void buildDefinitionMap(const ModelBuilder* model, std::map<uint32_t, uint32_t>* defMap) {
+    void buildDefinitionMap(const ModelBuilder* model,
+                            std::map<uint32_t, uint32_t>* defMap) {
         // actual definitions
         ASSERT_LT(model->operationCount(), kPseudoDefiningOperationBase);
         for (uint32_t i = 0, e = model->operationCount(); i < e; i++) {
@@ -942,8 +881,7 @@ class PartitioningTest : public ::testing::Test {
                 case OperandLifeTime::CONSTANT_COPY: {
                     ASSERT_EQ(operand.location.length, sizeof(uint32_t));
                     uint32_t value;
-                    memcpy(&value, model->getPointerToOperandValue(operand.location.offset),
-                           sizeof(uint32_t));
+                    memcpy(&value, model->getPointerToOperandValue(operand.location.offset), sizeof(uint32_t));
                     ASSERT_LT(value, kPseudoDefiningOperationNoValue);
                     (*defMap)[i] = kPseudoDefiningOperationConstantCopy0 + value;
                     break;
@@ -991,9 +929,11 @@ class PartitioningTest : public ::testing::Test {
 #endif
 
     bool compare(const Operand& operandA, const Operand& operandB) {
-        if (operandA.type != operandB.type || operandA.dimensions != operandB.dimensions ||
+        if (operandA.type != operandB.type ||
+            operandA.dimensions != operandB.dimensions ||
             operandA.numberOfConsumers != operandB.numberOfConsumers ||
-            operandA.scale != operandB.scale || operandA.zeroPoint != operandB.zeroPoint) {
+            operandA.scale != operandB.scale ||
+            operandA.zeroPoint != operandB.zeroPoint) {
             return false;
         }
         return true;
@@ -1042,10 +982,10 @@ class PartitioningTest : public ::testing::Test {
         ::dump("compare(B)", modelB);
 #endif
 
-        if (modelA->operandCount() != modelB->operandCount() ||
+        if (modelA->operandCount()   != modelB->operandCount()   ||
             modelA->operationCount() != modelB->operationCount() ||
-            modelA->inputCount() != modelB->inputCount() ||
-            modelA->outputCount() != modelB->outputCount()) {
+            modelA->inputCount()     != modelB->inputCount()     ||
+            modelA->outputCount()    != modelB->outputCount()) {
             RETURN_FALSE();
         }
 
@@ -1155,7 +1095,8 @@ class PartitioningTest : public ::testing::Test {
         }
 
         // Sanity check
-        if (modelA->operandCount() != defsA.size() || modelA->operandCount() != defsB.size() ||
+        if (modelA->operandCount() != defsA.size() ||
+            modelA->operandCount() != defsB.size() ||
             modelA->operandCount() != equivalentOperandsAToB.size() ||
             modelA->operationCount() + pseudoDefinitionCount != equivalentOperationsAToB.size()) {
             RETURN_FALSE();
@@ -1241,7 +1182,7 @@ TEST_F(PartitioningTest, SimpleModel) {
     uint32_t opnd2 = model.addOperation2To1V1_0(0, opnd0, opnd1);
     uint32_t opnd3 = model.addFloatOperand();
     uint32_t opnd4 = model.addOperation2To1V1_0(1, opnd2, opnd3);
-    model.identifyInputsAndOutputs({opnd0, opnd1, opnd3}, {opnd4});
+    model.identifyInputsAndOutputs({ opnd0, opnd1, opnd3 }, { opnd4 });
     model.finish();
     ASSERT_TRUE(model.isValid());
 
@@ -1254,7 +1195,7 @@ TEST_F(PartitioningTest, SimpleModel) {
               ANEURALNETWORKS_NO_ERROR);
     ASSERT_EQ(planA.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
     ASSERT_NE(planA.forTest_simpleGetDevice().get(), nullptr);
-    ASSERT_EQ(planA.forTest_simpleGetDevice()->getName(), "good");
+    ASSERT_STREQ(planA.forTest_simpleGetDevice()->getName(), "good");
 
     // Simple partition (two devices are each capable of everything, none better than CPU).
     // No need to compare the original model to the model from the plan -- we
@@ -1283,7 +1224,7 @@ TEST_F(PartitioningTest, SimpleModel) {
         uint32_t b0Opnd0 = modelB0.addFloatOperand();
         uint32_t b0Opnd1 = modelB0.addFloatOperand();
         uint32_t b0Opnd2 = modelB0.addOperation2To1V1_0(0, b0Opnd0, b0Opnd1);
-        modelB0.identifyInputsAndOutputs({b0Opnd0, b0Opnd1}, {b0Opnd2});
+        modelB0.identifyInputsAndOutputs({ b0Opnd0, b0Opnd1 }, { b0Opnd2 });
         modelB0.finish();
         ASSERT_TRUE(modelB0.isValid());
 
@@ -1306,7 +1247,7 @@ TEST_F(PartitioningTest, SimpleModel) {
         // an input; so in the submodel "modelB1", the corresponding
         // input b1Opnd2 is a submodel input, and must follow the
         // model input b1Opnd3.
-        modelB1.identifyInputsAndOutputs({b1Opnd3, b1Opnd2}, {b1Opnd4});
+        modelB1.identifyInputsAndOutputs({ b1Opnd3, b1Opnd2 }, { b1Opnd4 });
         modelB1.finish();
         ASSERT_TRUE(modelB1.isValid());
 
@@ -1342,7 +1283,7 @@ TEST_F(PartitioningTest, SliceModel) {
               ANEURALNETWORKS_NO_ERROR);
     ASSERT_EQ(planA.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
     ASSERT_NE(planA.forTest_simpleGetDevice().get(), nullptr);
-    ASSERT_EQ(planA.forTest_simpleGetDevice()->getName(), "V1_2");
+    ASSERT_STREQ(planA.forTest_simpleGetDevice()->getName(), "V1_2");
 
     // Compound partition (V1_0, V1_1, V1_2 devices are available, in decreasing
     // order of performance; model is distributed across all three devices).
@@ -1442,7 +1383,7 @@ TEST_F(PartitioningTest, SliceModelToEmpty) {
               ANEURALNETWORKS_NO_ERROR);
     ASSERT_EQ(plan.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
     ASSERT_NE(plan.forTest_simpleGetDevice().get(), nullptr);
-    ASSERT_EQ(plan.forTest_simpleGetDevice()->getName(), "V1_2");
+    ASSERT_STREQ(plan.forTest_simpleGetDevice()->getName(), "V1_2");
 }
 
 TEST_F(PartitioningTest, Cpu) {
@@ -1471,7 +1412,7 @@ TEST_F(PartitioningTest, Cpu) {
     uint32_t opnd7 = model.addOperation2To1V1_0(kDevOp, opnd3, opnd5);
     uint32_t opnd8 = model.addOperation2To1V1_0(kDevOp, opnd6, opnd7);
 
-    model.identifyInputsAndOutputs({opnd0, opnd1, opnd6}, {opnd4, opnd8});
+    model.identifyInputsAndOutputs({ opnd0, opnd1, opnd6 }, { opnd4, opnd8 });
     model.finish();
     ASSERT_TRUE(model.isValid());
 
@@ -1490,7 +1431,7 @@ TEST_F(PartitioningTest, Cpu) {
         uint32_t m0Opnd1 = model0.addFloatOperand();
         uint32_t m0Opnd2 = model0.addOperation2To1V1_0(kDevOp, m0Opnd0, m0Opnd1);
         uint32_t m0Opnd3 = model0.addOperation2To1V1_0(kDevOp, m0Opnd0, m0Opnd2);
-        model0.identifyInputsAndOutputs({m0Opnd0, m0Opnd1}, {m0Opnd2, m0Opnd3});
+        model0.identifyInputsAndOutputs({ m0Opnd0, m0Opnd1 }, { m0Opnd2, m0Opnd3 });
         model0.finish();
         ASSERT_TRUE(model0.isValid());
 
@@ -1513,7 +1454,7 @@ TEST_F(PartitioningTest, Cpu) {
         uint32_t m1Opnd4 = model1.addOperation2To1V1_0(kCpuOp, m1Opnd0, m1Opnd3);
         uint32_t m1Opnd2 = model1.addFloatOperand();
         uint32_t m1Opnd5 = model1.addOperation2To1V1_0(kCpuOp, m1Opnd2, m1Opnd4);
-        model1.identifyInputsAndOutputs({m1Opnd0, m1Opnd3, m1Opnd2}, {m1Opnd4, m1Opnd5});
+        model1.identifyInputsAndOutputs({ m1Opnd0, m1Opnd3, m1Opnd2 }, { m1Opnd4, m1Opnd5 });
         model1.finish();
         ASSERT_TRUE(model1.isValid());
 
@@ -1535,7 +1476,7 @@ TEST_F(PartitioningTest, Cpu) {
         uint32_t m2Opnd7 = model2.addOperation2To1V1_0(kDevOp, m2Opnd3, m2Opnd5);
         uint32_t m2Opnd6 = model2.addFloatOperand();
         uint32_t m2Opnd8 = model2.addOperation2To1V1_0(kDevOp, m2Opnd6, m2Opnd7);
-        model2.identifyInputsAndOutputs({m2Opnd6, m2Opnd3, m2Opnd5}, {m2Opnd8});
+        model2.identifyInputsAndOutputs({ m2Opnd6, m2Opnd3, m2Opnd5 }, { m2Opnd8 });
         model2.finish();
         ASSERT_TRUE(model2.isValid());
 
@@ -1556,7 +1497,7 @@ TEST_F(PartitioningTest, SetPartitioning) {
             model.addOperation2To1V1_0(0, opnd0, opnd1, PartitioningModel::Dimensioned::NO);
     uint32_t opnd3 = model.addFloatOperand();
     uint32_t opnd4 = model.addOperation2To1V1_0(1, opnd2, opnd3);
-    model.identifyInputsAndOutputs({opnd0, opnd1, opnd3}, {opnd4});
+    model.identifyInputsAndOutputs({ opnd0, opnd1, opnd3 }, { opnd4 });
     model.finish();
     ASSERT_TRUE(model.isValid());
 
@@ -1585,8 +1526,7 @@ TEST_F(PartitioningTest, SetPartitioning) {
     // No need to compare the original model to the model from the plan -- we
     // didn't actually do any partitioning.
     PartitioningCompilation cPWithFallback(&model, devices);
-    ASSERT_EQ(cPWithFallback.setPartitioning(DeviceManager::kPartitioningWithFallback),
-              Result::NO_ERROR);
+    ASSERT_EQ(cPWithFallback.setPartitioning(DeviceManager::kPartitioningWithFallback), Result::NO_ERROR);
     ASSERT_EQ(cPWithFallback.finish(), Result::NO_ERROR);
     ASSERT_EQ(cPWithFallback.getExecutionPlan().forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
     ASSERT_EQ(cPWithFallback.getExecutionPlan().forTest_simpleGetDevice(),
@@ -1595,23 +1535,21 @@ TEST_F(PartitioningTest, SetPartitioning) {
     // Test kPartitioningWithoutFallback.  We should attempt
     // partitioning, and fail.
     PartitioningCompilation cPWithoutFallback(&model, devices);
-    ASSERT_EQ(cPWithoutFallback.setPartitioning(DeviceManager::kPartitioningWithoutFallback),
-              Result::NO_ERROR);
+    ASSERT_EQ(cPWithoutFallback.setPartitioning(DeviceManager::kPartitioningWithoutFallback), Result::NO_ERROR);
     ASSERT_EQ(cPWithoutFallback.finish(), Result::OP_FAILED);
     ASSERT_TRUE(cPWithoutFallback.getExecutionPlan().forTest_hasSubModelOutputsOfUnknownSize());
     ASSERT_EQ(cPWithoutFallback.getExecutionPlan().forTest_getKind(), ExecutionPlan::Kind::ERROR);
 }
 
 // Regression test for http://b/69166603:
-//     "partitioned compilation and execution yields wrong results when model output is submodel
-//     input"
+//     "partitioned compilation and execution yields wrong results when model output is submodel input"
 TEST_F(PartitioningTest, ModelOutputAsSubmodelInput) {
     PartitioningModel model;
     uint32_t opnd0 = model.addFloatOperand();
     uint32_t opnd1 = model.addFloatOperand();
     uint32_t opnd2 = model.addOperation2To1V1_0(0, opnd0, opnd1);
     uint32_t opnd3 = model.addOperation2To1V1_0(1, opnd2, opnd2);
-    model.identifyInputsAndOutputs({opnd0, opnd1}, {opnd2, opnd3});
+    model.identifyInputsAndOutputs({ opnd0, opnd1 }, { opnd2, opnd3 });
     model.finish();
     ASSERT_TRUE(model.isValid());
 
@@ -1632,7 +1570,7 @@ TEST_F(PartitioningTest, ModelOutputAsSubmodelInput) {
         uint32_t m0Opnd0 = model0.addFloatOperand();
         uint32_t m0Opnd1 = model0.addFloatOperand();
         uint32_t m0Opnd2 = model0.addOperation2To1V1_0(0, m0Opnd0, m0Opnd1);
-        model0.identifyInputsAndOutputs({m0Opnd0, m0Opnd1}, {m0Opnd2});
+        model0.identifyInputsAndOutputs({ m0Opnd0, m0Opnd1 }, { m0Opnd2 });
         model0.finish();
         ASSERT_TRUE(model0.isValid());
         ASSERT_NO_FATAL_FAILURE(
@@ -1648,7 +1586,7 @@ TEST_F(PartitioningTest, ModelOutputAsSubmodelInput) {
         PartitioningModel model1;
         uint32_t m1Opnd2 = model1.addFloatOperand();
         uint32_t m1Opnd3 = model1.addOperation2To1V1_0(1, m1Opnd2, m1Opnd2);
-        model1.identifyInputsAndOutputs({m1Opnd2}, {m1Opnd3});
+        model1.identifyInputsAndOutputs({ m1Opnd2 }, { m1Opnd3 });
         model1.finish();
         ASSERT_TRUE(model1.isValid());
 
@@ -1666,7 +1604,7 @@ TEST_F(PartitioningTest, OemOperations) {
     PartitioningModel model;
     uint32_t opndIn = model.addFloatOperand();
     uint32_t opndOut = model.addOperationOEM1To1(opndIn);
-    model.identifyInputsAndOutputs({opndIn}, {opndOut});
+    model.identifyInputsAndOutputs({ opndIn }, { opndOut });
     model.finish();
     ASSERT_TRUE(model.isValid());
 
@@ -1682,7 +1620,7 @@ TEST_F(PartitioningTest, OemOperations) {
     const auto& planBestOEM = compilationBestOEM.getExecutionPlan();
     ASSERT_EQ(planBestOEM.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
     ASSERT_NE(planBestOEM.forTest_simpleGetDevice().get(), nullptr);
-    ASSERT_EQ(planBestOEM.forTest_simpleGetDevice()->getName(), "goodOEM");
+    ASSERT_STREQ(planBestOEM.forTest_simpleGetDevice()->getName(), "goodOEM");
 
     // Verify that we get an error if no driver can run an OEM operation.
     const auto devicesNoOEM = makeDevices({{"noOEM", 0.5, ~0U, PartitioningDriver::OEMNo}});
@@ -1713,7 +1651,7 @@ TEST_F(PartitioningTest, RelaxedFP) {
         uint32_t opnd0 = model.addFloatOperand();
         uint32_t opnd1 = model.addFloatOperand();
         uint32_t opnd2 = model.addOperation2To1V1_0(0, opnd0, opnd1);
-        model.identifyInputsAndOutputs({opnd0, opnd1}, {opnd2});
+        model.identifyInputsAndOutputs({ opnd0, opnd1 }, { opnd2 });
         model.relaxComputationFloat32toFloat16(doRelax);
         model.finish();
         ASSERT_TRUE(model.isValid());
@@ -1724,7 +1662,7 @@ TEST_F(PartitioningTest, RelaxedFP) {
         ASSERT_EQ(model.partitionTheWork(devices, ExecutePreference::PREFER_LOW_POWER, &plan),
                   ANEURALNETWORKS_NO_ERROR);
         ASSERT_EQ(plan.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
-        ASSERT_EQ(plan.forTest_simpleGetDevice()->getName(), expectDevice);
+        ASSERT_STREQ(plan.forTest_simpleGetDevice()->getName(), expectDevice);
     };
 
     ASSERT_NO_FATAL_FAILURE(TrivialTest(false, "f32"));
@@ -1772,7 +1710,7 @@ TEST_F(PartitioningTest, Perf) {
             ASSERT_EQ(model.partitionTheWork(devices, ExecutePreference::PREFER_LOW_POWER, &plan),
                       ANEURALNETWORKS_NO_ERROR);
             ASSERT_EQ(plan.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
-            ASSERT_EQ(plan.forTest_simpleGetDevice()->getName(), "good");
+            ASSERT_STREQ(plan.forTest_simpleGetDevice()->getName(), "good");
         }
 
         {
@@ -1790,7 +1728,7 @@ TEST_F(PartitioningTest, Perf) {
             ASSERT_EQ(model.partitionTheWork(devices, ExecutePreference::PREFER_LOW_POWER, &plan),
                       ANEURALNETWORKS_NO_ERROR);
             ASSERT_EQ(plan.forTest_getKind(), ExecutionPlan::Kind::SIMPLE);
-            ASSERT_EQ(plan.forTest_simpleGetDevice()->getName(), "base");
+            ASSERT_STREQ(plan.forTest_simpleGetDevice()->getName(), "base");
         }
     };
 
@@ -1853,7 +1791,7 @@ class CacheTest : public PartitioningTest {
         // Find the cache info for the device.
         const uint8_t* token = nullptr;
         if (plan.forTest_getKind() == ExecutionPlan::Kind::SIMPLE) {
-            ASSERT_EQ(plan.forTest_simpleGetDevice()->getName(), deviceName);
+            ASSERT_STREQ(plan.forTest_simpleGetDevice()->getName(), deviceName);
             token = plan.forTest_simpleGetCacheToken();
         } else if (plan.forTest_getKind() == ExecutionPlan::Kind::COMPOUND) {
             const auto& steps = plan.forTest_compoundGetSteps();
@@ -1861,7 +1799,7 @@ class CacheTest : public PartitioningTest {
             for (const auto& step : steps) {
                 // In general, two or more partitions can be on the same device. However, this will
                 // not happen on the test models with only 2 operations.
-                if (step->getDevice()->getName() == deviceName) {
+                if (strcmp(step->getDevice()->getName(), deviceName) == 0) {
                     ASSERT_FALSE(found);
                     token = step->forTest_getCacheToken();
                     found = true;

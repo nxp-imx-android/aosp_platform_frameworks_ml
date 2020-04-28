@@ -18,11 +18,6 @@
 
 #include "CompilationBuilder.h"
 
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 #include "BurstBuilder.h"
 #include "ExecutionBuilder.h"
 #include "ExecutionBurstController.h"
@@ -95,8 +90,8 @@ int CompilationBuilder::finish() {
 
 int CompilationBuilder::setPreference(int32_t preference) {
     if (mFinished) {
-        LOG(ERROR) << "ANeuralNetworksCompilation_setPreference can't modify after compilation "
-                      "finished";
+        LOG(ERROR) <<
+                "ANeuralNetworksCompilation_setPreference can't modify after compilation finished";
         return ANEURALNETWORKS_BAD_STATE;
     }
     if (preference >= kNumberOfPreferences) {
@@ -126,8 +121,8 @@ int CompilationBuilder::setCaching(const std::string& cacheDir, const uint8_t* t
 
 int CompilationBuilder::setPartitioning(uint32_t partitioning) {
     if (mFinished) {
-        LOG(ERROR) << "ANeuralNetworksCompilation_setPartitioning can't modify after compilation "
-                      "finished";
+        LOG(ERROR) <<
+                "ANeuralNetworksCompilation_setPartitioning can't modify after compilation finished";
         return ANEURALNETWORKS_BAD_STATE;
     }
 
@@ -135,7 +130,7 @@ int CompilationBuilder::setPartitioning(uint32_t partitioning) {
     return ANEURALNETWORKS_NO_ERROR;
 }
 
-int CompilationBuilder::createExecution(ExecutionBuilder** execution) {
+int CompilationBuilder::createExecution(ExecutionBuilder **execution) {
     if (!mFinished) {
         LOG(ERROR) << "ANeuralNetworksExecution_create passed an unfinished compilation";
         *execution = nullptr;
@@ -161,8 +156,7 @@ int CompilationBuilder::createBurst(BurstBuilder** burst) {
         *burst = nullptr;
         return ANEURALNETWORKS_BAD_STATE;
     }
-    std::vector<std::shared_ptr<ExecutionBurstController>> burstControllers =
-            mPlan.makeBursts(mPreference);
+    std::vector<std::shared_ptr<ExecutionBurstController>> burstControllers = mPlan.makeBursts();
     *burst = new (std::nothrow) BurstBuilder(this, std::move(burstControllers));
     return (*burst ? ANEURALNETWORKS_NO_ERROR : ANEURALNETWORKS_OUT_OF_MEMORY);
 }

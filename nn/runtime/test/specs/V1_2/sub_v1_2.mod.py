@@ -54,15 +54,7 @@ Example({
 })
 
 # SUB of data type TENSOR_FLOAT32 is introduced in V1_1.
-Example.SetVersion("V1_1",
-                   "sub_v1_2_none",
-                   "sub_v1_2_none_all_inputs_as_internal",
-                   "sub_v1_2_relu",
-                   "sub_v1_2_relu_all_inputs_as_internal",
-                   "sub_v1_2_relu1",
-                   "sub_v1_2_relu1_all_inputs_as_internal",
-                   "sub_v1_2_relu6",
-                   "sub_v1_2_relu6_all_inputs_as_internal")
+Example.SetVersion("V1_1", "sub_v1_2_none", "sub_v1_2_relu", "sub_v1_2_relu1", "sub_v1_2_relu6")
 
 
 # SUB, zero-sized input
@@ -98,9 +90,10 @@ quant8 = DataTypeConverter().Identify({
     o3: ("TENSOR_QUANT8_ASYMM", 0.1, 128)
 })
 
+# Create test case with dummy values.
 Example({
     i1: [1, 2],
-    o1: [],
-    o2: [],
-    o3: [],
+    o1: [0],
+    o2: [0],
+    o3: [0],
 }).AddVariations("relaxed", quant8, "float16")

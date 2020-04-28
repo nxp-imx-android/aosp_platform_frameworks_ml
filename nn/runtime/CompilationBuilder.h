@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_FRAMEWORKS_ML_NN_RUNTIME_COMPILATION_BUILDER_H
-#define ANDROID_FRAMEWORKS_ML_NN_RUNTIME_COMPILATION_BUILDER_H
+#ifndef ANDROID_ML_NN_RUNTIME_COMPILATION_BUILDER_H
+#define ANDROID_ML_NN_RUNTIME_COMPILATION_BUILDER_H
 
 #include "ExecutionPlan.h"
 #include "NeuralNetworks.h"
@@ -32,7 +32,7 @@ class ExecutionBuilder;
 class ModelBuilder;
 
 class CompilationBuilder {
-   public:
+public:
     friend class ExecutionBuilder;  // TODO remove this
 
     // explicitDeviceList is true if the list of devices was provided explicitly
@@ -56,7 +56,7 @@ class CompilationBuilder {
 
     const ExecutionPlan& forTest_getExecutionPlan() const { return mPlan; }
 
-   private:
+private:
     const ModelBuilder* mModel;
 
     ExecutionPlan mPlan;
@@ -88,7 +88,7 @@ class CompilationBuilder {
     bool mIsCacheInfoProvided = false;
 };
 
-}  // namespace nn
-}  // namespace android
+} // namespace nn
+} // namespace android
 
-#endif  // ANDROID_FRAMEWORKS_ML_NN_RUNTIME_COMPILATION_BUILDER_H
+#endif // ANDROID_ML_NN_RUNTIME_COMPILATION_BUILDER_H

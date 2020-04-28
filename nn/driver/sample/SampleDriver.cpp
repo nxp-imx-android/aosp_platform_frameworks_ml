@@ -18,33 +18,23 @@
 
 #include "SampleDriver.h"
 
-#include <android-base/logging.h>
-#include <android-base/properties.h>
-#include <hidl/LegacySupport.h>
-
-#include <algorithm>
-#include <chrono>
-#include <map>
-#include <memory>
-#include <optional>
-#include <thread>
-#include <tuple>
-#include <utility>
-#include <vector>
-
 #include "CpuExecutor.h"
 #include "ExecutionBurstServer.h"
 #include "HalInterfaces.h"
 #include "Tracing.h"
 #include "ValidateHal.h"
 
+#include <android-base/logging.h>
+#include <hidl/LegacySupport.h>
+#include <chrono>
+#include <optional>
+#include <thread>
+
 namespace android {
 namespace nn {
 namespace sample_driver {
 
 namespace {
-
-using namespace hal;
 
 using time_point = std::chrono::steady_clock::time_point;
 
@@ -63,7 +53,7 @@ static const Timing kNoTiming = {.timeOnDevice = UINT64_MAX, .timeInDriver = UIN
 Return<void> SampleDriver::getCapabilities(getCapabilities_cb cb) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INITIALIZATION,
                  "SampleDriver::getCapabilities");
-    return getCapabilities_1_3([&](ErrorStatus error, const V1_3::Capabilities& capabilities) {
+    return getCapabilities_1_2([&](ErrorStatus error, const V1_2::Capabilities& capabilities) {
         // TODO(dgross): Do we need to check compliantWithV1_0(capabilities)?
         cb(error, convertToV1_0(capabilities));
     });
@@ -72,18 +62,9 @@ Return<void> SampleDriver::getCapabilities(getCapabilities_cb cb) {
 Return<void> SampleDriver::getCapabilities_1_1(getCapabilities_1_1_cb cb) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INITIALIZATION,
                  "SampleDriver::getCapabilities_1_1");
-    return getCapabilities_1_3([&](ErrorStatus error, const V1_3::Capabilities& capabilities) {
+    return getCapabilities_1_2([&](ErrorStatus error, const V1_2::Capabilities& capabilities) {
         // TODO(dgross): Do we need to check compliantWithV1_1(capabilities)?
         cb(error, convertToV1_1(capabilities));
-    });
-}
-
-Return<void> SampleDriver::getCapabilities_1_2(getCapabilities_1_2_cb cb) {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_INITIALIZATION,
-                 "SampleDriver::getCapabilities_1_2");
-    return getCapabilities_1_3([&](ErrorStatus error, const V1_3::Capabilities& capabilities) {
-        // TODO(dgross): Do we need to check compliantWithV1_2(capabilities)?
-        cb(error, convertToV1_2(capabilities));
     });
 }
 
@@ -113,10 +94,11 @@ Return<void> SampleDriver::getSupportedOperations(const V1_0::Model& model,
                  "SampleDriver::getSupportedOperations");
     if (!validateModel(model)) {
         VLOG(DRIVER) << "getSupportedOperations";
-        cb(ErrorStatus::INVALID_ARGUMENT, {});
+        std::vector<bool> supported;
+        cb(ErrorStatus::INVALID_ARGUMENT, supported);
         return Void();
     }
-    return getSupportedOperations_1_3(convertToV1_3(model), cb);
+    return getSupportedOperations_1_2(convertToV1_2(model), cb);
 }
 
 Return<void> SampleDriver::getSupportedOperations_1_1(const V1_1::Model& model,
@@ -125,22 +107,11 @@ Return<void> SampleDriver::getSupportedOperations_1_1(const V1_1::Model& model,
                  "SampleDriver::getSupportedOperations_1_1");
     if (!validateModel(model)) {
         VLOG(DRIVER) << "getSupportedOperations_1_1";
-        cb(ErrorStatus::INVALID_ARGUMENT, {});
+        std::vector<bool> supported;
+        cb(ErrorStatus::INVALID_ARGUMENT, supported);
         return Void();
     }
-    return getSupportedOperations_1_3(convertToV1_3(model), cb);
-}
-
-Return<void> SampleDriver::getSupportedOperations_1_2(const V1_2::Model& model,
-                                                      getSupportedOperations_1_2_cb cb) {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION,
-                 "SampleDriver::getSupportedOperations_1_2");
-    if (!validateModel(model)) {
-        VLOG(DRIVER) << "getSupportedOperations_1_2";
-        cb(ErrorStatus::INVALID_ARGUMENT, {});
-        return Void();
-    }
-    return getSupportedOperations_1_3(convertToV1_3(model), cb);
+    return getSupportedOperations_1_2(convertToV1_2(model), cb);
 }
 
 Return<void> SampleDriver::getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeeded_cb cb) {
@@ -153,19 +124,12 @@ Return<void> SampleDriver::getNumberOfCacheFilesNeeded(getNumberOfCacheFilesNeed
 
 static void notify(const sp<V1_0::IPreparedModelCallback>& callback, const ErrorStatus& status,
                    const sp<SamplePreparedModel>& preparedModel) {
-    const auto ret = callback->notify(status, preparedModel);
-    if (!ret.isOk()) {
-        LOG(ERROR) << "Error when calling IPreparedModelCallback::notify: " << ret.description();
-    }
+    callback->notify(status, preparedModel);
 }
 
 static void notify(const sp<V1_2::IPreparedModelCallback>& callback, const ErrorStatus& status,
                    const sp<SamplePreparedModel>& preparedModel) {
-    const auto ret = callback->notify_1_2(status, preparedModel);
-    if (!ret.isOk()) {
-        LOG(ERROR) << "Error when calling IPreparedModelCallback::notify_1_2: "
-                   << ret.description();
-    }
+    callback->notify_1_2(status, preparedModel);
 }
 
 template <typename T_Model, typename T_IPreparedModelCallback>
@@ -185,17 +149,13 @@ Return<ErrorStatus> prepareModelBase(const T_Model& model, const SampleDriver* d
         return ErrorStatus::INVALID_ARGUMENT;
     }
 
-    // asynchronously prepare the model from a new, detached thread
-    std::thread([model, driver, preference, callback] {
-        sp<SamplePreparedModel> preparedModel =
-                new SamplePreparedModel(convertToV1_3(model), driver, preference);
-        if (!preparedModel->initialize()) {
-            notify(callback, ErrorStatus::INVALID_ARGUMENT, nullptr);
-            return;
-        }
-        notify(callback, ErrorStatus::NONE, preparedModel);
-    }).detach();
-
+    // TODO: make asynchronous later
+    sp<SamplePreparedModel> preparedModel = new SamplePreparedModel(convertToV1_2(model), driver);
+    if (!preparedModel->initialize()) {
+        notify(callback, ErrorStatus::INVALID_ARGUMENT, nullptr);
+        return ErrorStatus::INVALID_ARGUMENT;
+    }
+    notify(callback, ErrorStatus::NONE, preparedModel);
     return ErrorStatus::NONE;
 }
 
@@ -214,31 +174,24 @@ Return<ErrorStatus> SampleDriver::prepareModel_1_1(
 
 Return<ErrorStatus> SampleDriver::prepareModel_1_2(
         const V1_2::Model& model, ExecutionPreference preference, const hidl_vec<hidl_handle>&,
-        const hidl_vec<hidl_handle>&, const CacheToken&,
+        const hidl_vec<hidl_handle>&, const HidlToken&,
         const sp<V1_2::IPreparedModelCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION, "SampleDriver::prepareModel_1_2");
     return prepareModelBase(model, this, preference, callback);
 }
 
-Return<ErrorStatus> SampleDriver::prepareModel_1_3(
-        const V1_3::Model& model, ExecutionPreference preference, const hidl_vec<hidl_handle>&,
-        const hidl_vec<hidl_handle>&, const CacheToken&,
-        const sp<V1_2::IPreparedModelCallback>& callback) {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION, "SampleDriver::prepareModel_1_3");
-    return prepareModelBase(model, this, preference, callback);
-}
-
 Return<ErrorStatus> SampleDriver::prepareModelFromCache(
-        const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const CacheToken&,
+        const hidl_vec<hidl_handle>&, const hidl_vec<hidl_handle>&, const HidlToken&,
         const sp<V1_2::IPreparedModelCallback>& callback) {
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_COMPILATION,
                  "SampleDriver::prepareModelFromCache");
-    notify(callback, ErrorStatus::GENERAL_FAILURE, nullptr);
+    callback->notify_1_2(ErrorStatus::GENERAL_FAILURE, nullptr);
     return ErrorStatus::GENERAL_FAILURE;
 }
 
 Return<DeviceStatus> SampleDriver::getStatus() {
-    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_UNSPECIFIED, "SampleDriver::getStatus");
+    NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_UNSPECIFIED,
+                 "SampleDriver::getStatus");
     VLOG(DRIVER) << "getStatus()";
     return DeviceStatus::AVAILABLE;
 }
@@ -258,22 +211,18 @@ bool SamplePreparedModel::initialize() {
     return setRunTimePoolInfosFromHidlMemories(&mPoolInfos, mModel.pools);
 }
 
-static void notify(const sp<V1_0::IExecutionCallback>& callback, const ErrorStatus& status,
-                   const hidl_vec<OutputShape>&, Timing) {
-    const auto ret = callback->notify(status);
-    if (!ret.isOk()) {
-        LOG(ERROR) << "Error when calling IExecutionCallback::notify: " << ret.description();
-    }
+static Return<void> notify(const sp<V1_0::IExecutionCallback>& callback, const ErrorStatus& status,
+                           const hidl_vec<OutputShape>&, Timing) {
+    return callback->notify(status);
 }
 
-static void notify(const sp<V1_2::IExecutionCallback>& callback, const ErrorStatus& status,
-                   const hidl_vec<OutputShape>& outputShapes, Timing timing) {
-    const auto ret = callback->notify_1_2(status, outputShapes, timing);
-    if (!ret.isOk()) {
-        LOG(ERROR) << "Error when calling IExecutionCallback::notify_1_2: " << ret.description();
-    }
+static Return<void> notify(const sp<V1_2::IExecutionCallback>& callback, const ErrorStatus& status,
+                           const hidl_vec<OutputShape>& outputShapes, Timing timing) {
+    return callback->notify_1_2(status, outputShapes, timing);
 }
 
+// TODO(xusongw): Let callback notify actual output shape once dynamic output shape
+//                is supported in CpuExecutor.
 template <typename T_IExecutionCallback>
 void asyncExecute(const Request& request, MeasureTiming measure, time_point driverStart,
                   const Model& model, const SampleDriver& driver,
@@ -297,14 +246,18 @@ void asyncExecute(const Request& request, MeasureTiming measure, time_point driv
     VLOG(DRIVER) << "executor.run returned " << n;
     ErrorStatus executionStatus = convertResultCodeToErrorStatus(n);
     hidl_vec<OutputShape> outputShapes = executor.getOutputShapes();
+    Return<void> returned;
     if (measure == MeasureTiming::YES && executionStatus == ErrorStatus::NONE) {
         driverEnd = now();
         Timing timing = {.timeOnDevice = uint64_t(microsecondsDuration(deviceEnd, deviceStart)),
                          .timeInDriver = uint64_t(microsecondsDuration(driverEnd, driverStart))};
         VLOG(DRIVER) << "SampleDriver::asyncExecute timing = " << toString(timing);
-        notify(callback, executionStatus, outputShapes, timing);
+        returned = notify(callback, executionStatus, outputShapes, timing);
     } else {
-        notify(callback, executionStatus, outputShapes, kNoTiming);
+        returned = notify(callback, executionStatus, outputShapes, kNoTiming);
+    }
+    if (!returned.isOk()) {
+        LOG(ERROR) << " hidl callback failed to return properly: " << returned.description();
     }
 }
 
@@ -332,7 +285,8 @@ Return<ErrorStatus> executeBase(const Request& request, MeasureTiming measure, c
     // is expected to live forever.
     std::thread([&model, &driver, &poolInfos, request, measure, driverStart, callback] {
         asyncExecute(request, measure, driverStart, model, driver, poolInfos, callback);
-    }).detach();
+    })
+            .detach();
 
     return ErrorStatus::NONE;
 }
@@ -473,22 +427,6 @@ class BurstExecutorWithCache : public ExecutionBurstServer::IBurstExecutorWithCa
     std::map<int32_t, std::optional<RunTimePoolInfo>> mMemoryCache;  // cached requestPoolInfos
 };
 
-// This is the amount of time the ExecutionBurstServer should spend polling the
-// FMQ to see if it has data available before it should fall back to waiting on
-// the futex.
-static std::chrono::microseconds getPollingTimeWindow() {
-    constexpr int32_t defaultPollingTimeWindow = 50;
-#ifdef NN_DEBUGGABLE
-    constexpr int32_t minPollingTimeWindow = 0;
-    const int32_t selectedPollingTimeWindow =
-            base::GetIntProperty("debug.nn.sample-driver-burst-polling-window",
-                                 defaultPollingTimeWindow, minPollingTimeWindow);
-    return std::chrono::microseconds{selectedPollingTimeWindow};
-#else
-    return std::chrono::microseconds{defaultPollingTimeWindow};
-#endif  // NN_DEBUGGABLE
-}
-
 Return<void> SamplePreparedModel::configureExecutionBurst(
         const sp<V1_2::IBurstCallback>& callback,
         const MQDescriptorSync<V1_2::FmqRequestDatum>& requestChannel,
@@ -497,22 +435,17 @@ Return<void> SamplePreparedModel::configureExecutionBurst(
     NNTRACE_FULL(NNTRACE_LAYER_DRIVER, NNTRACE_PHASE_EXECUTION,
                  "SampleDriver::configureExecutionBurst");
 
-    const bool preferPowerOverLatency = (kPreference == hal::ExecutionPreference::LOW_POWER);
-    const auto pollingTimeWindow =
-            (preferPowerOverLatency ? std::chrono::microseconds{0} : getPollingTimeWindow());
-
     // Alternatively, the burst could be configured via:
     // const sp<V1_2::IBurstContext> burst =
     //         ExecutionBurstServer::create(callback, requestChannel,
-    //                                      resultChannel, this,
-    //                                      pollingTimeWindow);
+    //                                      resultChannel, this);
     //
     // However, this alternative representation does not include a memory map
     // caching optimization, and adds overhead.
     const std::shared_ptr<BurstExecutorWithCache> executorWithCache =
             std::make_shared<BurstExecutorWithCache>(mModel, mDriver, mPoolInfos);
     const sp<V1_2::IBurstContext> burst = ExecutionBurstServer::create(
-            callback, requestChannel, resultChannel, executorWithCache, pollingTimeWindow);
+            callback, requestChannel, resultChannel, executorWithCache);
 
     if (burst == nullptr) {
         cb(ErrorStatus::GENERAL_FAILURE, {});
@@ -523,6 +456,6 @@ Return<void> SamplePreparedModel::configureExecutionBurst(
     return Void();
 }
 
-}  // namespace sample_driver
-}  // namespace nn
-}  // namespace android
+} // namespace sample_driver
+} // namespace nn
+} // namespace android

@@ -20,17 +20,13 @@
 
 #include "Utils.h"
 
-#include <PackageInfo.h>
 #include <android-base/file.h>
 #include <android-base/properties.h>
+#include <android/content/pm/IPackageManagerNative.h>
 #include <binder/IServiceManager.h>
 #include <procpartition/procpartition.h>
 #include <algorithm>
-#include <map>
-#include <memory>
-#include <string>
 #include <string_view>
-#include <vector>
 
 namespace android {
 namespace nn {
@@ -45,8 +41,6 @@ inline bool StartsWith(std::string_view sv, std::string_view prefix) {
 }
 
 namespace {
-
-using namespace hal;
 
 const uint8_t kLowBitsType = static_cast<uint8_t>(Model::ExtensionTypeEncoding::LOW_BITS_TYPE);
 const uint32_t kMaxPrefix =
@@ -104,16 +98,42 @@ std::vector<std::string> getVendorExtensionAllowlistedApps() {
 // Query PackageManagerNative service about Android app properties.
 // On success, it will populate appPackageInfo->app* fields.
 bool fetchAppPackageLocationInfo(uid_t uid, TypeManager::AppPackageInfo* appPackageInfo) {
-    ANeuralNetworks_PackageInfo packageInfo;
-    if (!ANeuralNetworks_fetch_PackageInfo(uid, &packageInfo)) {
+    sp<::android::IServiceManager> sm(::android::defaultServiceManager());
+    sp<::android::IBinder> binder(sm->getService(String16("package_native")));
+    if (binder == nullptr) {
+        LOG(ERROR) << "getService package_native failed";
         return false;
     }
-    appPackageInfo->appPackageName = packageInfo.appPackageName;
-    appPackageInfo->appIsSystemApp = packageInfo.appIsSystemApp;
-    appPackageInfo->appIsOnVendorImage = packageInfo.appIsOnVendorImage;
-    appPackageInfo->appIsOnProductImage = packageInfo.appIsOnProductImage;
 
-    ANeuralNetworks_free_PackageInfo(&packageInfo);
+    sp<content::pm::IPackageManagerNative> packageMgr =
+            interface_cast<content::pm::IPackageManagerNative>(binder);
+    std::vector<int> uids{static_cast<int>(uid)};
+    std::vector<std::string> names;
+    binder::Status status = packageMgr->getNamesForUids(uids, &names);
+    if (!status.isOk()) {
+        LOG(ERROR) << "package_native::getNamesForUids failed: "
+                   << status.exceptionMessage().c_str();
+        return false;
+    }
+    const std::string& packageName = names[0];
+
+    appPackageInfo->appPackageName = packageName;
+    int flags = 0;
+    status = packageMgr->getLocationFlags(packageName, &flags);
+    if (!status.isOk()) {
+        LOG(ERROR) << "package_native::getLocationFlags failed: "
+                   << status.exceptionMessage().c_str();
+        return false;
+    }
+    // isSystemApp()
+    appPackageInfo->appIsSystemApp =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_SYSTEM) != 0);
+    // isVendor()
+    appPackageInfo->appIsOnVendorImage =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_VENDOR) != 0);
+    // isProduct()
+    appPackageInfo->appIsOnProductImage =
+            ((flags & content::pm::IPackageManagerNative::LOCATION_PRODUCT) != 0);
     return true;
 }
 
@@ -181,7 +201,7 @@ bool TypeManager::isExtensionsUseAllowed(const AppPackageInfo& appPackageInfo,
 
 void TypeManager::findAvailableExtensions() {
     for (const std::shared_ptr<Device>& device : mDeviceManager->getDrivers()) {
-        for (const Extension& extension : device->getSupportedExtensions()) {
+        for (const Extension extension : device->getSupportedExtensions()) {
             registerExtension(extension, device->getName());
         }
     }
