@@ -6,7 +6,7 @@ using namespace test_helper;
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1() {
+const TestModel& get_test_model_n_1_unused_output() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -73,10 +73,20 @@ const TestModel& get_test_model_n_1() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -216,7 +226,7 @@ const TestModel& get_test_model_n_1() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -249,13 +259,13 @@ const TestModel& get_test_model_n_1() {
     return model;
 }
 
-const auto dummy_test_model_n_1 = TestModelManager::get().add("while_fib_n_1", get_test_model_n_1());
+const auto dummy_test_model_n_1_unused_output = TestModelManager::get().add("while_fib_n_1_unused_output", get_test_model_n_1_unused_output());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_1_unused_output_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -322,10 +332,20 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -465,7 +485,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -498,19 +518,19 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_1_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_all_tensors_as_inputs", get_test_model_n_1_all_tensors_as_inputs());
+const auto dummy_test_model_n_1_unused_output_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_unused_output_all_tensors_as_inputs", get_test_model_n_1_unused_output_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -571,6 +591,16 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -603,12 +633,12 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -748,7 +778,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -781,13 +811,13 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_outputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -853,6 +883,16 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy1
                             .channelQuant = {},
@@ -887,14 +927,14 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -1031,7 +1071,7 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -1064,13 +1104,13 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_1_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_all_outputs_as_internal", get_test_model_n_1_all_outputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_all_outputs_as_internal", get_test_model_n_1_unused_output_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed() {
+const TestModel& get_test_model_n_1_unused_output_relaxed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -1137,10 +1177,20 @@ const TestModel& get_test_model_n_1_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -1280,7 +1330,7 @@ const TestModel& get_test_model_n_1_relaxed() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -1313,13 +1363,13 @@ const TestModel& get_test_model_n_1_relaxed() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed = TestModelManager::get().add("while_fib_n_1_relaxed", get_test_model_n_1_relaxed());
+const auto dummy_test_model_n_1_unused_output_relaxed = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed", get_test_model_n_1_unused_output_relaxed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -1386,10 +1436,20 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -1529,7 +1589,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -1562,19 +1622,19 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_relaxed_all_tensors_as_inputs", get_test_model_n_1_relaxed_all_tensors_as_inputs());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_tensors_as_inputs", get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -1635,6 +1695,16 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -1667,12 +1737,12 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -1812,7 +1882,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -1845,13 +1915,13 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -1917,6 +1987,16 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy6
                             .channelQuant = {},
@@ -1951,14 +2031,14 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -2095,7 +2175,7 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -2128,13 +2208,13 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_relaxed_all_outputs_as_internal", get_test_model_n_1_relaxed_all_outputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_outputs_as_internal", get_test_model_n_1_unused_output_relaxed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16() {
+const TestModel& get_test_model_n_1_unused_output_float16() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -2201,10 +2281,20 @@ const TestModel& get_test_model_n_1_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -2344,7 +2434,7 @@ const TestModel& get_test_model_n_1_float16() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -2377,13 +2467,13 @@ const TestModel& get_test_model_n_1_float16() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16 = TestModelManager::get().add("while_fib_n_1_float16", get_test_model_n_1_float16());
+const auto dummy_test_model_n_1_unused_output_float16 = TestModelManager::get().add("while_fib_n_1_unused_output_float16", get_test_model_n_1_unused_output_float16());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -2450,10 +2540,20 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -2593,7 +2693,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -2626,19 +2726,19 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_float16_all_tensors_as_inputs", get_test_model_n_1_float16_all_tensors_as_inputs());
+const auto dummy_test_model_n_1_unused_output_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_tensors_as_inputs", get_test_model_n_1_unused_output_float16_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -2699,6 +2799,16 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -2731,12 +2841,12 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -2876,7 +2986,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -2909,13 +3019,13 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_outputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -2981,6 +3091,16 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy11
                             .channelQuant = {},
@@ -3015,14 +3135,14 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -3159,7 +3279,7 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -3192,13 +3312,13 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_float16_all_outputs_as_internal", get_test_model_n_1_float16_all_outputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_outputs_as_internal", get_test_model_n_1_unused_output_float16_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8() {
+const TestModel& get_test_model_n_1_unused_output_quant8() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -3265,10 +3385,20 @@ const TestModel& get_test_model_n_1_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -3408,7 +3538,7 @@ const TestModel& get_test_model_n_1_quant8() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -3441,13 +3571,13 @@ const TestModel& get_test_model_n_1_quant8() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8 = TestModelManager::get().add("while_fib_n_1_quant8", get_test_model_n_1_quant8());
+const auto dummy_test_model_n_1_unused_output_quant8 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8", get_test_model_n_1_unused_output_quant8());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -3514,10 +3644,20 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -3657,7 +3797,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -3690,19 +3830,19 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_quant8_all_tensors_as_inputs", get_test_model_n_1_quant8_all_tensors_as_inputs());
+const auto dummy_test_model_n_1_unused_output_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_tensors_as_inputs", get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -3763,6 +3903,16 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -3795,12 +3945,12 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -3940,7 +4090,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -3973,13 +4123,13 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -4045,6 +4195,16 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy16
                             .channelQuant = {},
@@ -4079,14 +4239,14 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -4223,7 +4383,7 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -4256,13 +4416,13 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_quant8_all_outputs_as_internal", get_test_model_n_1_quant8_all_outputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_outputs_as_internal", get_test_model_n_1_unused_output_quant8_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -4329,10 +4489,20 @@ const TestModel& get_test_model_n_1_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -4472,7 +4642,7 @@ const TestModel& get_test_model_n_1_quant8_signed() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -4505,13 +4675,13 @@ const TestModel& get_test_model_n_1_quant8_signed() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed = TestModelManager::get().add("while_fib_n_1_quant8_signed", get_test_model_n_1_quant8_signed());
+const auto dummy_test_model_n_1_unused_output_quant8_signed = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed", get_test_model_n_1_unused_output_quant8_signed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -4578,10 +4748,20 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -4721,7 +4901,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -4754,19 +4934,19 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_tensors_as_inputs", get_test_model_n_1_quant8_signed_all_tensors_as_inputs());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_tensors_as_inputs", get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -4827,6 +5007,16 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -4859,12 +5049,12 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -5004,7 +5194,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -5037,13 +5227,13 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -5109,6 +5299,16 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
+                            .zeroPoint = 0
+                        }, { // i_out1
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy21
                             .channelQuant = {},
@@ -5143,14 +5343,14 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -5287,7 +5487,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal() {
                         }, { // zero_bias
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -5320,13 +5520,13 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_outputs_as_internal", get_test_model_n_1_quant8_signed_all_outputs_as_internal());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_outputs_as_internal", get_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2() {
+const TestModel& get_test_model_n_2_unused_output() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -5393,10 +5593,20 @@ const TestModel& get_test_model_n_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -5493,7 +5703,7 @@ const TestModel& get_test_model_n_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -5536,7 +5746,7 @@ const TestModel& get_test_model_n_2() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -5569,13 +5779,13 @@ const TestModel& get_test_model_n_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2 = TestModelManager::get().add("while_fib_n_2", get_test_model_n_2());
+const auto dummy_test_model_n_2_unused_output = TestModelManager::get().add("while_fib_n_2_unused_output", get_test_model_n_2_unused_output());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_2_unused_output_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -5642,10 +5852,20 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -5742,7 +5962,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -5785,7 +6005,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -5818,19 +6038,19 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_2_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_all_tensors_as_inputs", get_test_model_n_2_all_tensors_as_inputs());
+const auto dummy_test_model_n_2_unused_output_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_unused_output_all_tensors_as_inputs", get_test_model_n_2_unused_output_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -5891,6 +6111,16 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init1_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -5923,12 +6153,12 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -6025,7 +6255,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -6068,7 +6298,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -6101,13 +6331,13 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_outputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -6173,6 +6403,16 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy26
                             .channelQuant = {},
@@ -6207,14 +6447,14 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -6308,7 +6548,7 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -6351,7 +6591,7 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -6384,13 +6624,13 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_2_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_all_outputs_as_internal", get_test_model_n_2_all_outputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_all_outputs_as_internal", get_test_model_n_2_unused_output_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed() {
+const TestModel& get_test_model_n_2_unused_output_relaxed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -6457,10 +6697,20 @@ const TestModel& get_test_model_n_2_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -6557,7 +6807,7 @@ const TestModel& get_test_model_n_2_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -6600,7 +6850,7 @@ const TestModel& get_test_model_n_2_relaxed() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -6633,13 +6883,13 @@ const TestModel& get_test_model_n_2_relaxed() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed = TestModelManager::get().add("while_fib_n_2_relaxed", get_test_model_n_2_relaxed());
+const auto dummy_test_model_n_2_unused_output_relaxed = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed", get_test_model_n_2_unused_output_relaxed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -6706,10 +6956,20 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -6806,7 +7066,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -6849,7 +7109,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -6882,19 +7142,19 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_relaxed_all_tensors_as_inputs", get_test_model_n_2_relaxed_all_tensors_as_inputs());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_tensors_as_inputs", get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -6955,6 +7215,16 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init1_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -6987,12 +7257,12 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -7089,7 +7359,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -7132,7 +7402,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -7165,13 +7435,13 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -7237,6 +7507,16 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy31
                             .channelQuant = {},
@@ -7271,14 +7551,14 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -7372,7 +7652,7 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -7415,7 +7695,7 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -7448,13 +7728,13 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_relaxed_all_outputs_as_internal", get_test_model_n_2_relaxed_all_outputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_outputs_as_internal", get_test_model_n_2_unused_output_relaxed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16() {
+const TestModel& get_test_model_n_2_unused_output_float16() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -7521,10 +7801,20 @@ const TestModel& get_test_model_n_2_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -7621,7 +7911,7 @@ const TestModel& get_test_model_n_2_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -7664,7 +7954,7 @@ const TestModel& get_test_model_n_2_float16() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -7697,13 +7987,13 @@ const TestModel& get_test_model_n_2_float16() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16 = TestModelManager::get().add("while_fib_n_2_float16", get_test_model_n_2_float16());
+const auto dummy_test_model_n_2_unused_output_float16 = TestModelManager::get().add("while_fib_n_2_unused_output_float16", get_test_model_n_2_unused_output_float16());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -7770,10 +8060,20 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -7870,7 +8170,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -7913,7 +8213,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -7946,19 +8246,19 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_float16_all_tensors_as_inputs", get_test_model_n_2_float16_all_tensors_as_inputs());
+const auto dummy_test_model_n_2_unused_output_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_tensors_as_inputs", get_test_model_n_2_unused_output_float16_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -8019,6 +8319,16 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init1_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -8051,12 +8361,12 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -8153,7 +8463,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -8196,7 +8506,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -8229,13 +8539,13 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -8301,6 +8611,16 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy36
                             .channelQuant = {},
@@ -8335,14 +8655,14 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -8436,7 +8756,7 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -8479,7 +8799,7 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -8512,13 +8832,13 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_float16_all_outputs_as_internal", get_test_model_n_2_float16_all_outputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_outputs_as_internal", get_test_model_n_2_unused_output_float16_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8() {
+const TestModel& get_test_model_n_2_unused_output_quant8() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -8585,10 +8905,20 @@ const TestModel& get_test_model_n_2_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -8685,7 +9015,7 @@ const TestModel& get_test_model_n_2_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -8728,7 +9058,7 @@ const TestModel& get_test_model_n_2_quant8() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -8761,13 +9091,13 @@ const TestModel& get_test_model_n_2_quant8() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8 = TestModelManager::get().add("while_fib_n_2_quant8", get_test_model_n_2_quant8());
+const auto dummy_test_model_n_2_unused_output_quant8 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8", get_test_model_n_2_unused_output_quant8());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -8834,10 +9164,20 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -8934,7 +9274,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -8977,7 +9317,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -9010,19 +9350,19 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_quant8_all_tensors_as_inputs", get_test_model_n_2_quant8_all_tensors_as_inputs());
+const auto dummy_test_model_n_2_unused_output_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_tensors_as_inputs", get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -9083,6 +9423,16 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init1_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -9115,12 +9465,12 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -9217,7 +9567,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -9260,7 +9610,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -9293,13 +9643,13 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -9365,6 +9715,16 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy41
                             .channelQuant = {},
@@ -9399,14 +9759,14 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -9500,7 +9860,7 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -9543,7 +9903,7 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -9576,13 +9936,13 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_quant8_all_outputs_as_internal", get_test_model_n_2_quant8_all_outputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_outputs_as_internal", get_test_model_n_2_unused_output_quant8_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -9649,10 +10009,20 @@ const TestModel& get_test_model_n_2_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -9749,7 +10119,7 @@ const TestModel& get_test_model_n_2_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -9792,7 +10162,7 @@ const TestModel& get_test_model_n_2_quant8_signed() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -9825,13 +10195,13 @@ const TestModel& get_test_model_n_2_quant8_signed() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed = TestModelManager::get().add("while_fib_n_2_quant8_signed", get_test_model_n_2_quant8_signed());
+const auto dummy_test_model_n_2_unused_output_quant8_signed = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed", get_test_model_n_2_unused_output_quant8_signed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -9898,10 +10268,20 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -9998,7 +10378,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -10041,7 +10421,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -10074,19 +10454,19 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_tensors_as_inputs", get_test_model_n_2_quant8_signed_all_tensors_as_inputs());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_tensors_as_inputs", get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -10147,6 +10527,16 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init1_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -10179,12 +10569,12 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -10281,7 +10671,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -10324,7 +10714,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -10357,13 +10747,13 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -10429,6 +10819,16 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
+                            .zeroPoint = 0
+                        }, { // i_out3
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy46
                             .channelQuant = {},
@@ -10463,14 +10863,14 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -10564,7 +10964,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out1
+                        }, { // i_out2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -10607,7 +11007,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
                         }, { // zero_bias1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -10640,13 +11040,13 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_outputs_as_internal", get_test_model_n_2_quant8_signed_all_outputs_as_internal());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_outputs_as_internal", get_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3() {
+const TestModel& get_test_model_n_3_unused_output() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -10713,10 +11113,20 @@ const TestModel& get_test_model_n_3() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -10813,7 +11223,7 @@ const TestModel& get_test_model_n_3() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -10856,7 +11266,7 @@ const TestModel& get_test_model_n_3() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -10889,13 +11299,13 @@ const TestModel& get_test_model_n_3() {
     return model;
 }
 
-const auto dummy_test_model_n_3 = TestModelManager::get().add("while_fib_n_3", get_test_model_n_3());
+const auto dummy_test_model_n_3_unused_output = TestModelManager::get().add("while_fib_n_3_unused_output", get_test_model_n_3_unused_output());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_3_unused_output_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -10962,10 +11372,20 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -11062,7 +11482,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -11105,7 +11525,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -11138,19 +11558,19 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_3_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_all_tensors_as_inputs", get_test_model_n_3_all_tensors_as_inputs());
+const auto dummy_test_model_n_3_unused_output_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_unused_output_all_tensors_as_inputs", get_test_model_n_3_unused_output_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -11211,6 +11631,16 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init2_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -11243,12 +11673,12 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -11345,7 +11775,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -11388,7 +11818,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -11421,13 +11851,13 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_outputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -11493,6 +11923,16 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy51
                             .channelQuant = {},
@@ -11527,14 +11967,14 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -11628,7 +12068,7 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -11671,7 +12111,7 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -11704,13 +12144,13 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_3_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_all_outputs_as_internal", get_test_model_n_3_all_outputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_all_outputs_as_internal", get_test_model_n_3_unused_output_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed() {
+const TestModel& get_test_model_n_3_unused_output_relaxed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -11777,10 +12217,20 @@ const TestModel& get_test_model_n_3_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -11877,7 +12327,7 @@ const TestModel& get_test_model_n_3_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -11920,7 +12370,7 @@ const TestModel& get_test_model_n_3_relaxed() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -11953,13 +12403,13 @@ const TestModel& get_test_model_n_3_relaxed() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed = TestModelManager::get().add("while_fib_n_3_relaxed", get_test_model_n_3_relaxed());
+const auto dummy_test_model_n_3_unused_output_relaxed = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed", get_test_model_n_3_unused_output_relaxed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -12026,10 +12476,20 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -12126,7 +12586,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -12169,7 +12629,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -12202,19 +12662,19 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_relaxed_all_tensors_as_inputs", get_test_model_n_3_relaxed_all_tensors_as_inputs());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_tensors_as_inputs", get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -12275,6 +12735,16 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init2_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -12307,12 +12777,12 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -12409,7 +12879,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -12452,7 +12922,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -12485,13 +12955,13 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -12557,6 +13027,16 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy56
                             .channelQuant = {},
@@ -12591,14 +13071,14 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -12692,7 +13172,7 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -12735,7 +13215,7 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -12768,13 +13248,13 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_relaxed_all_outputs_as_internal", get_test_model_n_3_relaxed_all_outputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_outputs_as_internal", get_test_model_n_3_unused_output_relaxed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16() {
+const TestModel& get_test_model_n_3_unused_output_float16() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -12841,10 +13321,20 @@ const TestModel& get_test_model_n_3_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -12941,7 +13431,7 @@ const TestModel& get_test_model_n_3_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -12984,7 +13474,7 @@ const TestModel& get_test_model_n_3_float16() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -13017,13 +13507,13 @@ const TestModel& get_test_model_n_3_float16() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16 = TestModelManager::get().add("while_fib_n_3_float16", get_test_model_n_3_float16());
+const auto dummy_test_model_n_3_unused_output_float16 = TestModelManager::get().add("while_fib_n_3_unused_output_float16", get_test_model_n_3_unused_output_float16());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -13090,10 +13580,20 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -13190,7 +13690,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -13233,7 +13733,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -13266,19 +13766,19 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_float16_all_tensors_as_inputs", get_test_model_n_3_float16_all_tensors_as_inputs());
+const auto dummy_test_model_n_3_unused_output_float16_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_tensors_as_inputs", get_test_model_n_3_unused_output_float16_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -13339,6 +13839,16 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init2_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -13371,12 +13881,12 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -13473,7 +13983,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -13516,7 +14026,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -13549,13 +14059,13 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -13621,6 +14131,16 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy61
                             .channelQuant = {},
@@ -13655,14 +14175,14 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -13756,7 +14276,7 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -13799,7 +14319,7 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -13832,13 +14352,13 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_float16_all_outputs_as_internal", get_test_model_n_3_float16_all_outputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_float16_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_outputs_as_internal", get_test_model_n_3_unused_output_float16_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8() {
+const TestModel& get_test_model_n_3_unused_output_quant8() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -13905,10 +14425,20 @@ const TestModel& get_test_model_n_3_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -14005,7 +14535,7 @@ const TestModel& get_test_model_n_3_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -14048,7 +14578,7 @@ const TestModel& get_test_model_n_3_quant8() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -14081,13 +14611,13 @@ const TestModel& get_test_model_n_3_quant8() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8 = TestModelManager::get().add("while_fib_n_3_quant8", get_test_model_n_3_quant8());
+const auto dummy_test_model_n_3_unused_output_quant8 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8", get_test_model_n_3_unused_output_quant8());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -14154,10 +14684,20 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -14254,7 +14794,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -14297,7 +14837,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -14330,19 +14870,19 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_quant8_all_tensors_as_inputs", get_test_model_n_3_quant8_all_tensors_as_inputs());
+const auto dummy_test_model_n_3_unused_output_quant8_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_tensors_as_inputs", get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -14403,6 +14943,16 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init2_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -14435,12 +14985,12 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -14537,7 +15087,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -14580,7 +15130,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -14613,13 +15163,13 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -14685,6 +15235,16 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy66
                             .channelQuant = {},
@@ -14719,14 +15279,14 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -14820,7 +15380,7 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -14863,7 +15423,7 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -14896,13 +15456,13 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_quant8_all_outputs_as_internal", get_test_model_n_3_quant8_all_outputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_quant8_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_outputs_as_internal", get_test_model_n_3_unused_output_quant8_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -14969,10 +15529,20 @@ const TestModel& get_test_model_n_3_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -15069,7 +15639,7 @@ const TestModel& get_test_model_n_3_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -15112,7 +15682,7 @@ const TestModel& get_test_model_n_3_quant8_signed() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -15145,13 +15715,13 @@ const TestModel& get_test_model_n_3_quant8_signed() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed = TestModelManager::get().add("while_fib_n_3_quant8_signed", get_test_model_n_3_quant8_signed());
+const auto dummy_test_model_n_3_unused_output_quant8_signed = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed", get_test_model_n_3_unused_output_quant8_signed());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -15218,10 +15788,20 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -15318,7 +15898,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -15361,7 +15941,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -15394,19 +15974,19 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_tensors_as_inputs", get_test_model_n_3_quant8_signed_all_tensors_as_inputs());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_tensors_as_inputs", get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -15467,6 +16047,16 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init2_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -15499,12 +16089,12 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -15601,7 +16191,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -15644,7 +16234,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -15677,13 +16267,13 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal", get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -15750,6 +16340,16 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out5
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // dummy71
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({0}),
@@ -15783,14 +16383,14 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -15884,7 +16484,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out2
+                        }, { // i_out4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -15927,7 +16527,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
                         }, { // zero_bias2
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -15960,7 +16560,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_outputs_as_internal", get_test_model_n_3_quant8_signed_all_outputs_as_internal());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_outputs_as_internal", get_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal());
 
 }  // namespace generated_tests::while_fib
 
@@ -16133,7 +16733,7 @@ const TestModel& get_test_model_n_4() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -16176,7 +16776,7 @@ const TestModel& get_test_model_n_4() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -16382,7 +16982,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -16425,7 +17025,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -16665,7 +17265,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -16708,7 +17308,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -16948,7 +17548,7 @@ const TestModel& get_test_model_n_4_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -16991,7 +17591,7 @@ const TestModel& get_test_model_n_4_all_outputs_as_internal() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -17197,7 +17797,7 @@ const TestModel& get_test_model_n_4_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -17240,7 +17840,7 @@ const TestModel& get_test_model_n_4_relaxed() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -17446,7 +18046,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -17489,7 +18089,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -17729,7 +18329,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -17772,7 +18372,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -18012,7 +18612,7 @@ const TestModel& get_test_model_n_4_relaxed_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -18055,7 +18655,7 @@ const TestModel& get_test_model_n_4_relaxed_all_outputs_as_internal() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -18261,7 +18861,7 @@ const TestModel& get_test_model_n_4_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -18304,7 +18904,7 @@ const TestModel& get_test_model_n_4_float16() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -18510,7 +19110,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -18553,7 +19153,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -18793,7 +19393,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -18836,7 +19436,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -19076,7 +19676,7 @@ const TestModel& get_test_model_n_4_float16_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -19119,7 +19719,7 @@ const TestModel& get_test_model_n_4_float16_all_outputs_as_internal() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -19325,7 +19925,7 @@ const TestModel& get_test_model_n_4_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -19368,7 +19968,7 @@ const TestModel& get_test_model_n_4_quant8() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -19574,7 +20174,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -19617,7 +20217,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -19857,7 +20457,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -19900,7 +20500,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -20140,7 +20740,7 @@ const TestModel& get_test_model_n_4_quant8_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -20183,7 +20783,7 @@ const TestModel& get_test_model_n_4_quant8_all_outputs_as_internal() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -20389,7 +20989,7 @@ const TestModel& get_test_model_n_4_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -20432,7 +21032,7 @@ const TestModel& get_test_model_n_4_quant8_signed() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -20638,7 +21238,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -20681,7 +21281,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -20921,7 +21521,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -20964,7 +21564,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -21204,7 +21804,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out3
+                        }, { // i_out6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -21247,7 +21847,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_outputs_as_internal() {
                         }, { // zero_bias3
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -21453,7 +22053,7 @@ const TestModel& get_test_model_n_5() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -21496,7 +22096,7 @@ const TestModel& get_test_model_n_5() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -21702,7 +22302,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -21745,7 +22345,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -21985,7 +22585,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -22028,7 +22628,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -22268,7 +22868,7 @@ const TestModel& get_test_model_n_5_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -22311,7 +22911,7 @@ const TestModel& get_test_model_n_5_all_outputs_as_internal() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -22517,7 +23117,7 @@ const TestModel& get_test_model_n_5_relaxed() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -22560,7 +23160,7 @@ const TestModel& get_test_model_n_5_relaxed() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -22766,7 +23366,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -22809,7 +23409,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -23049,7 +23649,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -23092,7 +23692,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -23332,7 +23932,7 @@ const TestModel& get_test_model_n_5_relaxed_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -23375,7 +23975,7 @@ const TestModel& get_test_model_n_5_relaxed_all_outputs_as_internal() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -23581,7 +24181,7 @@ const TestModel& get_test_model_n_5_float16() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -23624,7 +24224,7 @@ const TestModel& get_test_model_n_5_float16() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -23830,7 +24430,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -23873,7 +24473,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -24113,7 +24713,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -24156,7 +24756,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -24396,7 +24996,7 @@ const TestModel& get_test_model_n_5_float16_all_outputs_as_internal() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -24439,7 +25039,7 @@ const TestModel& get_test_model_n_5_float16_all_outputs_as_internal() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -24645,7 +25245,7 @@ const TestModel& get_test_model_n_5_quant8() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -24688,7 +25288,7 @@ const TestModel& get_test_model_n_5_quant8() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -24894,7 +25494,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -24937,7 +25537,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -25177,7 +25777,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -25220,7 +25820,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -25460,7 +26060,7 @@ const TestModel& get_test_model_n_5_quant8_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -25503,7 +26103,7 @@ const TestModel& get_test_model_n_5_quant8_all_outputs_as_internal() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -25709,7 +26309,7 @@ const TestModel& get_test_model_n_5_quant8_signed() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -25752,7 +26352,7 @@ const TestModel& get_test_model_n_5_quant8_signed() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -25958,7 +26558,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -26001,7 +26601,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -26241,7 +26841,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -26284,7 +26884,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -26524,7 +27124,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_outputs_as_internal() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out4
+                        }, { // i_out7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -26567,7 +27167,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_outputs_as_internal() {
                         }, { // zero_bias4
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_COPY,
                             .numberOfConsumers = 1,
@@ -26606,7 +27206,7 @@ const auto dummy_test_model_n_5_quant8_signed_all_outputs_as_internal = TestMode
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_2() {
+const TestModel& get_test_model_n_1_unused_output_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -26673,10 +27273,20 @@ const TestModel& get_test_model_n_1_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -26773,7 +27383,7 @@ const TestModel& get_test_model_n_1_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -26816,7 +27426,7 @@ const TestModel& get_test_model_n_1_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -26849,13 +27459,13 @@ const TestModel& get_test_model_n_1_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_2 = TestModelManager::get().add("while_fib_n_1_2", get_test_model_n_1_2());
+const auto dummy_test_model_n_1_unused_output_2 = TestModelManager::get().add("while_fib_n_1_unused_output_2", get_test_model_n_1_unused_output_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_1_unused_output_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -26922,10 +27532,20 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -27022,7 +27642,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -27065,7 +27685,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -27098,19 +27718,19 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_all_tensors_as_inputs_2", get_test_model_n_1_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_1_unused_output_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_unused_output_all_tensors_as_inputs_2", get_test_model_n_1_unused_output_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -27171,6 +27791,16 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init5_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -27203,12 +27833,12 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -27305,7 +27935,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -27348,7 +27978,7 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -27381,13 +28011,13 @@ const TestModel& get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -27453,6 +28083,16 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy126
                             .channelQuant = {},
@@ -27487,14 +28127,14 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -27588,7 +28228,7 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -27631,7 +28271,7 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -27664,13 +28304,13 @@ const TestModel& get_test_model_n_1_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_all_outputs_as_internal_2", get_test_model_n_1_all_outputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_all_outputs_as_internal_2", get_test_model_n_1_unused_output_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_2() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -27737,10 +28377,20 @@ const TestModel& get_test_model_n_1_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -27837,7 +28487,7 @@ const TestModel& get_test_model_n_1_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -27880,7 +28530,7 @@ const TestModel& get_test_model_n_1_relaxed_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -27913,13 +28563,13 @@ const TestModel& get_test_model_n_1_relaxed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_2 = TestModelManager::get().add("while_fib_n_1_relaxed_2", get_test_model_n_1_relaxed_2());
+const auto dummy_test_model_n_1_unused_output_relaxed_2 = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_2", get_test_model_n_1_unused_output_relaxed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -27986,10 +28636,20 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -28086,7 +28746,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -28129,7 +28789,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -28162,19 +28822,19 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_relaxed_all_tensors_as_inputs_2", get_test_model_n_1_relaxed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_tensors_as_inputs_2", get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -28235,6 +28895,16 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init5_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -28267,12 +28937,12 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -28369,7 +29039,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -28412,7 +29082,7 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -28445,13 +29115,13 @@ const TestModel& get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_relaxed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -28517,6 +29187,16 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy131
                             .channelQuant = {},
@@ -28551,14 +29231,14 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -28652,7 +29332,7 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -28695,7 +29375,7 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -28728,13 +29408,13 @@ const TestModel& get_test_model_n_1_relaxed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_relaxed_all_outputs_as_internal_2", get_test_model_n_1_relaxed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_relaxed_all_outputs_as_internal_2", get_test_model_n_1_unused_output_relaxed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_2() {
+const TestModel& get_test_model_n_1_unused_output_float16_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -28801,10 +29481,20 @@ const TestModel& get_test_model_n_1_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -28901,7 +29591,7 @@ const TestModel& get_test_model_n_1_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -28944,7 +29634,7 @@ const TestModel& get_test_model_n_1_float16_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -28977,13 +29667,13 @@ const TestModel& get_test_model_n_1_float16_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_2 = TestModelManager::get().add("while_fib_n_1_float16_2", get_test_model_n_1_float16_2());
+const auto dummy_test_model_n_1_unused_output_float16_2 = TestModelManager::get().add("while_fib_n_1_unused_output_float16_2", get_test_model_n_1_unused_output_float16_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -29050,10 +29740,20 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -29150,7 +29850,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -29193,7 +29893,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -29226,19 +29926,19 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_float16_all_tensors_as_inputs_2", get_test_model_n_1_float16_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_1_unused_output_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_tensors_as_inputs_2", get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -29299,6 +29999,16 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init5_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -29331,12 +30041,12 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -29433,7 +30143,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -29476,7 +30186,7 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -29509,13 +30219,13 @@ const TestModel& get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_float16_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -29581,6 +30291,16 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy136
                             .channelQuant = {},
@@ -29615,14 +30335,14 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -29716,7 +30436,7 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -29759,7 +30479,7 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -29792,13 +30512,13 @@ const TestModel& get_test_model_n_1_float16_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_float16_all_outputs_as_internal_2", get_test_model_n_1_float16_all_outputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_float16_all_outputs_as_internal_2", get_test_model_n_1_unused_output_float16_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -29865,10 +30585,20 @@ const TestModel& get_test_model_n_1_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -29965,7 +30695,7 @@ const TestModel& get_test_model_n_1_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -30008,7 +30738,7 @@ const TestModel& get_test_model_n_1_quant8_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -30041,13 +30771,13 @@ const TestModel& get_test_model_n_1_quant8_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_2 = TestModelManager::get().add("while_fib_n_1_quant8_2", get_test_model_n_1_quant8_2());
+const auto dummy_test_model_n_1_unused_output_quant8_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_2", get_test_model_n_1_unused_output_quant8_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -30114,10 +30844,20 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -30214,7 +30954,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -30257,7 +30997,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -30290,19 +31030,19 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_quant8_all_tensors_as_inputs_2", get_test_model_n_1_quant8_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_tensors_as_inputs_2", get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -30363,6 +31103,16 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init5_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -30395,12 +31145,12 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -30497,7 +31247,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -30540,7 +31290,7 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -30573,13 +31323,13 @@ const TestModel& get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -30645,6 +31395,16 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy141
                             .channelQuant = {},
@@ -30679,14 +31439,14 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -30780,7 +31540,7 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -30823,7 +31583,7 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -30856,13 +31616,13 @@ const TestModel& get_test_model_n_1_quant8_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_quant8_all_outputs_as_internal_2", get_test_model_n_1_quant8_all_outputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_all_outputs_as_internal_2", get_test_model_n_1_unused_output_quant8_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -30929,10 +31689,20 @@ const TestModel& get_test_model_n_1_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -31029,7 +31799,7 @@ const TestModel& get_test_model_n_1_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -31072,7 +31842,7 @@ const TestModel& get_test_model_n_1_quant8_signed_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -31105,13 +31875,13 @@ const TestModel& get_test_model_n_1_quant8_signed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_2 = TestModelManager::get().add("while_fib_n_1_quant8_signed_2", get_test_model_n_1_quant8_signed_2());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_2", get_test_model_n_1_unused_output_quant8_signed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -31178,10 +31948,20 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -31278,7 +32058,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -31321,7 +32101,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -31354,19 +32134,19 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_1_quant8_signed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -31427,6 +32207,16 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init5_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -31459,12 +32249,12 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -31561,7 +32351,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -31604,7 +32394,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -31637,13 +32427,13 @@ const TestModel& get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_1_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -31709,6 +32499,16 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
+                            .zeroPoint = 0
+                        }, { // i_out9
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy146
                             .channelQuant = {},
@@ -31743,14 +32543,14 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -31844,7 +32644,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out5
+                        }, { // i_out8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -31887,7 +32687,7 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
                         }, { // zero_bias5
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -31920,13 +32720,13 @@ const TestModel& get_test_model_n_1_quant8_signed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_1_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_quant8_signed_all_outputs_as_internal_2", get_test_model_n_1_quant8_signed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_1_unused_output_quant8_signed_all_outputs_as_internal_2", get_test_model_n_1_unused_output_quant8_signed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_2() {
+const TestModel& get_test_model_n_2_unused_output_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -31993,10 +32793,20 @@ const TestModel& get_test_model_n_2_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -32093,7 +32903,7 @@ const TestModel& get_test_model_n_2_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -32136,7 +32946,7 @@ const TestModel& get_test_model_n_2_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -32169,13 +32979,13 @@ const TestModel& get_test_model_n_2_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_2 = TestModelManager::get().add("while_fib_n_2_2", get_test_model_n_2_2());
+const auto dummy_test_model_n_2_unused_output_2 = TestModelManager::get().add("while_fib_n_2_unused_output_2", get_test_model_n_2_unused_output_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_2_unused_output_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -32242,10 +33052,20 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -32342,7 +33162,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -32385,7 +33205,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -32418,19 +33238,19 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_all_tensors_as_inputs_2", get_test_model_n_2_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_2_unused_output_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_unused_output_all_tensors_as_inputs_2", get_test_model_n_2_unused_output_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -32491,6 +33311,16 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init6_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -32523,12 +33353,12 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -32625,7 +33455,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -32668,7 +33498,7 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -32701,13 +33531,13 @@ const TestModel& get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -32773,6 +33603,16 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy151
                             .channelQuant = {},
@@ -32807,14 +33647,14 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -32908,7 +33748,7 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -32951,7 +33791,7 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -32984,13 +33824,13 @@ const TestModel& get_test_model_n_2_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_all_outputs_as_internal_2", get_test_model_n_2_all_outputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_all_outputs_as_internal_2", get_test_model_n_2_unused_output_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_2() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -33057,10 +33897,20 @@ const TestModel& get_test_model_n_2_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -33157,7 +34007,7 @@ const TestModel& get_test_model_n_2_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -33200,7 +34050,7 @@ const TestModel& get_test_model_n_2_relaxed_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -33233,13 +34083,13 @@ const TestModel& get_test_model_n_2_relaxed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_2 = TestModelManager::get().add("while_fib_n_2_relaxed_2", get_test_model_n_2_relaxed_2());
+const auto dummy_test_model_n_2_unused_output_relaxed_2 = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_2", get_test_model_n_2_unused_output_relaxed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -33306,10 +34156,20 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -33406,7 +34266,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -33449,7 +34309,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -33482,19 +34342,19 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_relaxed_all_tensors_as_inputs_2", get_test_model_n_2_relaxed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_tensors_as_inputs_2", get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -33555,6 +34415,16 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init6_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -33587,12 +34457,12 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -33689,7 +34559,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -33732,7 +34602,7 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -33765,13 +34635,13 @@ const TestModel& get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_relaxed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -33837,6 +34707,16 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy156
                             .channelQuant = {},
@@ -33871,14 +34751,14 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -33972,7 +34852,7 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -34015,7 +34895,7 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -34048,13 +34928,13 @@ const TestModel& get_test_model_n_2_relaxed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_relaxed_all_outputs_as_internal_2", get_test_model_n_2_relaxed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_relaxed_all_outputs_as_internal_2", get_test_model_n_2_unused_output_relaxed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_2() {
+const TestModel& get_test_model_n_2_unused_output_float16_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -34121,10 +35001,20 @@ const TestModel& get_test_model_n_2_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -34221,7 +35111,7 @@ const TestModel& get_test_model_n_2_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -34264,7 +35154,7 @@ const TestModel& get_test_model_n_2_float16_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -34297,13 +35187,13 @@ const TestModel& get_test_model_n_2_float16_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_2 = TestModelManager::get().add("while_fib_n_2_float16_2", get_test_model_n_2_float16_2());
+const auto dummy_test_model_n_2_unused_output_float16_2 = TestModelManager::get().add("while_fib_n_2_unused_output_float16_2", get_test_model_n_2_unused_output_float16_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -34370,10 +35260,20 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -34470,7 +35370,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -34513,7 +35413,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -34546,19 +35446,19 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_float16_all_tensors_as_inputs_2", get_test_model_n_2_float16_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_2_unused_output_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_tensors_as_inputs_2", get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -34619,6 +35519,16 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init6_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -34651,12 +35561,12 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -34753,7 +35663,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -34796,7 +35706,7 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -34829,13 +35739,13 @@ const TestModel& get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_float16_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -34901,6 +35811,16 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy161
                             .channelQuant = {},
@@ -34935,14 +35855,14 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -35036,7 +35956,7 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -35079,7 +35999,7 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -35112,13 +36032,13 @@ const TestModel& get_test_model_n_2_float16_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_float16_all_outputs_as_internal_2", get_test_model_n_2_float16_all_outputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_float16_all_outputs_as_internal_2", get_test_model_n_2_unused_output_float16_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -35185,10 +36105,20 @@ const TestModel& get_test_model_n_2_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -35285,7 +36215,7 @@ const TestModel& get_test_model_n_2_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -35328,7 +36258,7 @@ const TestModel& get_test_model_n_2_quant8_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -35361,13 +36291,13 @@ const TestModel& get_test_model_n_2_quant8_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_2 = TestModelManager::get().add("while_fib_n_2_quant8_2", get_test_model_n_2_quant8_2());
+const auto dummy_test_model_n_2_unused_output_quant8_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_2", get_test_model_n_2_unused_output_quant8_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -35434,10 +36364,20 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -35534,7 +36474,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -35577,7 +36517,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -35610,19 +36550,19 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_quant8_all_tensors_as_inputs_2", get_test_model_n_2_quant8_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_tensors_as_inputs_2", get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -35683,6 +36623,16 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init6_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -35715,12 +36665,12 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -35817,7 +36767,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -35860,7 +36810,7 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -35893,13 +36843,13 @@ const TestModel& get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -35965,6 +36915,16 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy166
                             .channelQuant = {},
@@ -35999,14 +36959,14 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -36100,7 +37060,7 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -36143,7 +37103,7 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -36176,13 +37136,13 @@ const TestModel& get_test_model_n_2_quant8_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_quant8_all_outputs_as_internal_2", get_test_model_n_2_quant8_all_outputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_all_outputs_as_internal_2", get_test_model_n_2_unused_output_quant8_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -36249,10 +37209,20 @@ const TestModel& get_test_model_n_2_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -36349,7 +37319,7 @@ const TestModel& get_test_model_n_2_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -36392,7 +37362,7 @@ const TestModel& get_test_model_n_2_quant8_signed_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -36425,13 +37395,13 @@ const TestModel& get_test_model_n_2_quant8_signed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_2 = TestModelManager::get().add("while_fib_n_2_quant8_signed_2", get_test_model_n_2_quant8_signed_2());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_2", get_test_model_n_2_unused_output_quant8_signed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -36498,10 +37468,20 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -36598,7 +37578,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -36641,7 +37621,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -36674,19 +37654,19 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_2_quant8_signed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -36747,6 +37727,16 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init6_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -36779,12 +37769,12 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -36881,7 +37871,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -36924,7 +37914,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -36957,13 +37947,13 @@ const TestModel& get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_2_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -37029,6 +38019,16 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
+                            .zeroPoint = 0
+                        }, { // i_out11
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy171
                             .channelQuant = {},
@@ -37063,14 +38063,14 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -37164,7 +38164,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out6
+                        }, { // i_out10
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -37207,7 +38207,7 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
                         }, { // zero_bias6
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -37240,13 +38240,13 @@ const TestModel& get_test_model_n_2_quant8_signed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_2_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_quant8_signed_all_outputs_as_internal_2", get_test_model_n_2_quant8_signed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_2_unused_output_quant8_signed_all_outputs_as_internal_2", get_test_model_n_2_unused_output_quant8_signed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_2() {
+const TestModel& get_test_model_n_3_unused_output_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -37313,10 +38313,20 @@ const TestModel& get_test_model_n_3_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -37413,7 +38423,7 @@ const TestModel& get_test_model_n_3_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -37456,7 +38466,7 @@ const TestModel& get_test_model_n_3_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -37489,13 +38499,13 @@ const TestModel& get_test_model_n_3_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_2 = TestModelManager::get().add("while_fib_n_3_2", get_test_model_n_3_2());
+const auto dummy_test_model_n_3_unused_output_2 = TestModelManager::get().add("while_fib_n_3_unused_output_2", get_test_model_n_3_unused_output_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_3_unused_output_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -37562,10 +38572,20 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -37662,7 +38682,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -37705,7 +38725,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -37738,19 +38758,19 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_all_tensors_as_inputs_2", get_test_model_n_3_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_3_unused_output_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_unused_output_all_tensors_as_inputs_2", get_test_model_n_3_unused_output_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -37811,6 +38831,16 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init7_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -37843,12 +38873,12 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -37945,7 +38975,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -37988,7 +39018,7 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -38021,13 +39051,13 @@ const TestModel& get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal
     return model;
 }
 
-const auto dummy_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_unused_output_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -38093,6 +39123,16 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy176
                             .channelQuant = {},
@@ -38127,14 +39167,14 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -38228,7 +39268,7 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -38271,7 +39311,7 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -38304,13 +39344,13 @@ const TestModel& get_test_model_n_3_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_all_outputs_as_internal_2", get_test_model_n_3_all_outputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_all_outputs_as_internal_2", get_test_model_n_3_unused_output_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_2() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -38377,10 +39417,20 @@ const TestModel& get_test_model_n_3_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -38477,7 +39527,7 @@ const TestModel& get_test_model_n_3_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -38520,7 +39570,7 @@ const TestModel& get_test_model_n_3_relaxed_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -38553,13 +39603,13 @@ const TestModel& get_test_model_n_3_relaxed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_2 = TestModelManager::get().add("while_fib_n_3_relaxed_2", get_test_model_n_3_relaxed_2());
+const auto dummy_test_model_n_3_unused_output_relaxed_2 = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_2", get_test_model_n_3_unused_output_relaxed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -38626,10 +39676,20 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -38726,7 +39786,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -38769,7 +39829,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -38802,19 +39862,19 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_relaxed_all_tensors_as_inputs_2", get_test_model_n_3_relaxed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_tensors_as_inputs_2", get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = true,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -38875,6 +39935,16 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init7_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({1.0f, 1.0f}),
@@ -38907,12 +39977,12 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -39009,7 +40079,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -39052,7 +40122,7 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -39085,13 +40155,13 @@ const TestModel& get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_unused_output_relaxed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_relaxed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -39157,6 +40227,16 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
+                            .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy181
                             .channelQuant = {},
@@ -39191,14 +40271,14 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::UNKNOWN,
         .referenced = {{ // cond
@@ -39292,7 +40372,7 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -39335,7 +40415,7 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -39368,13 +40448,13 @@ const TestModel& get_test_model_n_3_relaxed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_relaxed_all_outputs_as_internal_2", get_test_model_n_3_relaxed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_relaxed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_relaxed_all_outputs_as_internal_2", get_test_model_n_3_unused_output_relaxed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_2() {
+const TestModel& get_test_model_n_3_unused_output_float16_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -39441,10 +40521,20 @@ const TestModel& get_test_model_n_3_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -39541,7 +40631,7 @@ const TestModel& get_test_model_n_3_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -39584,7 +40674,7 @@ const TestModel& get_test_model_n_3_float16_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -39617,13 +40707,13 @@ const TestModel& get_test_model_n_3_float16_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_2 = TestModelManager::get().add("while_fib_n_3_float16_2", get_test_model_n_3_float16_2());
+const auto dummy_test_model_n_3_unused_output_float16_2 = TestModelManager::get().add("while_fib_n_3_unused_output_float16_2", get_test_model_n_3_unused_output_float16_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -39690,10 +40780,20 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -39790,7 +40890,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -39833,7 +40933,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -39866,19 +40966,19 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_float16_all_tensors_as_inputs_2", get_test_model_n_3_float16_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_3_unused_output_float16_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_tensors_as_inputs_2", get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -39939,6 +41039,16 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init7_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({1.0f, 1.0f}),
@@ -39971,12 +41081,12 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -40073,7 +41183,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -40116,7 +41226,7 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -40149,13 +41259,13 @@ const TestModel& get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_unused_output_float16_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_float16_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -40221,6 +41331,16 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
+                            .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy186
                             .channelQuant = {},
@@ -40255,14 +41375,14 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -40356,7 +41476,7 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -40399,7 +41519,7 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -40432,13 +41552,13 @@ const TestModel& get_test_model_n_3_float16_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_float16_all_outputs_as_internal_2", get_test_model_n_3_float16_all_outputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_float16_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_float16_all_outputs_as_internal_2", get_test_model_n_3_unused_output_float16_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -40505,10 +41625,20 @@ const TestModel& get_test_model_n_3_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -40605,7 +41735,7 @@ const TestModel& get_test_model_n_3_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -40648,7 +41778,7 @@ const TestModel& get_test_model_n_3_quant8_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -40681,13 +41811,13 @@ const TestModel& get_test_model_n_3_quant8_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_2 = TestModelManager::get().add("while_fib_n_3_quant8_2", get_test_model_n_3_quant8_2());
+const auto dummy_test_model_n_3_unused_output_quant8_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_2", get_test_model_n_3_unused_output_quant8_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -40754,10 +41884,20 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -40854,7 +41994,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -40897,7 +42037,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -40930,19 +42070,19 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_quant8_all_tensors_as_inputs_2", get_test_model_n_3_quant8_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_tensors_as_inputs_2", get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -41003,6 +42143,16 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init7_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint8_t>({1, 1}),
@@ -41035,12 +42185,12 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -41137,7 +42287,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -41180,7 +42330,7 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -41213,13 +42363,13 @@ const TestModel& get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_i
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_unused_output_quant8_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -41285,6 +42435,16 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
                             .numberOfConsumers = 1,
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
+                            .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // dummy191
                             .channelQuant = {},
@@ -41319,14 +42479,14 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -41420,7 +42580,7 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -41463,7 +42623,7 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -41496,13 +42656,13 @@ const TestModel& get_test_model_n_3_quant8_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_quant8_all_outputs_as_internal_2", get_test_model_n_3_quant8_all_outputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_quant8_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_all_outputs_as_internal_2", get_test_model_n_3_unused_output_quant8_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -41569,10 +42729,20 @@ const TestModel& get_test_model_n_3_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -41669,7 +42839,7 @@ const TestModel& get_test_model_n_3_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -41712,7 +42882,7 @@ const TestModel& get_test_model_n_3_quant8_signed_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -41745,13 +42915,13 @@ const TestModel& get_test_model_n_3_quant8_signed_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_2 = TestModelManager::get().add("while_fib_n_3_quant8_signed_2", get_test_model_n_3_quant8_signed_2());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_2", get_test_model_n_3_unused_output_quant8_signed_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -41818,10 +42988,20 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -41918,7 +43098,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -41961,7 +43141,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -41994,19 +43174,19 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_3_quant8_signed_all_tensors_as_inputs_2());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_tensors_as_inputs_2", get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
         .isRelaxed = false,
         .main = {
-                .inputIndexes = {4, 6},
+                .inputIndexes = {4, 7},
                 .operands = {{ // cond7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<uint32_t>({0}),
@@ -42067,6 +43247,16 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // fib_init7_new
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({1, 1}),
@@ -42099,12 +43289,12 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .zeroPoint = 0
                         }},
                 .operations = {{
-                            .inputs = {6, 7, 8},
+                            .inputs = {7, 8, 9},
                             .outputs = {2},
                             .type = TestOperationType::ADD
                         }, {
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }},
                 .outputIndexes = {5}
@@ -42201,7 +43391,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -42244,7 +43434,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -42277,13 +43467,13 @@ const TestModel& get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inpu
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2", get_test_model_n_3_unused_output_quant8_signed_all_tensors_as_inputs_all_inputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
 namespace generated_tests::while_fib {
 
-const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
+const TestModel& get_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal_2() {
     static TestModel model = {
         .expectFailure = false,
         .expectedMultinomialDistributionTolerance = 0,
@@ -42350,6 +43540,16 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
+                        }, { // i_out13
+                            .channelQuant = {},
+                            .data = TestBuffer::createFromVector<int32_t>({}),
+                            .dimensions = {1},
+                            .isIgnored = false,
+                            .lifetime = TestOperandLifeTime::TEMPORARY_VARIABLE,
+                            .numberOfConsumers = 0,
+                            .scale = 0.0f,
+                            .type = TestOperandType::TENSOR_INT32,
+                            .zeroPoint = 0
                         }, { // dummy196
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({0}),
@@ -42383,14 +43583,14 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
                         }},
                 .operations = {{
                             .inputs = {0, 1, 2, 3, 4},
-                            .outputs = {5},
+                            .outputs = {5, 6},
                             .type = TestOperationType::WHILE
                         }, {
-                            .inputs = {5, 6, 7},
-                            .outputs = {8},
+                            .inputs = {5, 7, 8},
+                            .outputs = {9},
                             .type = TestOperationType::ADD
                         }},
-                .outputIndexes = {8}
+                .outputIndexes = {9}
             },
         .minSupportedVersion = TestHalVersion::V1_3,
         .referenced = {{ // cond
@@ -42484,7 +43684,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out7
+                        }, { // i_out12
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -42527,7 +43727,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
                         }, { // zero_bias7
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -42560,7 +43760,7 @@ const TestModel& get_test_model_n_3_quant8_signed_all_outputs_as_internal_2() {
     return model;
 }
 
-const auto dummy_test_model_n_3_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_quant8_signed_all_outputs_as_internal_2", get_test_model_n_3_quant8_signed_all_outputs_as_internal_2());
+const auto dummy_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal_2 = TestModelManager::get().add("while_fib_n_3_unused_output_quant8_signed_all_outputs_as_internal_2", get_test_model_n_3_unused_output_quant8_signed_all_outputs_as_internal_2());
 
 }  // namespace generated_tests::while_fib
 
@@ -42733,7 +43933,7 @@ const TestModel& get_test_model_n_4_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -42776,7 +43976,7 @@ const TestModel& get_test_model_n_4_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -42982,7 +44182,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -43025,7 +44225,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -43265,7 +44465,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -43308,7 +44508,7 @@ const TestModel& get_test_model_n_4_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -43548,7 +44748,7 @@ const TestModel& get_test_model_n_4_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -43591,7 +44791,7 @@ const TestModel& get_test_model_n_4_all_outputs_as_internal_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -43797,7 +44997,7 @@ const TestModel& get_test_model_n_4_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -43840,7 +45040,7 @@ const TestModel& get_test_model_n_4_relaxed_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -44046,7 +45246,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -44089,7 +45289,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -44329,7 +45529,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -44372,7 +45572,7 @@ const TestModel& get_test_model_n_4_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -44612,7 +45812,7 @@ const TestModel& get_test_model_n_4_relaxed_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -44655,7 +45855,7 @@ const TestModel& get_test_model_n_4_relaxed_all_outputs_as_internal_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -44861,7 +46061,7 @@ const TestModel& get_test_model_n_4_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -44904,7 +46104,7 @@ const TestModel& get_test_model_n_4_float16_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -45110,7 +46310,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -45153,7 +46353,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -45393,7 +46593,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -45436,7 +46636,7 @@ const TestModel& get_test_model_n_4_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -45676,7 +46876,7 @@ const TestModel& get_test_model_n_4_float16_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -45719,7 +46919,7 @@ const TestModel& get_test_model_n_4_float16_all_outputs_as_internal_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -45925,7 +47125,7 @@ const TestModel& get_test_model_n_4_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -45968,7 +47168,7 @@ const TestModel& get_test_model_n_4_quant8_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -46174,7 +47374,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -46217,7 +47417,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -46457,7 +47657,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -46500,7 +47700,7 @@ const TestModel& get_test_model_n_4_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -46740,7 +47940,7 @@ const TestModel& get_test_model_n_4_quant8_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -46783,7 +47983,7 @@ const TestModel& get_test_model_n_4_quant8_all_outputs_as_internal_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -46989,7 +48189,7 @@ const TestModel& get_test_model_n_4_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -47032,7 +48232,7 @@ const TestModel& get_test_model_n_4_quant8_signed_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -47238,7 +48438,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -47281,7 +48481,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -47521,7 +48721,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -47564,7 +48764,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -47804,7 +49004,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out8
+                        }, { // i_out14
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -47847,7 +49047,7 @@ const TestModel& get_test_model_n_4_quant8_signed_all_outputs_as_internal_2() {
                         }, { // zero_bias8
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -48053,7 +49253,7 @@ const TestModel& get_test_model_n_5_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -48096,7 +49296,7 @@ const TestModel& get_test_model_n_5_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -48302,7 +49502,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -48345,7 +49545,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -48585,7 +49785,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_all_inputs_as_internal
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -48628,7 +49828,7 @@ const TestModel& get_test_model_n_5_all_tensors_as_inputs_all_inputs_as_internal
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -48868,7 +50068,7 @@ const TestModel& get_test_model_n_5_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -48911,7 +50111,7 @@ const TestModel& get_test_model_n_5_all_outputs_as_internal_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -49117,7 +50317,7 @@ const TestModel& get_test_model_n_5_relaxed_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -49160,7 +50360,7 @@ const TestModel& get_test_model_n_5_relaxed_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -49366,7 +50566,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -49409,7 +50609,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -49649,7 +50849,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -49692,7 +50892,7 @@ const TestModel& get_test_model_n_5_relaxed_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -49932,7 +51132,7 @@ const TestModel& get_test_model_n_5_relaxed_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT32,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -49975,7 +51175,7 @@ const TestModel& get_test_model_n_5_relaxed_all_outputs_as_internal_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<float>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -50181,7 +51381,7 @@ const TestModel& get_test_model_n_5_float16_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -50224,7 +51424,7 @@ const TestModel& get_test_model_n_5_float16_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -50430,7 +51630,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -50473,7 +51673,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -50713,7 +51913,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_all_inputs_as_
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -50756,7 +51956,7 @@ const TestModel& get_test_model_n_5_float16_all_tensors_as_inputs_all_inputs_as_
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -50996,7 +52196,7 @@ const TestModel& get_test_model_n_5_float16_all_outputs_as_internal_2() {
                             .scale = 0.0f,
                             .type = TestOperandType::TENSOR_FLOAT16,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -51039,7 +52239,7 @@ const TestModel& get_test_model_n_5_float16_all_outputs_as_internal_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<_Float16>({0.0f, 0.0f}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -51245,7 +52445,7 @@ const TestModel& get_test_model_n_5_quant8_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -51288,7 +52488,7 @@ const TestModel& get_test_model_n_5_quant8_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -51494,7 +52694,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -51537,7 +52737,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -51777,7 +52977,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_all_inputs_as_i
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -51820,7 +53020,7 @@ const TestModel& get_test_model_n_5_quant8_all_tensors_as_inputs_all_inputs_as_i
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -52060,7 +53260,7 @@ const TestModel& get_test_model_n_5_quant8_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -52103,7 +53303,7 @@ const TestModel& get_test_model_n_5_quant8_all_outputs_as_internal_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -52309,7 +53509,7 @@ const TestModel& get_test_model_n_5_quant8_signed_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -52352,7 +53552,7 @@ const TestModel& get_test_model_n_5_quant8_signed_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -52558,7 +53758,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -52601,7 +53801,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -52841,7 +54041,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_all_inpu
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -52884,7 +54084,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_tensors_as_inputs_all_inpu
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,
@@ -53124,7 +54324,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_outputs_as_internal_2() {
                             .scale = 1.0f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // i_out9
+                        }, { // i_out15
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({}),
                             .dimensions = {1},
@@ -53167,7 +54367,7 @@ const TestModel& get_test_model_n_5_quant8_signed_all_outputs_as_internal_2() {
                         }, { // zero_bias9
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int32_t>({0, 0}),
-                            .dimensions = {2, 1},
+                            .dimensions = {2},
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::CONSTANT_REFERENCE,
                             .numberOfConsumers = 1,

@@ -107,13 +107,17 @@ struct OperandTypeWithExtraParams {
             }
         }
 
-        if (channelQuant.has_value() && channelQuant->scales) {
-            return that.channelQuant->scales &&
-                   std::equal(channelQuant->scales, channelQuant->scales + channelQuant->scaleCount,
-                              that.channelQuant->scales);
-        } else {
-            return that.channelQuant->scales != nullptr;
+        if (channelQuant.has_value()) {
+            if (channelQuant->scales) {
+                return that.channelQuant->scales &&
+                       std::equal(channelQuant->scales,
+                                  channelQuant->scales + channelQuant->scaleCount,
+                                  that.channelQuant->scales);
+            } else {
+                return that.channelQuant->scales == nullptr;
+            }
         }
+        return true;
     }
 
     bool operator!=(const OperandTypeWithExtraParams& that) const { return !(*this == that); }
@@ -2374,7 +2378,9 @@ void fullyConnectedOpTest(int32_t operandCode) {
 
     OperationTestBase fullyConnectedTest(ANEURALNETWORKS_FULLY_CONNECTED,
                                          {input, weights, bias, activation}, {output},
-                                         {{TensorRankConstraint::Between(2, 4)}});
+                                         {{TensorRankConstraint::Between(2, 4), {0}},
+                                          {TensorRankConstraint::Exactly(2), {1}},
+                                          {TensorRankConstraint::Exactly(1), {2}}});
     fullyConnectedTest.testOpsValidations();
 }
 
