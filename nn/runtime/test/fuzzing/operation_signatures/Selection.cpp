@@ -238,6 +238,15 @@ static void sliceFinalizer(RandomOperation* op) {
     uint32_t rank = op->inputs[0]->dimensions.size();
     int32_t* begin = reinterpret_cast<int32_t*>(op->inputs[1]->buffer.data());
     int32_t* size = reinterpret_cast<int32_t*>(op->inputs[2]->buffer.data());
+
+    NN_FUZZER_CHECK(op->inputs[1]->buffer.size() >= rank)
+            << "input[1] buffer size " << op->inputs[1]->buffer.size() << " is smaller than rank "
+            << rank;
+
+    NN_FUZZER_CHECK(op->inputs[2]->buffer.size() >= rank)
+            << "input[1] buffer size " << op->inputs[2]->buffer.size() << " is smaller than rank "
+            << rank;
+
     for (uint32_t i = 0; i < rank; i++) {
         int32_t inputSize = op->inputs[0]->dimensions[i].getValue();
         int32_t outputSize = op->outputs[0]->dimensions[i].getValue();
@@ -280,8 +289,7 @@ static void stridedSliceConstructor(TestOperandType, uint32_t rank, RandomOperat
     setFreeDimensions(op->inputs[0], rank);
     std::vector<bool> shrinkMask(rank, false);
     for (uint32_t i = 0; i < rank; i++) {
-        // TODO: Currently shrinkMask is always set to false.
-        shrinkMask[i] = false;
+        shrinkMask[i] = getBernoulli(0.2f);
         int32_t stride = getUniform<int32_t>(1, 3);
         op->inputs[3]->value<int32_t>(i) = stride;
         if (!shrinkMask[i]) {
@@ -299,11 +307,21 @@ static void stridedSliceFinalizer(RandomOperation* op) {
     int32_t* begin = reinterpret_cast<int32_t*>(op->inputs[1]->buffer.data());
     int32_t* end = reinterpret_cast<int32_t*>(op->inputs[2]->buffer.data());
     std::vector<bool> beginMask(rank, false), endMask(rank, false);
+
+    NN_FUZZER_CHECK(op->inputs[1]->buffer.size() >= rank)
+            << "input[1] buffer size " << op->inputs[1]->buffer.size() << " is smaller than rank "
+            << rank;
+
+    NN_FUZZER_CHECK(op->inputs[2]->buffer.size() >= rank)
+            << "input[1] buffer size " << op->inputs[2]->buffer.size() << " is smaller than rank "
+            << rank;
+
     int32_t shrinkMask = op->inputs[6]->value<int32_t>();
     for (uint32_t i = 0, o = 0; i < rank; i++) {
         int32_t inputSize = op->inputs[0]->dimensions[i].getValue();
         int32_t stride = op->inputs[3]->value<int32_t>(i);
-        if ((shrinkMask & (1 << i)) == 0) {
+        bool shrink = shrinkMask & (1 << i);
+        if (!shrink) {
             int32_t outputSize = op->outputs[0]->dimensions[o++].getValue();
             int32_t maxStart = inputSize - (outputSize - 1) * stride - 1;
             begin[i] = getUniform<int32_t>(0, maxStart);
@@ -320,22 +338,22 @@ static void stridedSliceFinalizer(RandomOperation* op) {
             // arbitrary value.
             if (beginMask[i]) begin[i] = getUniform<int32_t>(-inputSize, inputSize - 1);
             if (endMask[i]) end[i] = getUniform<int32_t>(-inputSize, inputSize - 1);
+
+            // Switch to negative stride.
+            if (getBernoulli(0.2f)) {
+                op->inputs[3]->value<int32_t>(i) = -stride;
+                std::swap(begin[i], end[i]);
+                std::swap(beginMask[i], endMask[i]);
+                begin[i]--;
+                end[i]--;
+                // end = -1 will be interpreted to inputSize - 1 if not setting endMask.
+                if (end[i] < 0) endMask[i] = true;
+            }
         } else {
             // When shrink mask is set, the begin and end must define a slice of size 1, e.g.
             // begin[i] = x, end[i] = x + 1.
             begin[i] = getUniform<int32_t>(0, inputSize - 1);
             end[i] = begin[i] + 1;
-        }
-
-        // Switch to negative stride.
-        if (getBernoulli(0.2f)) {
-            op->inputs[3]->value<int32_t>(i) = -stride;
-            std::swap(begin[i], end[i]);
-            std::swap(beginMask[i], endMask[i]);
-            begin[i]--;
-            end[i]--;
-            // end = -1 will be intepreted to inputSize - 1 if not setting endMask.
-            if (end[i] < 0) endMask[i] = true;
         }
     }
     op->inputs[4]->setScalarValue<int32_t>(convertToBitMask(beginMask));
