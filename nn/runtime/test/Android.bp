@@ -41,7 +41,6 @@ cc_defaults {
         "android.hardware.neuralnetworks@1.3",
         "libc++fs",
         "libneuralnetworks_generated_test_harness",
-        "libsync",
         "libtextclassifier_hash_static",
     ],
     whole_static_libs: [
@@ -195,7 +194,10 @@ cc_test {
 
 cc_fuzz {
     name: "libneuralnetworks_fuzzer",
-    defaults: ["NeuralNetworksTest_default_libs"],
+    defaults: [
+        "NeuralNetworksTest_default_libs",
+        "libneuralnetworks_fuzzer_defaults",
+    ],
     owner: "google",
     fuzz_config: {
         cc: ["butlermichael@google.com"],
@@ -204,24 +206,21 @@ cc_fuzz {
         fuzz_on_haiku_device: false,
     },
     srcs: [
-        "android_fuzzing/Converter.cpp",
         "android_fuzzing/FuzzTest.cpp",
-        "android_fuzzing/StaticAssert.cpp",
     ],
-    corpus: ["android_fuzzing/corpus/*"],
-    shared_libs: ["libprotobuf-cpp-full"],
     static_libs: [
         "libneuralnetworks_common",
-        "libneuralnetworks_fuzzer_proto",
         "libneuralnetworks_generated_test_harness",
         "libneuralnetworks_static",
-        "libprotobuf-mutator",
     ],
 }
 
 cc_fuzz {
     name: "libneuralnetworks_driver_fuzzer",
-    defaults: ["NeuralNetworksTest_default_libs"],
+    defaults: [
+        "NeuralNetworksTest_default_libs",
+        "libneuralnetworks_fuzzer_defaults",
+    ],
     owner: "google",
     fuzz_config: {
         cc: ["butlermichael@google.com"],
@@ -230,19 +229,13 @@ cc_fuzz {
         fuzz_on_haiku_device: false,
     },
     srcs: [
-        "android_fuzzing/Converter.cpp",
         "android_fuzzing/DriverFuzzTest.cpp",
-        "android_fuzzing/StaticAssert.cpp",
     ],
-    corpus: ["android_fuzzing/corpus/*"],
-    shared_libs: ["libprotobuf-cpp-full"],
     static_libs: [
         "libSampleDriver",
         "libneuralnetworks_common",
-        "libneuralnetworks_fuzzer_proto",
         "libneuralnetworks_generated_test_harness",
         "libneuralnetworks_static",
-        "libprotobuf-mutator",
     ],
 }
 
@@ -429,4 +422,55 @@ cc_library_static {
     defaults: ["neuralnetworks_float16"],
     srcs: ["generated/spec_V1_3_cts_only/*.example.cpp"],
     static_libs: ["libneuralnetworks_generated_test_harness"],
+}
+
+cc_library_static {
+    name: "NeuralNetworksTest_random_graph",
+    defaults: ["neuralnetworks_float16"],
+    srcs: [
+        ":libneuralnetworks_generated_test_harness_for_cts",
+        "GeneratedTestUtils.cpp",
+        "TestNeuralNetworksWrapper.cpp",
+        "fuzzing/OperationManager.cpp",
+        "fuzzing/RandomGraphGenerator.cpp",
+        "fuzzing/RandomGraphGeneratorUtils.cpp",
+        "fuzzing/RandomVariable.cpp",
+        "fuzzing/operation_signatures/*.cpp",
+    ],
+    include_dirs: [
+        "frameworks/ml/nn/common/include",
+        "frameworks/ml/nn/runtime/",
+        "frameworks/ml/nn/runtime/include/",
+    ],
+    header_libs: [
+        "libneuralnetworks_generated_test_harness_headers_for_cts",
+    ],
+    export_include_dirs: [
+        ".",
+        "fuzzing",
+    ],
+    cflags: [
+        "-UNDEBUG",
+        "-Wall",
+        "-Werror",
+    ],
+    shared_libs: [
+        "libandroid",
+        "liblog",
+        "libneuralnetworks",
+    ],
+    static_libs: [
+        "libbase_ndk",
+        "libgmock_ndk",
+        "libgtest_ndk_c++",
+    ],
+    sanitize: {
+        address: true,
+        all_undefined: true,
+    },
+    strip: {
+        keep_symbols: true,
+    },
+    sdk_version: "current",
+    stl: "libc++_static",
 }

@@ -26,7 +26,10 @@
 #include <sys/system_properties.h>
 
 #include <algorithm>
+#include <functional>
+#include <iostream>
 #include <limits>
+#include <numeric>
 #include <set>
 #include <string>
 #include <tuple>
@@ -689,12 +692,18 @@ static int validateHalVersion(ANeuralNetworksOperationType opType, HalVersion ha
     return ANEURALNETWORKS_NO_ERROR;
 }
 
-// Checks if two operands have the same types, shapes, and parameters.
-// Omits lifetime, numberOfConsumers, and location.
+// Checks if two operands have the same types, ranks (if specified), dimensions
+// (if specified), scales, zeroPoints, and extraParams.
 static bool compatible(const Operand& a, const Operand& b) {
     NN_RET_CHECK(a.type == b.type) << toString(a.type) << " != " << toString(b.type);
-    NN_RET_CHECK(a.dimensions == b.dimensions)
-            << toString(a.dimensions) << " != " << toString(b.dimensions);
+    if (a.dimensions.size() != 0 && b.dimensions.size() != 0) {
+        NN_RET_CHECK_EQ(a.dimensions.size(), b.dimensions.size()) << "Incompatible dimensions";
+        for (uint32_t i = 0, n = a.dimensions.size(); i < n; ++i) {
+            if (a.dimensions[i] != 0 && b.dimensions[i] != 0) {
+                NN_RET_CHECK_EQ(a.dimensions[i], b.dimensions[i]) << "Incompatible dimensions";
+            }
+        }
+    }
     NN_RET_CHECK_EQ(a.scale, b.scale);
     NN_RET_CHECK_EQ(a.zeroPoint, b.zeroPoint);
     NN_RET_CHECK(a.extraParams == b.extraParams)
@@ -753,6 +762,15 @@ static bool validateIfOperation(uint32_t inputCount, const uint32_t* inputs, uin
     return true;
 }
 
+static bool validateControlFlowOperandUnknownSize(const SubgraphValidationHelper& helper,
+                                                  const Operand& operand) {
+    if (!helper.allowControlFlowOperationWithOperandOfUnknownSize &&
+        !isExtensionOperandType(operand.type)) {
+        NN_RET_CHECK_NE(nonExtensionOperandSizeOfData(operand.type, operand.dimensions), 0u);
+    }
+    return true;
+}
+
 static bool validateWhileOperation(uint32_t inputCount, const uint32_t* inputs,
                                    uint32_t outputCount, const uint32_t* outputs,
                                    const std::vector<Operand>& operands,
@@ -780,6 +798,8 @@ static bool validateWhileOperation(uint32_t inputCount, const uint32_t* inputs,
             const Operand& innerOperand = *helper.getSubgraphInputOperand(condModelOperand, i);
             const Operand& outerOperand = operands[inputs[op::kFirstInput + i]];
             NN_RET_CHECK(compatible(innerOperand, outerOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, innerOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, outerOperand));
         }
         NN_RET_CHECK(
                 validateConditionOperand(*helper.getSubgraphOutputOperand(condModelOperand, 0)));
@@ -800,16 +820,20 @@ static bool validateWhileOperation(uint32_t inputCount, const uint32_t* inputs,
             const Operand& innerOperand = *helper.getSubgraphInputOperand(bodyModelOperand, i);
             const Operand& outerOperand = operands[inputs[op::kFirstInput + i]];
             NN_RET_CHECK(compatible(innerOperand, outerOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, innerOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, outerOperand));
         }
         for (uint32_t i = 0; i < inputOutputCount; ++i) {
             const Operand& innerOperand = *helper.getSubgraphOutputOperand(bodyModelOperand, i);
             const Operand& outerOperand = operands[outputs[i]];
             NN_RET_CHECK(compatible(innerOperand, outerOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, outerOperand));
         }
         for (uint32_t i = 0, n = inputOutputCount + stateOnlyCount; i < n; ++i) {
             const Operand& inputOperand = *helper.getSubgraphInputOperand(bodyModelOperand, i);
             const Operand& outputOperand = *helper.getSubgraphOutputOperand(bodyModelOperand, i);
             NN_RET_CHECK(compatible(inputOperand, outputOperand));
+            NN_RET_CHECK(validateControlFlowOperandUnknownSize(helper, outputOperand));
         }
         return true;
     };
@@ -1083,6 +1107,20 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                                                  outExpectedTypes);
         }
         case ANEURALNETWORKS_BIDIRECTIONAL_SEQUENCE_LSTM: {
+            const uint32_t kNumOutputs = 2;
+            const uint32_t kNumOutputsMerged = 1;
+            const uint32_t kNumOutputsWithState = 6;
+            const uint32_t kNumOutputsMergedWithState = 5;
+            if (inputCount != 61 ||
+                (outputCount != kNumOutputs && outputCount != kNumOutputsMerged &&
+                 outputCount != kNumOutputsWithState &&
+                 outputCount != kNumOutputsMergedWithState)) {
+                LOG(ERROR) << "Invalid number of input operands (" << inputCount
+                           << ", expected 61) or output operands (" << outputCount
+                           << ", expected 1, 2, 5 or 6) for operation " << getOperationName(opType);
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+
             std::vector<OperandType> inExpectedTypes;
             auto inputType = operands[inputIndexes[0]].type;
             if (inputType != OperandType::TENSOR_FLOAT32 &&
@@ -1109,20 +1147,6 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 inExpectedTypes.push_back(inputType);
             }
 
-            const uint32_t kNumOutputs = 2;
-            const uint32_t kNumOutputsMerged = 1;
-            const uint32_t kNumOutputsWithState = 6;
-            const uint32_t kNumOutputsMergedWithState = 5;
-
-            if (inputCount != 61 ||
-                (outputCount != kNumOutputs && outputCount != kNumOutputsMerged &&
-                 outputCount != kNumOutputsWithState &&
-                 outputCount != kNumOutputsMergedWithState)) {
-                LOG(ERROR) << "Invalid number of input operands (" << inputCount
-                           << ", expected 61) or output operands (" << outputCount
-                           << ", expected 1, 2, 5 or 6) for operation " << getOperationName(opType);
-                return ANEURALNETWORKS_BAD_DATA;
-            }
             HalVersion minSupportedHalVersion = HalVersion::V1_2;
             if (outputCount == kNumOutputsWithState || outputCount == kNumOutputsMergedWithState) {
                 minSupportedHalVersion = HalVersion::V1_3;
@@ -1135,6 +1159,12 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
             return status;
         }
         case ANEURALNETWORKS_LSTM: {
+            if ((inputCount != 23 && inputCount != 27) || outputCount != 4) {
+                LOG(ERROR) << "Invalid number of input operands (" << inputCount
+                           << ", expected 23 or 27) or output operands (" << outputCount
+                           << ", expected 4) for operation " << getOperationName(opType);
+                return ANEURALNETWORKS_BAD_DATA;
+            }
             std::vector<OperandType> inExpectedTypes;
             std::vector<OperandType> outExpectedTypes;
             auto inputType = operands[inputIndexes[0]].type;
@@ -1160,18 +1190,13 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
             }
 
             outExpectedTypes = {inputType, inputType, inputType, inputType};
-            if (inputCount == 23 && outputCount == 4) {
+            if (inputCount == 23) {
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_0));
-            } else if (inputCount == 27 && outputCount == 4) {
+            } else {
+                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
                 for (int i = 0; i < 4; ++i) {
                     inExpectedTypes.push_back(inputType);
                 }
-                NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_2));
-            } else {
-                LOG(ERROR) << "Invalid number of input operands (" << inputCount
-                           << ", expected 23 or 27) or output operands (" << outputCount
-                           << ", expected 4) for operation " << getOperationName(opType);
-                return ANEURALNETWORKS_BAD_DATA;
             }
             return validateOperationOperandTypes(operands, inputCount, inputIndexes,
                                                  inExpectedTypes, outputCount, outputIndexes,
@@ -1508,8 +1533,10 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 logInvalidInOutNumber(1, 1);
                 return ANEURALNETWORKS_BAD_DATA;
             }
-            auto inputType = operands[inputIndexes[0]].type;
-            auto outputType = operands[outputIndexes[0]].type;
+            auto inputOperand = operands[inputIndexes[0]];
+            auto outputOperand = operands[outputIndexes[0]];
+            auto inputType = inputOperand.type;
+            auto outputType = outputOperand.type;
             std::vector<OperandType> inExpectedTypes;
             std::vector<OperandType> outExpectedTypes;
             if ((inputType == OperandType::TENSOR_FLOAT16 ||
@@ -1533,6 +1560,19 @@ int validateOperation(ANeuralNetworksOperationType opType, uint32_t inputCount,
                 NN_RETURN_IF_ERROR(validateHalVersion(opType, halVersion, HalVersion::V1_3));
             } else {
                 LOG(ERROR) << "Unsupported data type for operation " << getOperationName(opType);
+                return ANEURALNETWORKS_BAD_DATA;
+            }
+            // Validate that output shape is equal to input shape if dimensions
+            // are already known.
+            auto getNumberOfElements = [](const hardware::hidl_vec<uint32_t>& dims) {
+                if (dims.size() == 0) {
+                    return 0;
+                }
+                return std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<>());
+            };
+            if (inputOperand.dimensions.size() != 0 && outputOperand.dimensions.size() != 0 &&
+                getNumberOfElements(outputOperand.dimensions) != 0 &&
+                inputOperand.dimensions != outputOperand.dimensions) {
                 return ANEURALNETWORKS_BAD_DATA;
             }
             return validateOperationOperandTypes(operands, inputCount, inputIndexes,

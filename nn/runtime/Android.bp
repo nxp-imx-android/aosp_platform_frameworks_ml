@@ -21,11 +21,17 @@ cc_library_headers {
     export_include_dirs: ["include"],
     apex_available: [
         "com.android.neuralnetworks",
-        "test_com.android.neuralnetworks",
-        // Due to the dependency from libneuralnetworks_common
+        "test_com.android.neuralnetworks", // Due to the dependency from libneuralnetworks_common
         // that is available to the platform
+
         "//apex_available:platform",
     ],
+}
+
+cc_library_headers {
+    name: "libneuralnetworks_headers_ndk",
+    export_include_dirs: ["include"],
+    sdk_version: "current",
 }
 
 cc_library_headers {
@@ -89,7 +95,6 @@ cc_defaults {
         "libmath",
         "libneuralnetworks_common",
         "libprocessgroup",
-        "libsync",
         "libtextclassifier_hash_static",
         "libutils",
     ],

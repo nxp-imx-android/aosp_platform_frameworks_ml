@@ -19,7 +19,6 @@
 #include "Manager.h"
 
 #include <android/hidl/manager/1.2/IServiceManager.h>
-#include <android/sync.h>
 #include <build/version.h>
 #include <cutils/native_handle.h>
 #include <hidl/HidlTransportSupport.h>
@@ -657,8 +656,8 @@ std::pair<int, std::shared_ptr<PreparedModel>> CpuDevice::prepareModel(
             << "Should never call prepareModel with cache information on CpuDevice";
 
     const Model model = makeModel();
-    if (!validateModel(model) || !validateExecutionPreference(preference) ||
-        !validatePriority(priority)) {
+    if (!validateModel(model, ValidationMode::RUNTIME) ||
+        !validateExecutionPreference(preference) || !validatePriority(priority)) {
         return {ANEURALNETWORKS_OP_FAILED, nullptr};
     }
     if (hasDeadlinePassed(deadline)) {
