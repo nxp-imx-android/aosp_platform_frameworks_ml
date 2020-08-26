@@ -222,26 +222,8 @@ class Type(NamedVariable):
     def IsScalar(self):
         return not self.type.startswith("TENSOR_")
 
-    def GetElementByteSize(self):
-        cppTypeString = self.GetCppTypeString()
-        if cppTypeString in ["uint8_t", "int8_t", "bool8"]:
-            return 1
-        elif cppTypeString in ["int16_t", "uint16_t", "_Float16"]:
-            return 2
-        else:
-            return 4
-
-    def GetByteSize(self):
-        return self.GetElementByteSize() * self.GetNumberOfElements()
-
-    def GetDimensionsString(self):
-        return "{" + GetJointStr(self.dimensions) + "}"
-
     def GetSignatureTuple(self):
         return (self.type, self.dimensions, self.scale, self.zeroPoint)
-
-    def ToUnspecifiedDim(self):
-        return Type.GetType(self.type, [0] * len(self.dimensions), self.scale, self.zeroPoint)
 
 # To track implicitly convertible parameter types
 class ImplicitParameter():
@@ -266,17 +248,6 @@ class SymmPerChannelQuantParams():
         bshape = [1] * len(dimensions)
         bshape[self.channelDim] = len(self.scales)
         return np.array(self.scales).reshape(bshape)
-
-    def GetConstructor(self):
-        return "SymmPerChannelQuantParams({%s},%d)" % (
-            ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
-
-    def GetVtsSetter(self):
-        return "channelQuant"
-
-    def GetVtsConstructor(self):
-        return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
-            ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
 
 # An operand that can be fed into operations. Also, an operand is always
@@ -319,10 +290,6 @@ class Operand(NamedVariable):
             return "{%s}"%(GetJointStr(self.value, method=lambda v: "true" if v else "false"))
         else:
             return "{%s}"%(GetJointStr(self.value, method=lambda x: str(int(x))))
-
-    def ToUnspecifiedDim(self):
-        self.dimensions = self.type.dimensions
-        self.type = self.type.ToUnspecifiedDim()
 
     def ConvertTo(self, DerivedClass, name=None):
         assert issubclass(DerivedClass, Operand)
@@ -494,12 +461,6 @@ class Model:
         self.version = FileNames.version
         self.referenced_models = None
         Model.models.append(self)
-
-    def WithSuffix(self, *args):
-        self.createFunctionName = GlobalVariable("CreateModel", self.name, *args)
-        self.createTestFunctionName = GlobalVariable("createTestModel", self.name, *args)
-        self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name, *args)
-        return self
 
     def AddOperand(self, operand):
         if operand not in self.operands:
@@ -1023,7 +984,7 @@ def CompatibleWithADD(op):
             op.type.type in ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM",
                              "TENSOR_FLOAT16", "TENSOR_QUANT8_ASYMM_SIGNED"])
 
-# Add a dummy ADD operation before each model input to make it as an internal operand.
+# Add a placeholder ADD operation before each model input to make it as an internal operand.
 class AllInputsAsInternalCoverter(ModelVariation):
     supportsSubgraphs = True
 
@@ -1043,18 +1004,19 @@ class AllInputsAsInternalCoverter(ModelVariation):
         if not modelInputs:
             raise SkipVariation
 
-        # Make every input an output of a dummy operation: input_new ADD dummy = input.
+        # Make every input an output of a placeholder operation: input_new ADD placeholder = input.
         for op in modelInputs:
             newInput = op.ConvertTo(Input, name=op.name + "_new")
-            dummyParam = Parameter("dummy", (op.type.type, [1], op.type.scale, op.type.zeroPoint),
-                                   [op.type.zeroPoint])
-            model.Operation("ADD", newInput, dummyParam, 0).To(op)
+            placeholderParam = Parameter("placeholder",
+                                         (op.type.type, [1], op.type.scale, op.type.zeroPoint),
+                                         [op.type.zeroPoint])
+            model.Operation("ADD", newInput, placeholderParam, 0).To(op)
 
         # Convert to internal operands.
         model.UpdateEquivalentOperands([op.ConvertTo(Internal) for op in modelInputs])
         return model
 
-# Add a dummy ADD operation after each model output to make it as an internal operand.
+# Add a placeholder ADD operation after each model output to make it as an internal operand.
 class AllOutputsAsInternalCoverter(ModelVariation):
     supportsSubgraphs = True
 
@@ -1074,12 +1036,13 @@ class AllOutputsAsInternalCoverter(ModelVariation):
         if not modelOutputs:
             raise SkipVariation
 
-        # Make every output an input of a dummy operation: output ADD dummy = output_new.
+        # Make every output an input of a placeholder operation: output ADD placeholder = output_new.
         for op in modelOutputs:
             newOutput = op.ConvertTo(Output, name=op.name + "_new")
-            dummyParam = Parameter("dummy", (op.type.type, [1], op.type.scale, op.type.zeroPoint),
-                                   [op.type.zeroPoint])
-            model.Operation("ADD", op, dummyParam, 0).To(newOutput)
+            placeholderParam = Parameter("placeholder",
+                                         (op.type.type, [1], op.type.scale, op.type.zeroPoint),
+                                         [op.type.zeroPoint])
+            model.Operation("ADD", op, placeholderParam, 0).To(newOutput)
 
         # Convert to internal operands.
         model.UpdateEquivalentOperands([op.ConvertTo(Internal) for op in modelOutputs])
@@ -1095,7 +1058,6 @@ class Example:
         self.name = name
         self.expectedMultinomialDistributionTolerance = 0
         self.expectFailure = False
-        self.testDynamicOutputShape = True
         self.testLifeTimeVariation = True
         self.feedDicts = []
         for feedDict in args:
@@ -1267,7 +1229,7 @@ class Example:
                                                    *varNames)
                 if str(self.testName) in Example.versionOverrides:
                     self.model.IntroducedIn(Example.versionOverrides[str(self.testName)])
-                self.model.WithSuffix(*varNames).Compile()
+                self.model.Compile()
 
                 # Dump files
                 if DumpExample is not None and example_fd is not None:
@@ -1291,10 +1253,6 @@ class Example:
     def ExpectFailure(self):
         assert self.expectedMultinomialDistributionTolerance == 0
         self.expectFailure = True
-        return self
-
-    def DisableDynamicOutputShapeVariation(self):
-        self.testDynamicOutputShape = False
         return self
 
     def DisableLifeTimeVariation(self):

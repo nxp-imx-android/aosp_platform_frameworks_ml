@@ -140,7 +140,7 @@ const TestModel& get_test_model() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // forget_gate_bias
@@ -150,7 +150,7 @@ const TestModel& get_test_model() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // cell_gate_bias
@@ -160,7 +160,7 @@ const TestModel& get_test_model() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // output_gate_bias
@@ -170,7 +170,7 @@ const TestModel& get_test_model() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // projection_weights
@@ -517,7 +517,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // forget_gate_bias
@@ -527,7 +527,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // cell_gate_bias
@@ -537,7 +537,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // output_gate_bias
@@ -547,7 +547,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .isIgnored = false,
                             .lifetime = TestOperandLifeTime::SUBGRAPH_INPUT,
                             .numberOfConsumers = 1,
-                            .scale = 4.65661e-08f,
+                            .scale = 0.0f,
                             .type = TestOperandType::TENSOR_INT32,
                             .zeroPoint = 0
                         }, { // projection_weights
@@ -750,7 +750,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .scale = 0.0078125f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // dummy
+                        }, { // placeholder
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({0}),
                             .dimensions = {1},
@@ -780,7 +780,7 @@ const TestModel& get_test_model_all_inputs_as_internal() {
                             .scale = 3.05176e-05f,
                             .type = TestOperandType::TENSOR_QUANT8_ASYMM_SIGNED,
                             .zeroPoint = 0
-                        }, { // dummy1
+                        }, { // placeholder1
                             .channelQuant = {},
                             .data = TestBuffer::createFromVector<int8_t>({0}),
                             .dimensions = {1},

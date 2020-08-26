@@ -448,7 +448,7 @@ static HalVersion getHalVersion(const V1_3::Operation&) {
 template <typename VersionedOperation>
 static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
                                const hidl_vec<Operand>& operands,
-                               const hidl_vec<Subgraph>& subgraphs) {
+                               const hidl_vec<Subgraph>& subgraphs, ValidationMode mode) {
     auto isValidSubgraphReference = [&subgraphs](const Operand& modelOperand) -> bool {
         NN_RET_CHECK(modelOperand.type == OperandType::SUBGRAPH)
                 << "Unexpected operand type: " << toString(modelOperand.type);
@@ -478,7 +478,6 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
         CHECK_LT(subgraph.outputIndexes[index], subgraph.operands.size());
         return &subgraph.operands[subgraph.outputIndexes[index]];
     };
-    const size_t operandCount = operands.size();
     for (auto& op : operations) {
         // TODO Validate the shapes and any known values. This is currently
         // done in CpuExecutor but should be done here for all drivers.
@@ -490,7 +489,11 @@ static bool validateOperations(const hidl_vec<VersionedOperation>& operations,
                  .getSubgraphInputCount = getInputCount,
                  .getSubgraphOutputCount = getOutputCount,
                  .getSubgraphInputOperand = getInputOperand,
-                 .getSubgraphOutputOperand = getOutputOperand});
+                 .getSubgraphOutputOperand = getOutputOperand,
+                 // 1.3 HAL does not support CF operations with operands of
+                 // unknown size. See http://b/132458982#comment63.
+                 .allowControlFlowOperationWithOperandOfUnknownSize =
+                         mode == ValidationMode::RUNTIME});
         if (error != ANEURALNETWORKS_NO_ERROR) {
             LOG(ERROR) << "Invalid operation " << toString(op.type);
             return false;
@@ -687,7 +690,7 @@ static bool checkNoReferenceCycles(const V1_3::Model& model) {
 }
 
 template <class T_Model>
-bool validateModel(const T_Model& model) {
+bool validateModel(const T_Model& model, ValidationMode mode) {
     NNTRACE_FULL(NNTRACE_LAYER_UTILITY, NNTRACE_PHASE_UNSPECIFIED, "validateModel");
     HalVersion version = ModelToHalVersion<T_Model>::version;
     if (model.operations.size() == 0 || model.operands.size() == 0) {
@@ -699,7 +702,7 @@ bool validateModel(const T_Model& model) {
     const hidl_vec<Operand> latestVersionOperands = convertToV1_3(model.operands);
     return (validateOperands(model.operands, model.operandValues, model.pools, /*subgraphs=*/{},
                              /*allowUnspecifiedRank=*/version >= HalVersion::V1_2) &&
-            validateOperations(model.operations, latestVersionOperands, /*subgraphs=*/{}) &&
+            validateOperations(model.operations, latestVersionOperands, /*subgraphs=*/{}, mode) &&
             validateModelInputOutputs(model.inputIndexes, latestVersionOperands,
                                       OperandLifeTime::SUBGRAPH_INPUT) &&
             validateModelInputOutputs(model.outputIndexes, latestVersionOperands,
@@ -707,21 +710,22 @@ bool validateModel(const T_Model& model) {
             validatePools(model.pools, version) && validateGraph(model));
 }
 
-template bool validateModel<V1_0::Model>(const V1_0::Model& model);
-template bool validateModel<V1_1::Model>(const V1_1::Model& model);
-template bool validateModel<V1_2::Model>(const V1_2::Model& model);
+template bool validateModel<V1_0::Model>(const V1_0::Model& model, ValidationMode mode);
+template bool validateModel<V1_1::Model>(const V1_1::Model& model, ValidationMode mode);
+template bool validateModel<V1_2::Model>(const V1_2::Model& model, ValidationMode mode);
 
 template <>
-bool validateModel(const V1_3::Model& model) {
+bool validateModel(const V1_3::Model& model, ValidationMode mode) {
     NNTRACE_FULL(NNTRACE_LAYER_UTILITY, NNTRACE_PHASE_UNSPECIFIED, "validateModel");
     if (model.main.operations.size() == 0 || model.main.operands.size() == 0) {
         LOG(ERROR) << "Invalid empty model.";
         return false;
     }
-    auto validateSubgraph = [&model](const Subgraph& subgraph) -> bool {
+    auto validateSubgraph = [&model, mode](const Subgraph& subgraph) -> bool {
         return (validateOperands(subgraph.operands, model.operandValues, model.pools,
                                  model.referenced, /*allowUnspecifiedRank=*/true) &&
-                validateOperations(subgraph.operations, subgraph.operands, model.referenced) &&
+                validateOperations(subgraph.operations, subgraph.operands, model.referenced,
+                                   mode) &&
                 validateModelInputOutputs(subgraph.inputIndexes, subgraph.operands,
                                           OperandLifeTime::SUBGRAPH_INPUT) &&
                 validateModelInputOutputs(subgraph.outputIndexes, subgraph.operands,
@@ -774,11 +778,19 @@ static bool validateRequestArguments(const hidl_vec<RequestArgument>& requestArg
             uint32_t requestRank = requestArgument.dimensions.size();
             if (requestRank == 0) {
                 if (!allowUnspecified) {
+                    // NOTE: validateRequestArguments cannot validate unknown tensor rank with
+                    // extension operand type.
+                    if (!isExtensionOperandType(operand.type) &&
+                        !nonExtensionOperandTypeIsScalar(static_cast<int>(operand.type))) {
+                        NN_RET_CHECK_GT(modelRank, 0) << "Model has unknown rank but the request "
+                                                         "does not specify the rank.";
+                    }
                     // Validate that all the dimensions are specified in the model.
                     for (size_t i = 0; i < modelRank; i++) {
                         if (operand.dimensions[i] == 0) {
-                            LOG(ERROR) << "Model has dimension " << i
-                                       << " set to 0 but the request does specify the dimension.";
+                            LOG(ERROR)
+                                    << "Model has dimension " << i
+                                    << " set to 0 but the request does not specify the dimension.";
                             return false;
                         }
                     }

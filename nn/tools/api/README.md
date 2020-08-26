@@ -127,8 +127,10 @@ generated output file.
 #### `%define *name* *body*`
 
 Defines a macro identified by the token *name*.  The *body* is separated from
-the *name* by whitespace, and extends to the end of the line -- it may contain
-whitespace itself.
+the *name* by exactly one whitespace character, and extends to the end of the
+line -- it may contain whitespace itself. For example,
+
+  %define test  this body begins and ends with a space character 
 
 Macro substitution occurs within a definition region or a section region: a
 substring `%{*name*}` is replaced with the corresponding *body*.  Macro
@@ -197,7 +199,7 @@ Permitted in regions: null, section
 
 This directive has two purposes:
 
-* Sanity-checking. If the "kind" is not on the space-delimited *list* of tokens,
+* Validity-checking. If the "kind" is not on the space-delimited *list* of tokens,
   `generate_api.py` terminates with an error.
 * Ordering the possible kinds for the *lowest version pattern* (see the section
   above for the explanation of the pattern).
