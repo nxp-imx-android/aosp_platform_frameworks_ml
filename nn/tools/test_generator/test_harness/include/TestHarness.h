@@ -226,13 +226,12 @@ class TestBuffer {
 
     // Factory method for creating a randomized buffer with "size" number of
     // bytes.
-    template <typename T>
-    static TestBuffer createFromRng(size_t size, std::default_random_engine* gen) {
-        static_assert(kAlignment % sizeof(T) == 0);
+    static TestBuffer createRandom(size_t size, std::default_random_engine* gen) {
+        static_assert(kAlignment % sizeof(uint32_t) == 0);
         TestBuffer testBuffer(size);
-        std::uniform_int_distribution<T> dist{};
-        const size_t adjustedSize = testBuffer.alignedSize() / sizeof(T);
-        std::generate_n(testBuffer.getMutable<T>(), adjustedSize, [&] { return dist(*gen); });
+        std::uniform_int_distribution<uint32_t> dist{};
+        const size_t count = testBuffer.alignedSize() / sizeof(uint32_t);
+        std::generate_n(testBuffer.getMutable<uint32_t>(), count, [&] { return dist(*gen); });
         return testBuffer;
     }
 
@@ -429,7 +428,7 @@ class TestModelManager {
         return instance;
     }
 
-    // Registers a TestModel to the manager. Returns a dummy integer for global variable
+    // Registers a TestModel to the manager. Returns a placeholder integer for global variable
     // initialization.
     int add(std::string name, const TestModel& testModel) {
         mTestModels.emplace(std::move(name), &testModel);

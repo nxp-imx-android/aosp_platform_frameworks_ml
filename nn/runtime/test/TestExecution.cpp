@@ -80,7 +80,7 @@ class TestPreparedModelLatest : public IPreparedModel {
     Return<V1_0::ErrorStatus> execute(const V1_0::Request& request,
                                       const sp<V1_0::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_0 != nullptr) << "V1_0 prepared model is nullptr.";
-        std::thread([this, &request, &callback] {
+        std::thread([this, request, callback] {
             dummyExecution();
             if (mErrorStatus == ErrorStatus::NONE) {
                 // Note that we lose the actual launch status.
@@ -95,7 +95,7 @@ class TestPreparedModelLatest : public IPreparedModel {
     Return<V1_0::ErrorStatus> execute_1_2(const V1_0::Request& request, MeasureTiming measure,
                                           const sp<V1_2::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_2 != nullptr) << "V1_2 prepared model is nullptr.";
-        std::thread([this, &request, measure, &callback] {
+        std::thread([this, request, measure, callback] {
             dummyExecution();
             if (mErrorStatus == ErrorStatus::NONE) {
                 // Note that we lose the actual launch status.
@@ -115,7 +115,7 @@ class TestPreparedModelLatest : public IPreparedModel {
                                           const OptionalTimeoutDuration& loopTimeoutDuration,
                                           const sp<V1_3::IExecutionCallback>& callback) override {
         CHECK(mPreparedModelV1_3 != nullptr) << "V1_3 prepared model is nullptr.";
-        std::thread([this, &request, measure, &deadline, &loopTimeoutDuration, &callback] {
+        std::thread([this, request, measure, deadline, loopTimeoutDuration, callback] {
             dummyExecution();
             if (mErrorStatus == ErrorStatus::NONE) {
                 // Note that we lose the actual launch status.
@@ -834,27 +834,27 @@ class ExecutionTest13 : public ExecutionTestTemplate<TestDriver13> {};
 TEST_P(ExecutionTest13, Wait) {
     TestWait();
 }
-INSTANTIATE_TEST_CASE_P(Flavor, ExecutionTest13, kTestValues);
+INSTANTIATE_TEST_SUITE_P(Flavor, ExecutionTest13, kTestValues);
 
 class ExecutionTest12 : public ExecutionTestTemplate<TestDriver12> {};
 TEST_P(ExecutionTest12, Wait) {
     TestWait();
 }
-INSTANTIATE_TEST_CASE_P(Flavor, ExecutionTest12, kTestValues);
+INSTANTIATE_TEST_SUITE_P(Flavor, ExecutionTest12, kTestValues);
 
 class ExecutionTest11 : public ExecutionTestTemplate<TestDriver11> {};
 TEST_P(ExecutionTest11, Wait) {
     if (kForceErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) return;
     TestWait();
 }
-INSTANTIATE_TEST_CASE_P(Flavor, ExecutionTest11, kTestValues);
+INSTANTIATE_TEST_SUITE_P(Flavor, ExecutionTest11, kTestValues);
 
 class ExecutionTest10 : public ExecutionTestTemplate<TestDriver10> {};
 TEST_P(ExecutionTest10, Wait) {
     if (kForceErrorStatus == ErrorStatus::OUTPUT_INSUFFICIENT_SIZE) return;
     TestWait();
 }
-INSTANTIATE_TEST_CASE_P(Flavor, ExecutionTest10, kTestValues);
+INSTANTIATE_TEST_SUITE_P(Flavor, ExecutionTest10, kTestValues);
 
 auto kIntrospectionTestValues = ::testing::Values(
         std::make_tuple(ErrorStatus::NONE, Result::NO_ERROR, /* kUseIntrospectionAPI */ true),
@@ -867,7 +867,7 @@ auto kIntrospectionTestValues = ::testing::Values(
         std::make_tuple(ErrorStatus::INVALID_ARGUMENT, Result::BAD_DATA,
                         /* kUseIntrospectionAPI */ true));
 
-INSTANTIATE_TEST_CASE_P(IntrospectionFlavor, ExecutionTest13, kIntrospectionTestValues);
+INSTANTIATE_TEST_SUITE_P(IntrospectionFlavor, ExecutionTest13, kIntrospectionTestValues);
 
 }  // namespace
 }  // namespace android

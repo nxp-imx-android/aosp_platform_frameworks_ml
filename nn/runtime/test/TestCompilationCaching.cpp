@@ -349,7 +349,8 @@ using CompilationCachingTestParam = std::tuple<uint32_t, uint32_t, ErrorStatus>;
 class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachingTestParam> {
    protected:
     virtual void SetUp() override {
-        char cacheDirTemp[] = "/data/local/tmp/TestCompilationCachingXXXXXX";
+        char cacheDirTemp[] =
+                "/data/local/tmp/AVeryLongDirectoryNameForTestCompilationCachingXXXXXX";
         char* cacheDir = mkdtemp(cacheDirTemp);
         ASSERT_NE(cacheDir, nullptr);
         mCacheDir = cacheDir;
@@ -383,6 +384,9 @@ class CompilationCachingTest : public ::testing::TestWithParam<CompilationCachin
                       ANEURALNETWORKS_NO_ERROR);
         }
         ASSERT_EQ(ANeuralNetworksCompilation_finish(compilation), ANEURALNETWORKS_NO_ERROR);
+
+        // close memory
+        ANeuralNetworksCompilation_free(compilation);
     }
 
     void createCache() {
@@ -474,12 +478,12 @@ static const auto kErrorStatusPrepareFromCacheChoices =
         testing::Values(ErrorStatus::NONE, ErrorStatus::GENERAL_FAILURE,
                         ErrorStatus::DEVICE_UNAVAILABLE, ErrorStatus::INVALID_ARGUMENT);
 
-INSTANTIATE_TEST_CASE_P(TestCompilationCaching, DeviceRegistrationTest,
-                        testing::Combine(kErrorStatusGetNumCacheFilesChoices, kNumCacheChoices,
-                                         kNumCacheChoices));
+INSTANTIATE_TEST_SUITE_P(TestCompilationCaching, DeviceRegistrationTest,
+                         testing::Combine(kErrorStatusGetNumCacheFilesChoices, kNumCacheChoices,
+                                          kNumCacheChoices));
 
-INSTANTIATE_TEST_CASE_P(TestCompilationCaching, CompilationCachingTest,
-                        testing::Combine(kNumValidCacheChoices, kNumValidCacheChoices,
-                                         kErrorStatusPrepareFromCacheChoices));
+INSTANTIATE_TEST_SUITE_P(TestCompilationCaching, CompilationCachingTest,
+                         testing::Combine(kNumValidCacheChoices, kNumValidCacheChoices,
+                                          kErrorStatusPrepareFromCacheChoices));
 
 }  // namespace
