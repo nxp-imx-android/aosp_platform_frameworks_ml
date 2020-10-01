@@ -19,6 +19,8 @@
 #include "CpuExecutor.h"
 
 #include <android/hardware_buffer.h>
+#include <android-base/scopeguard.h>
+
 #include <sys/mman.h>
 #include <vndk/hardware_buffer.h>
 
@@ -1722,11 +1724,10 @@ int CpuExecutor::executeOperation(const Operation& operation, RunTimeOperandInfo
     }
     if (result != ANEURALNETWORKS_NO_ERROR) {
         LOG(ERROR) << getOperationName(operation.type) << " failed.";
-        return result;
     }
 
     consumeOperationInputs(ins, operands);
-    return ANEURALNETWORKS_NO_ERROR;
+    return result;
 }
 
 // Copies RunTimeOperandInfo, preserving the original lifetime and numberOfUsesLeft
@@ -1796,6 +1797,25 @@ int CpuExecutor::executeWhileOperation(const Operation& operation, RunTimeOperan
     // For body output double buffering.
     std::vector<uint8_t*> tmp1(bodySubgraph.outputIndexes.size());
     std::vector<uint8_t*> tmp2(bodySubgraph.outputIndexes.size());
+
+    // Ensure objects are freed
+    auto cleanupGuard = base::make_scope_guard(
+        [&tmp1, &tmp2, &condOperands, &bodyOperands, &operation, &operands] {
+            auto freeLoopOutputs = [](const std::vector<uint8_t*>& tmp) {
+                for (auto buffer : tmp) {
+                    if (buffer != nullptr) {
+                        delete[] buffer;
+                    }
+                }
+            };
+
+            freeLoopOutputs(tmp1);
+            freeLoopOutputs(tmp2);
+            freeUnusedSubgraphOperands(&condOperands);
+            freeUnusedSubgraphOperands(&bodyOperands);
+            consumeOperationInputs(operation.inputs, operands);
+        }
+    );
 
     // For body outputs with unknown shape, we skip double buffering and
     // allocate on each iteration instead. This allows growing output tensors
@@ -1883,19 +1903,6 @@ int CpuExecutor::executeWhileOperation(const Operation& operation, RunTimeOperan
         std::memcpy(outerOperand.buffer, innerOperand.buffer, innerOperand.length);
     }
 
-    auto freeLoopOutputs = [](const std::vector<uint8_t*>& tmp) {
-        for (auto buffer : tmp) {
-            if (buffer != nullptr) {
-                delete[] buffer;
-            }
-        }
-    };
-    freeLoopOutputs(tmp1);
-    freeLoopOutputs(tmp2);
-    freeUnusedSubgraphOperands(&condOperands);
-    freeUnusedSubgraphOperands(&bodyOperands);
-    consumeOperationInputs(operation.inputs, operands);
-
     return ANEURALNETWORKS_NO_ERROR;
 }
 
@@ -1907,6 +1914,8 @@ void CpuExecutor::setOutputShapes(const std::vector<uint32_t>& outputIndexes,
         const RunTimeOperandInfo& from = operands[operandIndex];
         mOutputShapes[i].dimensions = from.dimensions;
         mOutputShapes[i].isSufficient = from.isSufficient();
+        VLOG(EXECUTION) << "CpuExecutor::setOutputShapes: mOutputShapes[" << i
+                        << "] = " << toString(mOutputShapes[i]);
     }
 }
 

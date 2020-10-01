@@ -15,6 +15,7 @@
  */
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <ftw.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
@@ -26,6 +27,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <thread>
 #include <utility>
@@ -60,6 +62,8 @@ class GeneratedTests : public GeneratedTestBase {
     void SetUp() override;
     void TearDown() override;
 
+    bool shouldSkipTest();
+
     std::optional<Compilation> compileModel(const Model& model);
     void executeWithCompilation(const Compilation& compilation, const TestModel& testModel);
     void executeOnce(const Model& model, const TestModel& testModel);
@@ -68,6 +72,9 @@ class GeneratedTests : public GeneratedTestBase {
     // Test driver for those generated from ml/nn/runtime/test/spec
     void execute(const TestModel& testModel);
 
+    // VNDK version of the device under test.
+    static int mVndkVersion;
+
     std::string mCacheDir;
     std::vector<uint8_t> mToken;
     bool mTestCompilationCaching = false;
@@ -75,7 +82,10 @@ class GeneratedTests : public GeneratedTestBase {
     bool mExpectFailure = false;
     bool mTestQuantizationCoupling = false;
     bool mTestDeviceMemory = false;
+    Execution::ComputeMode mComputeMode = Execution::getComputeMode();
 };
+
+int GeneratedTests::mVndkVersion = __ANDROID_API_FUTURE__;
 
 // Tag for the dynamic output shape tests
 class DynamicOutputShapeTest : public GeneratedTests {
@@ -129,13 +139,14 @@ std::optional<Compilation> GeneratedTests::compileModel(const Model& model) {
     }
 }
 
-static void computeWithPtrs(const TestModel& testModel, Execution* execution, Result* result,
+static void computeWithPtrs(const TestModel& testModel, Execution* execution,
+                            Execution::ComputeMode computeMode, Result* result,
                             std::vector<TestBuffer>* outputs) {
     {
         NNTRACE_APP(NNTRACE_PHASE_INPUTS_AND_OUTPUTS, "computeWithPtrs example");
         createRequest(testModel, execution, outputs);
     }
-    *result = execution->compute();
+    *result = execution->compute(computeMode);
 }
 
 static ANeuralNetworksMemory* createDeviceMemoryForInput(const Compilation& compilation,
@@ -166,8 +177,8 @@ static ANeuralNetworksMemory* createDeviceMemoryForOutput(const Compilation& com
 
 // Set result = Result::NO_ERROR and outputs = {} if the test should be skipped.
 static void computeWithDeviceMemories(const Compilation& compilation, const TestModel& testModel,
-                                      Execution* execution, Result* result,
-                                      std::vector<TestBuffer>* outputs) {
+                                      Execution* execution, Execution::ComputeMode computeMode,
+                                      Result* result, std::vector<TestBuffer>* outputs) {
     ASSERT_NE(execution, nullptr);
     ASSERT_NE(result, nullptr);
     ASSERT_NE(outputs, nullptr);
@@ -209,7 +220,7 @@ static void computeWithDeviceMemories(const Compilation& compilation, const Test
         }
     }
 
-    *result = execution->compute();
+    *result = execution->compute(computeMode);
 
     // Copy out output results.
     for (uint32_t i = 0; i < testModel.main.outputIndexes.size(); i++) {
@@ -236,9 +247,10 @@ void GeneratedTests::executeWithCompilation(const Compilation& compilation,
     std::vector<TestBuffer> outputs;
 
     if (mTestDeviceMemory) {
-        computeWithDeviceMemories(compilation, testModel, &execution, &result, &outputs);
+        computeWithDeviceMemories(compilation, testModel, &execution, mComputeMode, &result,
+                                  &outputs);
     } else {
-        computeWithPtrs(testModel, &execution, &result, &outputs);
+        computeWithPtrs(testModel, &execution, mComputeMode, &result, &outputs);
     }
 
     if (result == Result::NO_ERROR && outputs.empty()) {
@@ -256,6 +268,7 @@ void GeneratedTests::executeWithCompilation(const Compilation& compilation,
 
         // Check output dimensions.
         for (uint32_t i = 0; i < testModel.main.outputIndexes.size(); i++) {
+            SCOPED_TRACE("Output index: " + std::to_string(i));
             const auto& output = testModel.main.operands[testModel.main.outputIndexes[i]];
             if (output.isIgnored) continue;
             std::vector<uint32_t> actualDimensions;
@@ -328,8 +341,35 @@ void GeneratedTests::execute(const TestModel& testModel) {
     }
 }
 
+bool GeneratedTests::shouldSkipTest() {
+    // A map of {min VNDK version -> tests that should be skipped with earlier VNDK versions}.
+    // The listed tests are added in a later release, but exercising old APIs. They should be
+    // skipped if the device has a mixed build of system and vendor partitions.
+    static const std::map<int, std::set<std::string>> kMapOfMinVndkVersionToTests = {
+            {
+                    __ANDROID_API_R__,
+                    {
+                            "add_broadcast_quant8_all_inputs_as_internal",
+                    },
+            },
+    };
+    for (const auto& [minVersion, names] : kMapOfMinVndkVersionToTests) {
+        if (mVndkVersion < minVersion && names.count(kTestName) > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void GeneratedTests::SetUp() {
     GeneratedTestBase::SetUp();
+
+    mVndkVersion = ::android::base::GetIntProperty("ro.vndk.version", __ANDROID_API_FUTURE__);
+    if (shouldSkipTest()) {
+        GTEST_SKIP();
+        return;
+    }
+
     char cacheDirTemp[] = "/data/local/tmp/TestCompilationCachingXXXXXX";
     char* cacheDir = mkdtemp(cacheDirTemp);
     ASSERT_NE(cacheDir, nullptr);
@@ -351,21 +391,18 @@ void GeneratedTests::TearDown() {
 
 #ifdef NNTEST_COMPUTE_MODE
 TEST_P(GeneratedTests, Sync) {
-    const auto oldComputeMode = Execution::setComputeMode(Execution::ComputeMode::SYNC);
+    mComputeMode = Execution::ComputeMode::SYNC;
     execute(testModel);
-    Execution::setComputeMode(oldComputeMode);
 }
 
 TEST_P(GeneratedTests, Async) {
-    const auto oldComputeMode = Execution::setComputeMode(Execution::ComputeMode::ASYNC);
+    mComputeMode = Execution::ComputeMode::ASYNC;
     execute(testModel);
-    Execution::setComputeMode(oldComputeMode);
 }
 
 TEST_P(GeneratedTests, Burst) {
-    const auto oldComputeMode = Execution::setComputeMode(Execution::ComputeMode::BURST);
+    mComputeMode = Execution::ComputeMode::BURST;
     execute(testModel);
-    Execution::setComputeMode(oldComputeMode);
 }
 #else
 TEST_P(GeneratedTests, Test) {
@@ -390,9 +427,8 @@ TEST_P(DeviceMemoryTest, Test) {
 }
 
 TEST_P(FencedComputeTest, Test) {
-    const auto oldComputeMode = Execution::setComputeMode(Execution::ComputeMode::FENCED);
+    mComputeMode = Execution::ComputeMode::FENCED;
     execute(testModel);
-    Execution::setComputeMode(oldComputeMode);
 }
 
 INSTANTIATE_GENERATED_TEST(GeneratedTests,
