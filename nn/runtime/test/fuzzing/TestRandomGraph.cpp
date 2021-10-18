@@ -196,6 +196,10 @@ class RandomGraphTest : public ::testing::TestWithParam<uint32_t> {
                 //       [0, 255]. We should investigate on a better buffer value generation
                 //       algorithm that represents the real-world cases.
                 "TestRandomGraph_SingleOperationTest_CONV_2D_V1_2_12",
+                // In this test, the RGG produces a graph with a SIN operator followed by a FLOOR
+                // operator. The small accuracy mismatch from the SIN operator may be enlarged by
+                // the FLOOR operator and result in a test failure that should be permitted.
+                "TestRandomGraph_RandomGraphTest_LargeGraph_TENSOR_FLOAT32_Rank3_44",
         };
         if (kDisabledTests.find(mTestName) != kDisabledTests.end()) return true;
         const auto& operations = mGraph.getOperations();
